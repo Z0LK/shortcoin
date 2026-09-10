@@ -77,32 +77,87 @@ export function shortScore(a: Asset): Scorecard {
 
   const score = Math.round(100 * (1 - clamp01(cost)))
 
-  return { score, grade: gradeFor(score), momentum, fundingAnnual, crowding, borrow, carry, strength, depth, squeeze }
+  const parts = { momentum, fundingAnnual, crowding, borrow, carry, strength, depth, squeeze }
+  return { score, grade: gradeFor(score, parts), ...parts }
 }
 
-function gradeFor(score: number): Grade {
+/**
+ * The label has to name the actual problem, not just how bad the number is.
+ *
+ * A crowded equity short and an unlendable memecoin can score identically and
+ * mean opposite things: one is expensive because everybody is already short,
+ * the other because nobody will lend it at any price. Calling the second
+ * "crowded" tells the user something false about who is on the other side.
+ */
+function gradeFor(
+  score: number,
+  p: { crowding: number; borrow: number; strength: number; depth: number },
+): Grade {
   if (score >= 70)
     return {
       label: 'Clean',
       tone: 'accent',
-      verdict: 'Cheap to borrow, uncrowded and losing altitude. You can be early without being punished for waiting.',
+      verdict:
+        'Cheap to borrow, uncrowded and losing altitude. You can be early without being punished for waiting.',
     }
   if (score >= 55)
     return {
       label: 'Workable',
       tone: 'accent',
-      verdict: 'Nothing disqualifying, but the carry is real. Size it so the funding bill never forces the exit.',
+      verdict:
+        'Nothing disqualifying, but the carry is real. Size it so the funding bill never forces the exit.',
     }
-  if (score >= 40)
+
+  const crowded = p.crowding > 0.42
+  const rising = p.strength > 0.62
+
+  if (crowded && rising)
+    return {
+      label: 'Squeeze risk',
+      tone: 'warn',
+      verdict:
+        'A crowded book meeting an upward move. Every cover order above you is itself a buy, which is how the move feeds on the people trying to leave it.',
+    }
+
+  if (crowded)
     return {
       label: 'Crowded',
       tone: 'warn',
-      verdict: 'The trade is well known and the rent is high. Everyone here already agrees with you, which is the problem.',
+      verdict:
+        'The trade is well known and the rent is high. Everyone here already agrees with you, which is the problem.',
     }
+
+  // High cost with an empty short side is a supply problem, not a consensus
+  // one — the signature of almost every coin on this chain.
+  if (p.borrow > 0.75)
+    return {
+      label: 'No lender',
+      tone: 'warn',
+      verdict:
+        'Barely anyone is short, and it still costs a fortune to borrow. That is not consensus against you, it is an absent supply of stock — you are paying for scarcity, and the rent compounds while you wait to be right.',
+    }
+
+  if (rising)
+    return {
+      label: 'Fighting the tape',
+      tone: 'warn',
+      verdict:
+        'Uncrowded and affordable, but going the wrong way. Selling something that is rising is a bet on timing rather than on value.',
+    }
+
+  if (p.depth > 0.85)
+    return {
+      label: 'Thin',
+      tone: 'warn',
+      verdict:
+        'The book is too shallow to leave quickly. Entry is never the problem on a name like this; the exit is.',
+    }
+
   return {
-    label: 'Squeeze risk',
+    label: 'Expensive',
     tone: 'warn',
-    verdict: 'Expensive, crowded and not co-operating. A short here is a bet on timing, not on the company.',
+    verdict:
+      'Nothing here is disqualifying on its own, but the costs stack. The thesis has to work on a schedule.',
   }
 }
 

@@ -42,8 +42,9 @@ export function Hero() {
         How you short a token that nobody will lend you.
       </h1>
       <p className="mt-5 max-w-[62ch] text-base leading-relaxed text-ink-2">
-        Robinhood Chain carries {SHORT_CENSUS.total} tokenized equities.{' '}
-        <span className="text-ink">{SHORT_CENSUS.none} of them</span> — {' '}
+        Robinhood Chain carries {SHORT_CENSUS.equities} tokenized equities and{' '}
+        {SHORT_CENSUS.coins} native coins.{' '}
+        <span className="text-ink">{SHORT_CENSUS.none} of them</span> —{' '}
         {Math.round((SHORT_CENSUS.none / SHORT_CENSUS.total) * 100)}% of the chain — have no way to
         be sold short. No borrow market, no perpetual, no inverse product. SHORTCOIN builds the
         missing side of the trade out of the price series itself.
@@ -68,10 +69,16 @@ export function WhyYouCannotShort() {
       </p>
       <p>
         The usual answer is a perpetual future, and on this chain{' '}
-        <span className="num text-ink">{SHORT_CENSUS.perp}</span> tokens have one somewhere. That
-        leaves everything else. Five names have a lending market listed against them, and every one
-        of those markets currently has nothing supplied — a borrow that does not clear is not a
-        borrow.
+        <span className="num text-ink">{SHORT_CENSUS.perp}</span> tokens have one somewhere — all of
+        them equities. That leaves everything else. Five names have a lending market listed against
+        them, and every one of those markets currently has nothing supplied; a borrow that does not
+        clear is not a borrow.
+      </p>
+      <p>
+        The coins are worse. Not one memecoin on this chain has a perp, a lending market or an
+        inverse product, and their borrow quotes — where a desk will quote at all — run past 200% a
+        year. That is not a crowded trade. It is an absent one: nobody is short because there is no
+        instrument to be short with.
       </p>
     </Section>
   )

@@ -146,6 +146,24 @@ function ScannerRowBase({ asset, index }: { asset: Asset; index: number }) {
             <span className="flex min-w-0 items-center gap-1.5">
               <span className="truncate text-micro text-ink-3">{asset.name}</span>
               {!asset.private && <Pill className="shrink-0">{asset.sector}</Pill>}
+              {asset.ageDays !== undefined && (
+                <Pill
+                  className="shrink-0"
+                  tone={asset.ageDays < 14 ? 'warn' : 'neutral'}
+                  title={`Deployed ${asset.ageDays} days ago. Anything under two weeks old has no price history worth trusting.`}
+                >
+                  {asset.ageDays}d
+                </Pill>
+              )}
+              {asset.quote !== 'USDG' && (
+                <Pill
+                  className="shrink-0"
+                  tone="info"
+                  title={`Stock-paired: this token's pool is quoted against ${asset.quote}, not a stablecoin, so its price moves with ${asset.quote} as well as with its own flow.`}
+                >
+                  /{asset.quote}
+                </Pill>
+              )}
             </span>
           </span>
         </div>

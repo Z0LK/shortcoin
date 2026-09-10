@@ -9,7 +9,6 @@
  */
 
 import { Search, X, ArrowDown, ArrowUp } from 'lucide-react'
-import { SECTORS } from '@/lib/assets'
 import { Label } from '@/components/ui/primitives'
 import { cn } from '@/lib/utils'
 import type { Sector } from '@/lib/types'
@@ -40,7 +39,11 @@ export const HARD_TO_BORROW = 0.15
 /** Short interest above which the exit door is narrower than the crowd. */
 export const CROWDED_SHORT = 0.45
 
+/** Stock tokens, native coins, or the whole chain. */
+export type ClassTab = 'all' | 'equity' | 'coin'
+
 export interface ScannerQuery {
+  cls: ClassTab
   sector: SectorTab
   text: string
   lens: Lens
@@ -77,21 +80,59 @@ const LENSES: { key: Lens; label: string; hint: string }[] = [
   },
 ]
 
-const TABS: SectorTab[] = ['All', 'Watchlist', ...SECTORS]
+const CLASSES: { key: ClassTab; label: string; hint: string }[] = [
+  { key: 'all', label: 'All', hint: 'Everything listed on Robinhood Chain' },
+  { key: 'equity', label: 'Stocks', hint: 'Tokenized equities and ETFs tracking a listed share' },
+  { key: 'coin', label: 'Coins', hint: 'Native tokens — memecoins, launchpads and infrastructure' },
+]
 
 export function ScannerFilters({
   query,
   onChange,
   watchCount,
   counts,
+  sectors,
 }: {
   query: ScannerQuery
   onChange: (patch: Partial<ScannerQuery>) => void
   watchCount: number
-  counts: { hard: number; crowded: number }
+  counts: { hard: number; crowded: number; equity: number; coin: number }
+  /** Sector list narrowed to whichever asset class is selected. */
+  sectors: string[]
 }) {
+  const TABS: SectorTab[] = ['All', 'Watchlist', ...sectors]
+
   return (
     <div className="flex h-[var(--subnav-h)] shrink-0 items-center gap-2 border-b border-line bg-surface px-3">
+      {/* Asset class comes first: stocks and coins are different instruments
+          that happen to share a chain, and mixing them hides both. */}
+      <div
+        role="tablist"
+        aria-label="Asset class"
+        className="flex shrink-0 items-center rounded-[5px] border border-line bg-sunken p-[2px]"
+      >
+        {CLASSES.map((c) => {
+          const active = query.cls === c.key
+          const n = c.key === 'equity' ? counts.equity : c.key === 'coin' ? counts.coin : null
+          return (
+            <button
+              key={c.key}
+              role="tab"
+              aria-selected={active}
+              title={c.hint}
+              onClick={() => onChange({ cls: c.key, sector: 'All' })}
+              className={cn(
+                'rounded-[3px] px-2 py-[3px] text-mini font-semibold transition-colors',
+                active ? 'bg-raised text-ink' : 'text-ink-3 hover:text-ink-2',
+              )}
+            >
+              {c.label}
+              {n !== null && <span className="num ml-1 text-micro text-ink-4">{n}</span>}
+            </button>
+          )
+        })}
+      </div>
+
       <div
         role="tablist"
         aria-label="Sector"

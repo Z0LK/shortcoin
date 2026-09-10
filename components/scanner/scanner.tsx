@@ -19,7 +19,15 @@ import {
 } from '@/components/scanner/scanner-filters'
 import { ScannerRow } from '@/components/scanner/scanner-row'
 import { Label, Pill } from '@/components/ui/primitives'
-import { ASSETS, marketPhase, PHASE_LABEL, SHORT_CENSUS, tokenizationWindowOpen } from '@/lib/assets'
+import {
+  ASSETS,
+  COIN_SECTORS,
+  marketPhase,
+  PHASE_LABEL,
+  SECTORS,
+  SHORT_CENSUS,
+  tokenizationWindowOpen,
+} from '@/lib/assets'
 import { useStore } from '@/lib/store'
 import { abbr, usdAbbr } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -75,7 +83,10 @@ const COLUMNS: Column[] = [
   { key: null, label: '', align: 'right', width: 'w-[92px]' },
 ]
 
+const EQUITY_SECTORS = SECTORS.filter((s) => !COIN_SECTORS.includes(s))
+
 const DEFAULT_QUERY: ScannerQuery = {
+  cls: 'all',
   sector: 'All',
   text: '',
   lens: 'all',
@@ -110,13 +121,25 @@ export function Scanner() {
     () => ({
       hard: ASSETS.filter((a) => a.borrowFee > HARD_TO_BORROW).length,
       crowded: ASSETS.filter((a) => a.shortInterest > CROWDED_SHORT).length,
+      equity: SHORT_CENSUS.equities,
+      coin: SHORT_CENSUS.coins,
     }),
     [],
+  )
+
+  // Sector tabs follow the asset class: "Memecoin" is meaningless while looking
+  // at equities, and "Semiconductors" is meaningless while looking at coins.
+  const sectorTabs = useMemo(
+    () =>
+      query.cls === 'coin' ? COIN_SECTORS : query.cls === 'equity' ? EQUITY_SECTORS : SECTORS,
+    [query.cls],
   )
 
   const rows = useMemo(() => {
     const text = query.text.trim().toLowerCase()
     let pool = ASSETS
+
+    if (query.cls !== 'all') pool = pool.filter((a) => a.assetClass === query.cls)
 
     if (query.sector === 'Watchlist') pool = pool.filter((a) => watchlist.includes(a.symbol))
     else if (query.sector !== 'All') pool = pool.filter((a) => a.sector === query.sector)
@@ -183,8 +206,8 @@ export function Scanner() {
             </Pill>
           )}
           <span className="text-ink-4">
-            {SHORT_CENSUS.none} of {SHORT_CENSUS.total} tokens on this chain cannot be shorted
-            anywhere
+            {SHORT_CENSUS.equities} stock tokens · {SHORT_CENSUS.coins} coins ·{' '}
+            {SHORT_CENSUS.none} with no short route anywhere
           </span>
         </span>
       </div>
@@ -194,6 +217,7 @@ export function Scanner() {
         onChange={(patch) => setQuery((q) => ({ ...q, ...patch }))}
         watchCount={watchlist.length}
         counts={counts}
+        sectors={sectorTabs}
       />
 
       {/* ── table ────────────────────────────────────────────────────────── */}

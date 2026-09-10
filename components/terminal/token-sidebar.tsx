@@ -117,6 +117,14 @@ export function TokenSidebar({ asset }: { asset: Asset }) {
         <div className="mt-2.5 flex flex-wrap items-center gap-1">
           <Pill>{asset.sector}</Pill>
           {asset.underlying && !asset.private && <Pill>Underlying {asset.underlying}</Pill>}
+          {asset.ageDays !== undefined && (
+            <Pill tone={asset.ageDays < 14 ? 'warn' : 'neutral'}>{asset.ageDays} days old</Pill>
+          )}
+          {asset.quote !== 'USDG' && (
+            <Pill tone="info" title={`Quoted against ${asset.quote}, not a stablecoin.`}>
+              Paired /{asset.quote}
+            </Pill>
+          )}
           {asset.uiMultiplier !== 1 && (
             <Pill
               tone="info"
@@ -189,36 +197,70 @@ export function TokenSidebar({ asset }: { asset: Asset }) {
 
       <ShortDesk asset={asset} />
 
-      {/* ── trading hours ──────────────────────────────────────────────── */}
-      <Panel title="Trading hours" bodyClassName="p-3">
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1.5">
-            <span
-              className={cn(
-                'size-1.5 rounded-full bg-current',
-                phase === 'open' && 'pulse-dot',
-                phase === 'open' ? 'text-long' : phase ? 'text-warn' : 'text-ink-4',
-              )}
-            />
-            <span className="text-mini font-medium text-ink-2">
-              {phase ? PHASE_LABEL[phase] : '—'}
+      {/* ── how it trades ──────────────────────────────────────────────── */}
+      {asset.assetClass === 'coin' ? (
+        <Panel title="How it trades" bodyClassName="p-3">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <span className="pulse-dot size-1.5 rounded-full bg-long" />
+              <span className="text-mini font-medium text-ink-2">Always on</span>
             </span>
-          </span>
-          <Pill tone={windowOpen === false ? 'warn' : 'neutral'}>
-            {windowOpen === false ? 'MINT WINDOW SHUT' : 'MINT WINDOW OPEN'}
-          </Pill>
-        </div>
+            <Pill title={`Liquidity sits in a DEX pool against ${asset.quote}.`}>
+              Pool /{asset.quote}
+            </Pill>
+          </div>
 
-        <p className="mt-2 text-mini leading-relaxed text-ink-3">
-          The token trades on-chain 24/7. The share it tracks does not. Mint and burn only run
-          Monday 02:00 CET through Saturday 02:00 CET, and outside that window no authorised
-          participant can arbitrage the token back to the underlying.
-        </p>
-        <p className="mt-2 text-mini leading-relaxed text-ink-4">
-          Borrow and funding keep accruing the whole time. A short held over a weekend pays for
-          three days of carry against a price nothing is anchoring.
-        </p>
-      </Panel>
+          <p className="mt-2 text-mini leading-relaxed text-ink-3">
+            Nothing anchors this token. There is no share behind it, no net asset value and no
+            authorised participant — the price is whatever the pool says it is, every second of
+            every day.
+          </p>
+          {asset.quote !== 'USDG' && (
+            <p className="mt-2 text-mini leading-relaxed text-ink-3">
+              It is also a stock-paired meme: the pool is quoted in {asset.quote} rather than a
+              stablecoin, so shorting it is a bet on the coin <em>relative to</em> {asset.quote},
+              not against the dollar.
+            </p>
+          )}
+          {asset.ageDays !== undefined && asset.ageDays < 14 && (
+            <p className="mt-2 text-mini leading-relaxed text-warn">
+              {asset.ageDays} days old. Borrow on a token this young is punitive precisely because
+              nobody can price the risk of it going to zero overnight.
+            </p>
+          )}
+        </Panel>
+      ) : (
+        <Panel title="Trading hours" bodyClassName="p-3">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <span
+                className={cn(
+                  'size-1.5 rounded-full bg-current',
+                  phase === 'open' && 'pulse-dot',
+                  phase === 'open' ? 'text-long' : phase ? 'text-warn' : 'text-ink-4',
+                )}
+              />
+              <span className="text-mini font-medium text-ink-2">
+                {phase ? PHASE_LABEL[phase] : '—'}
+              </span>
+            </span>
+            <Pill tone={windowOpen === false ? 'warn' : 'neutral'}>
+              {windowOpen === false ? 'MINT WINDOW SHUT' : 'MINT WINDOW OPEN'}
+            </Pill>
+          </div>
+
+          <p className="mt-2 text-mini leading-relaxed text-ink-3">
+            The token trades on-chain 24/7. The share it tracks does not. Mint and burn only run
+            Monday 02:00 CET through Saturday 02:00 CET, and outside that window no authorised
+            participant can arbitrage the token back to the underlying.
+          </p>
+          <p className="mt-2 text-mini leading-relaxed text-ink-4">
+            Borrow and funding keep accruing the whole time. A short held over a weekend pays for
+            three days of carry against a price nothing is anchoring.
+          </p>
+        </Panel>
+      )}
+
     </div>
   )
 }

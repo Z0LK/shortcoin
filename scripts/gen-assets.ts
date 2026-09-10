@@ -11,6 +11,7 @@ import { writeFileSync, readFileSync } from 'node:fs'
 import { rng, between } from '../lib/rng'
 
 const REGISTRY = readFileSync(new URL('./registry.txt', import.meta.url), 'utf8')
+const COINS = readFileSync(new URL('./coins.txt', import.meta.url), 'utf8')
 
 /** The 44 tokens with a live Lighter perp — the only ones shortable via perps. */
 const LIGHTER_PERPS = new Set(
@@ -62,6 +63,32 @@ interface Row {
   address?: string
 }
 
+interface CoinRow {
+  ticker: string
+  name: string
+  sector: string
+  price: number
+  quote: string
+  ageDays: number
+  tier: number
+}
+
+const coinRows: CoinRow[] = COINS.split('\n')
+  .map((l) => l.trim())
+  .filter((l) => l && !l.startsWith('#'))
+  .map((l) => {
+    const [ticker, name, sector, price, quote, ageDays, tier] = l.split('|').map((x) => x.trim())
+    return {
+      ticker,
+      name,
+      sector,
+      price: Number(price),
+      quote,
+      ageDays: Number(ageDays),
+      tier: Number(tier),
+    }
+  })
+
 const rows: Row[] = REGISTRY.split('\n')
   .map((l) => l.trim())
   .filter(Boolean)
@@ -109,7 +136,7 @@ function shortRoute(t: string): 'borrow' | 'perp' | 'none' {
   return 'none'
 }
 
-const seeds = rows.map((r) => {
+const equitySeeds = rows.map((r) => {
   const next = rng(`rhc:${r.ticker}`)
   const [lo, hi] = bandFor(r.sector)
   const price = KNOWN_PRICES[r.ticker] ?? Number(between(next, lo, hi).toFixed(2))
@@ -125,13 +152,50 @@ const seeds = rows.map((r) => {
     wholeSharesOnly: WHOLE_SHARES_ONLY.has(r.ticker),
     uiMultiplier: UI_MULTIPLIER[r.ticker] ?? 1,
     vol: Number(volFor(r.sector).toFixed(3)),
+    cls: 'equity' as const,
+    quote: 'USDG',
+    age: 0,
+    tier: 0,
   }
 })
+
+/**
+ * Coins are a different animal. Nothing anchors them to a share, so volatility
+ * is measured in whole multiples rather than percentages, depth is thin, and a
+ * token can be four days old. None of them can be shorted anywhere: no perp
+ * lists a Robinhood Chain memecoin and no lender will take one as a borrow.
+ */
+const coinSeeds = coinRows.map((r) => {
+  const next = rng(`rhc:coin:${r.ticker}`)
+  const vol =
+    r.sector === 'Infrastructure' ? 0.62 : r.sector === 'Launchpad' ? 1.45 : 1.9 - r.tier * 0.16
+  return {
+    ticker: r.ticker,
+    name: r.name,
+    sector: r.sector,
+    price: r.price,
+    address: fakeAddress(next),
+    real: false,
+    route: 'none' as const,
+    collateralOnly: false,
+    wholeSharesOnly: false,
+    uiMultiplier: 1,
+    vol: Number(vol.toFixed(3)),
+    cls: 'coin' as const,
+    quote: r.quote,
+    age: r.ageDays,
+    tier: r.tier,
+  }
+})
+
+const seeds = [...equitySeeds, ...coinSeeds]
 
 const sectors = [...new Set(seeds.map((s) => s.sector))].sort()
 
 const counts = {
   total: seeds.length,
+  equities: equitySeeds.length,
+  coins: coinSeeds.length,
   borrow: seeds.filter((s) => s.route === 'borrow').length,
   perp: seeds.filter((s) => s.route === 'perp').length,
   none: seeds.filter((s) => s.route === 'none').length,
@@ -155,7 +219,7 @@ const body = `/**
  *   ${counts.none} tokens — ${Math.round((counts.none / counts.total) * 100)}% of the chain — have no way to go short at all
  */
 
-import type { Asset, MarketPhase, ShortRoute } from './types'
+import type { Asset, AssetClass, MarketPhase, ShortRoute } from './types'
 import { between, rng } from './rng'
 
 export const CHAIN = {
@@ -176,6 +240,8 @@ export const CHAIN = {
 /** Census of how shortable this chain actually is. Drives the product's pitch. */
 export const SHORT_CENSUS = {
   total: ${counts.total},
+  equities: ${counts.equities},
+  coins: ${counts.coins},
   borrow: ${counts.borrow},
   perp: ${counts.perp},
   none: ${counts.none},
@@ -193,6 +259,10 @@ interface Seed {
   whole: boolean
   mult: number
   v: number
+  c: AssetClass
+  q: string
+  age: number
+  tier: number
 }
 
 const SEEDS: Seed[] = ${JSON.stringify(
@@ -208,6 +278,10 @@ const SEEDS: Seed[] = ${JSON.stringify(
     whole: s.wholeSharesOnly,
     mult: s.uiMultiplier,
     v: s.vol,
+    c: s.cls,
+    q: s.quote,
+    age: s.age,
+    tier: s.tier,
   })),
   null,
   0,
@@ -218,41 +292,63 @@ const SEEDS: Seed[] = ${JSON.stringify(
 
 function build(seed: Seed): Asset {
   const next = rng(\`rhc:\${seed.t}:mkt\`)
+  const isCoin = seed.c === 'coin'
 
   const vol = seed.v * between(next, 0.85, 1.25)
   const drift = between(next, -0.24, 0.34)
   const isEtf = seed.s.startsWith('ETF')
-  const change24h = between(next, -9, 9) * (isEtf ? 0.3 : 1)
-  const change1h = change24h * between(next, 0.05, 0.5) + between(next, -1.4, 1.4)
+
+  // A memecoin does not move like a share. Nothing arbitrages it back to a
+  // fair value, so the daily range is measured in tens of percent and the
+  // youngest names are the wildest.
+  const swing = isCoin ? (seed.tier >= 2 ? 26 : 55) : isEtf ? 2.7 : 9
+  const change24h = between(next, -swing, swing)
+  const change1h = change24h * between(next, 0.05, 0.5) + between(next, -1.4, 1.4) * (isCoin ? 6 : 1)
   const change7d = change24h * between(next, 0.6, 2.4)
 
-  // Depth follows how much attention a name gets, which the short route is a decent
-  // proxy for: a token liquid enough to carry a perp is a token people trade.
-  const tier = seed.r === 'borrow' ? 6 : seed.r === 'perp' ? 2.4 : 0.7
+  // Depth. For equities the short route is a decent proxy for attention; for
+  // coins it is simply how established the token is.
+  const tier = isCoin
+    ? [0.02, 0.12, 0.8, 4][seed.tier] ?? 0.05
+    : seed.r === 'borrow'
+      ? 6
+      : seed.r === 'perp'
+        ? 2.4
+        : 0.7
   const liquidity = between(next, 0.4e6, 18e6) * tier
-  const volume24h = liquidity * between(next, 0.4, 5.6)
-  const marketCap = liquidity * between(next, 40, 900)
+  // Coins turn over their own float many times a day. Equities do not.
+  const volume24h = liquidity * (isCoin ? between(next, 1.2, 14) : between(next, 0.4, 5.6))
+  const marketCap = liquidity * (isCoin ? between(next, 8, 60) : between(next, 40, 900))
 
   // Borrow is the price of a short, so it is expensive exactly where shorting is
-  // hard — which on this chain is almost everywhere.
-  const borrowFee =
-    seed.r === 'none'
+  // hard — which on this chain is almost everywhere, and worst of all on coins
+  // that no lender will touch.
+  const borrowFee = isCoin
+    ? between(next, 0.6, 3.2) - seed.tier * 0.12
+    : seed.r === 'none'
       ? between(next, 0.22, 0.95)
       : seed.r === 'perp'
         ? between(next, 0.03, 0.28)
         : between(next, 0.005, 0.06)
 
-  const shortInterest = seed.r === 'none' ? between(next, 0.02, 0.18) : between(next, 0.12, 0.66)
+  const shortInterest = isCoin
+    ? between(next, 0.0, 0.08)
+    : seed.r === 'none'
+      ? between(next, 0.02, 0.18)
+      : between(next, 0.12, 0.66)
   const fundingRate = (shortInterest - 0.5) * -between(next, 0.0004, 0.0055)
 
   return {
     symbol: seed.t,
-    underlying: seed.t,
+    underlying: isCoin ? undefined : seed.t,
     name: seed.n,
-    /** The on-chain ERC-20 name, e.g. "Apple • Robinhood Token". */
-    tokenName: \`\${seed.n} • Robinhood Token\`,
+    /** The on-chain ERC-20 name. Stock tokens carry the issuer suffix; coins do not. */
+    tokenName: isCoin ? seed.n : \`\${seed.n} • Robinhood Token\`,
     sector: seed.s,
-    private: seed.s === 'Space & Satellite' && seed.t === 'SPCX',
+    assetClass: seed.c,
+    quote: seed.q,
+    ageDays: isCoin ? seed.age : undefined,
+    private: seed.t === 'SPCX',
     address: seed.a,
     verifiedAddress: seed.real,
     logoHue: Math.floor(next() * 360),
@@ -264,7 +360,9 @@ function build(seed: Seed): Asset {
     volume24h,
     liquidity,
     marketCap,
-    holders: Math.floor(between(next, 240, 96_000) * (seed.r === 'none' ? 0.4 : 1)),
+    holders: Math.floor(
+      between(next, 240, 96_000) * (isCoin ? 0.05 + seed.tier * 0.4 : seed.r === 'none' ? 0.4 : 1),
+    ),
     borrowFee,
     fundingRate,
     shortInterest,
@@ -290,6 +388,16 @@ export function getAsset(symbol: string): Asset | undefined {
 }
 
 export const SECTORS: string[] = ${JSON.stringify(sectors, null, 0).replace(/","/g, '", "')}
+
+/** Sectors that belong to native coins rather than tokenized equities. */
+export const COIN_SECTORS: string[] = ${JSON.stringify(
+  [...new Set(coinSeeds.map((c) => c.sector))].sort(),
+  null,
+  0,
+).replace(/","/g, '", "')}
+
+export const EQUITIES: Asset[] = ASSETS.filter((a) => a.assetClass === 'equity')
+export const COINS: Asset[] = ASSETS.filter((a) => a.assetClass === 'coin')
 
 export const SHORT_ROUTE_LABEL: Record<ShortRoute, string> = {
   borrow: 'Spot borrow',
@@ -340,5 +448,7 @@ export function tokenizationWindowOpen(now = new Date()): boolean {
 `
 
 writeFileSync(new URL('../lib/assets.ts', import.meta.url), body)
-console.log(`wrote lib/assets.ts — ${counts.total} assets, ${sectors.length} sectors`)
+console.log(
+  `wrote lib/assets.ts — ${counts.total} assets (${counts.equities} equities, ${counts.coins} coins), ${sectors.length} sectors`,
+)
 console.log(`short routes: borrow ${counts.borrow} · perp ${counts.perp} · none ${counts.none}`)

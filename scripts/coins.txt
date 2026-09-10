@@ -1,0 +1,29 @@
+# Native Robinhood Chain coins.
+# symbol | name | sector | price | quote | ageDays | tier
+#
+# Symbols, names and the broad shape of the ecosystem are real (Pons is the
+# chain's meme-coin factory, CASHCAT is its totem and was listed in the Robinhood
+# app, Artificial Inu started the "stock-paired meme" category quoted against a
+# tokenized equity rather than a stablecoin). Prices below are invented except
+# PONS, which is roughly where it traded in early September 2026.
+#
+# tier drives liquidity depth: 3 = chain blue chip, 2 = established, 1 = mid, 0 = long tail.
+
+PONS | Pons | Launchpad | 0.5978 | USDG | 71 | 3
+CASHCAT | Cash Cat | Memecoin | 0.04128 | USDG | 68 | 3
+WETH | Wrapped Ether | Infrastructure | 2431.60 | USDG | 71 | 3
+AI | Artificial Inu | Stock-paired meme | 0.013842 | NVDA | 58 | 2
+DOGO | Dogo | Memecoin | 0.009164 | USDG | 62 | 2
+PIPEDOG | Pipedog | Memecoin | 0.002471 | USDG | 55 | 2
+MOW | Mow | Memecoin | 0.00084217 | USDG | 41 | 2
+TENDIES | Tendies | Memecoin | 0.00196402 | USDG | 49 | 2
+HMM | Hmm | Memecoin | 0.00031845 | USDG | 33 | 1
+STONKBROKER | Stonkbroker | Stock-paired meme | 0.00006428 | SPY | 27 | 1
+MEME | Meme | Memecoin | 0.00412069 | USDG | 24 | 1
+CINEMA | Cinema | Memecoin | 0.00008912 | USDG | 16 | 1
+SHRUB | Shrub | Memecoin | 0.00001274 | USDG | 9 | 1
+BAGHOLDER | Bagholder | Stock-paired meme | 0.00002186 | TSLA | 12 | 0
+DIAMONDHANDS | Diamond Hands | Memecoin | 0.00000914 | USDG | 6 | 0
+MARGINCALL | Margin Call | Stock-paired meme | 0.00000472 | QQQ | 4 | 0
+GAMMA | Gamma Squeeze | Memecoin | 0.00000238 | USDG | 3 | 0
+PAPERHANDS | Paper Hands | Memecoin | 0.00000117 | USDG | 2 | 0

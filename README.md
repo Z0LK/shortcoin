@@ -1,7 +1,8 @@
 # SHORTCOIN
 
-A **short-only** trading terminal for tokenized equities on **Robinhood Chain** — the one thing no
-other on-chain venue offers.
+A **short-only** trading terminal for **Robinhood Chain** — both the tokenized equities (AAPL, TSLA,
+SPCX) and the chain's native coins (PONS, CASHCAT and the memecoins quoted against stock tokens).
+Shorting is the one thing no other on-chain venue offers.
 
 There is no long side and no leverage. Every chart in the product is already the synthetic inverse,
 so a green candle means the stock fell and the trade is working.
@@ -19,15 +20,22 @@ buying the inverse is economically a short of the underlying.
 
 ## The wedge, in one number
 
-Robinhood Chain carries **195** tokenized equities.
+Robinhood Chain carries **195** tokenized equities and **18** native coins.
 
 | Short route available today | Tokens |
 | --- | --- |
 | Spot borrow market (all currently with nothing supplied) | 5 |
 | Perpetual future on another venue | 39 |
-| **Nothing at all** | **151** — 77% of the chain |
+| **Nothing at all** | **169** — 79% of the chain |
 
-That last row is the product.
+That last row is the product. Every single coin is in it: no memecoin on this chain has a perp, a
+lending market or an inverse product, and borrow quotes run past 200% a year — not because the trade
+is crowded, but because there is no instrument to be short with.
+
+**Two asset classes, two sets of rules.** Equities track a share, so they inherit its calendar and
+the Monday–Saturday mint window that keeps the token pegged. Coins track nothing and trade genuinely
+around the clock — and some of them, the *stock-paired memes* the chain invented, are quoted against
+a tokenized equity rather than a stablecoin, so shorting them is a bet relative to NVDA or SPY.
 
 ---
 

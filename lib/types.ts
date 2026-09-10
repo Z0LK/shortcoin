@@ -35,6 +35,14 @@ export type Sector = string
  */
 export type ShortRoute = 'borrow' | 'perp' | 'none'
 
+/**
+ * Two very different things live on this chain. Tokenized equities track a share
+ * and inherit its trading calendar; native coins track nothing, trade genuinely
+ * around the clock, and can be a few days old. Almost every rule that differs
+ * between them keys off this.
+ */
+export type AssetClass = 'equity' | 'coin'
+
 /** Whether the underlying equity's primary venue is currently open. */
 export type MarketPhase = 'open' | 'pre' | 'after' | 'closed'
 
@@ -59,6 +67,15 @@ export interface Asset {
   /** The on-chain ERC-20 name, e.g. "Apple • Robinhood Token". */
   tokenName: string
   sector: Sector
+  assetClass: AssetClass
+  /**
+   * What the token is quoted against on the chain's DEXes. Usually USDG, but
+   * Robinhood Chain invented the stock-paired meme: a coin whose pool is against
+   * a tokenized equity, so its price is denominated in shares of NVDA or SPY.
+   */
+  quote: string
+  /** Days since the token was deployed. Only meaningful for coins. */
+  ageDays?: number
   /** True for tokenized private companies such as SpaceX. */
   private: boolean
   /** 0x… address on Robinhood Chain. */
