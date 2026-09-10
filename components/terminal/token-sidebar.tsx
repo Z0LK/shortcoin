@@ -147,6 +147,23 @@ export function TokenSidebar({ asset }: { asset: Asset }) {
         </div>
       </Panel>
 
+      {asset.imported && (
+        <Panel bodyClassName="p-3">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <Pill tone="long">READ FROM CHAIN</Pill>
+            <Pill tone="warn">SIMULATED MARKET</Pill>
+          </div>
+          <p className="text-mini leading-relaxed text-ink-3">
+            This token is not on any of our lists. Its symbol, name, decimals and supply were read
+            from the contract on {CHAIN.name} just now, and those are real.
+          </p>
+          <p className="mt-2 text-mini leading-relaxed text-warn">
+            Everything below the identity — price, depth, holders, borrow — is generated. Nobody
+            indexes this token, so there is no market to quote.
+          </p>
+        </Panel>
+      )}
+
       {/* ── short route ────────────────────────────────────────────────── */}
       <Panel title="Short route today" bodyClassName="p-3">
         <Pill tone={ROUTE_TONE[asset.shortRoute]} className="mb-2">

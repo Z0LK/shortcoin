@@ -2,6 +2,23 @@ import { notFound } from 'next/navigation'
 import { Terminal } from '@/components/terminal/terminal'
 import { ASSETS } from '@/lib/assets'
 import { resolveAsset } from '@/lib/universe'
+import { isAddress, readToken } from '@/lib/chain'
+import { assetFromChain, toPayload } from '@/lib/imported'
+
+/**
+ * Resolve anything the URL can carry: a listed ticker, a generated tail token,
+ * or a bare contract address, which is read off Robinhood Chain on the server.
+ */
+async function resolve(symbol: string) {
+  const known = resolveAsset(symbol)
+  if (known) return known
+
+  if (isAddress(symbol)) {
+    const token = await readToken(symbol)
+    if (token) return assetFromChain(toPayload(token))
+  }
+  return undefined
+}
 
 /**
  * The named universe is prerendered. The Pons tail is four million tokens deep
@@ -18,7 +35,7 @@ type Params = { params: Promise<{ symbol: string }> }
 
 export async function generateMetadata({ params }: Params) {
   const { symbol } = await params
-  const asset = resolveAsset(symbol)
+  const asset = await resolve(symbol)
   if (!asset) return { title: 'Unknown token — SHORTCOIN' }
   return {
     title: `${asset.symbol} · ${asset.name} — SHORTCOIN`,
@@ -28,7 +45,7 @@ export async function generateMetadata({ params }: Params) {
 
 export default async function TerminalPage({ params }: Params) {
   const { symbol } = await params
-  const asset = resolveAsset(symbol)
+  const asset = await resolve(symbol)
   if (!asset) notFound()
 
   return <Terminal asset={asset} />

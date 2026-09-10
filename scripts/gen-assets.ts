@@ -75,13 +75,16 @@ interface CoinRow {
   quote: string
   ageDays: number
   tier: number
+  address?: string
 }
 
 const coinRows: CoinRow[] = COINS.split('\n')
   .map((l) => l.trim())
   .filter((l) => l && !l.startsWith('#'))
   .map((l) => {
-    const [ticker, name, sector, price, quote, ageDays, tier] = l.split('|').map((x) => x.trim())
+    const [ticker, name, sector, price, quote, ageDays, tier, address] = l
+      .split('|')
+      .map((x) => x.trim())
     return {
       ticker,
       name,
@@ -90,6 +93,7 @@ const coinRows: CoinRow[] = COINS.split('\n')
       quote,
       ageDays: Number(ageDays),
       tier: Number(tier),
+      address: address || undefined,
     }
   })
 
@@ -178,8 +182,8 @@ const coinSeeds = coinRows.map((r) => {
     name: r.name,
     sector: r.sector,
     price: r.price,
-    address: fakeAddress(next),
-    real: false,
+    address: r.address ?? fakeAddress(next),
+    real: !!r.address,
     route: 'none' as const,
     collateralOnly: false,
     wholeSharesOnly: false,

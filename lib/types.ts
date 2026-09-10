@@ -128,6 +128,13 @@ export interface Asset {
    * splits and corporate actions without moving anyone's tokens.
    */
   uiMultiplier: number
+
+  /**
+   * True when this token was read off Robinhood Chain on demand rather than
+   * coming from a curated list. Its identity is real; its market is not, and
+   * the interface has to say which is which.
+   */
+  imported?: boolean
 }
 
 export interface Position {

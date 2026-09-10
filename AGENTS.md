@@ -10,7 +10,10 @@ React 19 · TypeScript 5.9 · Tailwind v4 · lightweight-charts 5 · zustand 5 �
 
 ## Rules that are easy to break
 
-- **Everything is fictional.** Never present simulated data as live. The honesty lines in the ticket
+- **`lib/chain.ts` is the only real network call in the product**, and it is read-only identity:
+  symbol, name, decimals, supply. Never let simulated numbers borrow its credibility — an imported
+  token carries both a READ FROM CHAIN badge and a SIMULATED MARKET one, and both have to stay.
+- **Everything else is fictional.** Never present simulated data as live. The honesty lines in the ticket
   and on `/how-it-works` are load-bearing, not boilerplate.
 - **Short only, unlevered, always inverted.** There is no direction switch, no leverage control and
   no way to see the underlying series. Do not reintroduce any of the three.

@@ -1,5 +1,5 @@
 # Native Robinhood Chain coins.
-# symbol | name | sector | price | quote | ageDays | tier
+# symbol | name | sector | price | quote | ageDays | tier | address (optional, read on-chain)
 #
 # Symbols, names and the broad shape of the ecosystem are real (Pons is the
 # chain's meme-coin factory, CASHCAT is its totem and was listed in the Robinhood
@@ -9,7 +9,7 @@
 #
 # tier drives liquidity depth: 3 = chain blue chip, 2 = established, 1 = mid, 0 = long tail.
 
-PONS | Pons | Launchpad | 0.5978 | USDG | 71 | 3
+PONS | Pons | Launchpad | 0.5978 | USDG | 71 | 3 | 0x39dbed3a2bd333467115de45665cc57f813c4571
 CASHCAT | Cash Cat | Memecoin | 0.04128 | USDG | 68 | 3
 WETH | Wrapped Ether | Infrastructure | 2431.60 | USDG | 71 | 3
 AI | Artificial Inu | Stock-paired meme | 0.013842 | NVDA | 58 | 2
