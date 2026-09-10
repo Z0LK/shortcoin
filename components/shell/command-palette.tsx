@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ⌘K. Symbol search plus the two direction commands.
+ * ⌘K. Symbol search.
  *
  * Keyboard-first because the target user does not reach for a mouse to change
  * chart. Opening it is also how the header search behaves, so there is exactly
@@ -10,15 +10,13 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowDownRight, ArrowUpRight, CornerDownLeft, Search } from 'lucide-react'
+import { CornerDownLeft, Search } from 'lucide-react'
 import { ASSETS } from '@/lib/assets'
-import { useStore } from '@/lib/store'
 import { pct, price } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 export function CommandPalette() {
   const router = useRouter()
-  const setMode = useStore((s) => s.setMode)
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [cursor, setCursor] = useState(0)
@@ -62,35 +60,10 @@ export function CommandPalette() {
     return pool.slice(0, 9)
   }, [query])
 
-  const commands = useMemo(
-    () =>
-      [
-        {
-          id: 'long',
-          label: 'Switch terminal to LONG',
-          icon: <ArrowUpRight size={14} className="text-long" />,
-          run: () => setMode('long'),
-        },
-        {
-          id: 'short',
-          label: 'Switch terminal to SHORT',
-          icon: <ArrowDownRight size={14} className="text-short" />,
-          run: () => setMode('short'),
-        },
-      ].filter((c) => !query || c.label.toLowerCase().includes(query.toLowerCase())),
-    [query, setMode],
-  )
-
-  const rows = [
-    ...commands.map((c) => ({ kind: 'cmd' as const, ...c })),
-    ...results.map((a) => ({ kind: 'asset' as const, id: a.symbol, asset: a })),
-  ]
-
   const commit = (i: number) => {
-    const row = rows[i]
-    if (!row) return
-    if (row.kind === 'cmd') row.run()
-    else router.push(`/t/${row.asset.symbol}`)
+    const asset = results[i]
+    if (!asset) return
+    router.push(`/t/${asset.symbol}`)
     setOpen(false)
   }
 
@@ -117,7 +90,7 @@ export function CommandPalette() {
             onKeyDown={(e) => {
               if (e.key === 'ArrowDown') {
                 e.preventDefault()
-                setCursor((c) => Math.min(c + 1, rows.length - 1))
+                setCursor((c) => Math.min(c + 1, results.length - 1))
               }
               if (e.key === 'ArrowUp') {
                 e.preventDefault()
@@ -137,15 +110,15 @@ export function CommandPalette() {
         </div>
 
         <div className="max-h-[52vh] overflow-y-auto py-1.5">
-          {rows.length === 0 && (
+          {results.length === 0 && (
             <p className="px-3.5 py-8 text-center text-xs text-ink-3">
               Nothing matches “{query}”.
             </p>
           )}
 
-          {rows.map((row, i) => (
+          {results.map((asset, i) => (
             <button
-              key={`${row.kind}-${row.id}`}
+              key={asset.symbol}
               onMouseEnter={() => setCursor(i)}
               onClick={() => commit(i)}
               className={cn(
@@ -153,36 +126,25 @@ export function CommandPalette() {
                 i === cursor ? 'bg-raised' : 'hover:bg-raised/50',
               )}
             >
-              {row.kind === 'cmd' ? (
-                <>
-                  <span className="grid size-6 shrink-0 place-items-center rounded-[4px] border border-line bg-sunken">
-                    {row.icon}
-                  </span>
-                  <span className="flex-1 text-xs text-ink">{row.label}</span>
-                </>
-              ) : (
-                <>
-                  <span
-                    className="grid size-6 shrink-0 place-items-center rounded-[4px] text-micro font-bold text-void"
-                    style={{ background: `hsl(${row.asset.logoHue} 62% 58%)` }}
-                  >
-                    {row.asset.symbol.slice(0, 2)}
-                  </span>
-                  <span className="w-[86px] shrink-0 text-xs font-semibold text-ink">
-                    {row.asset.symbol}
-                  </span>
-                  <span className="flex-1 truncate text-xs text-ink-3">{row.asset.name}</span>
-                  <span className="num text-xs text-ink-2">{price(row.asset.price)}</span>
-                  <span
-                    className={cn(
-                      'num w-[62px] text-right text-xs',
-                      row.asset.change24h >= 0 ? 'text-long' : 'text-short',
-                    )}
-                  >
-                    {pct(row.asset.change24h, 1)}
-                  </span>
-                </>
-              )}
+              <span
+                className="num grid size-6 shrink-0 place-items-center rounded-[4px] text-micro font-bold text-void"
+                style={{ background: `hsl(${asset.logoHue} 62% 58%)` }}
+              >
+                {asset.symbol.slice(0, 2)}
+              </span>
+              <span className="w-[86px] shrink-0 text-xs font-semibold text-ink">
+                {asset.symbol}
+              </span>
+              <span className="flex-1 truncate text-xs text-ink-3">{asset.name}</span>
+              <span className="num text-xs text-ink-2">{price(asset.price)}</span>
+              <span
+                className={cn(
+                  'num w-[62px] text-right text-xs',
+                  asset.change24h >= 0 ? 'text-long' : 'text-short',
+                )}
+              >
+                {pct(asset.change24h, 1)}
+              </span>
               {i === cursor && <CornerDownLeft size={12} className="shrink-0 text-ink-4" />}
             </button>
           ))}

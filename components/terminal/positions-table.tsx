@@ -117,10 +117,7 @@ export function PositionsTable({
               proximity > 0.7 && 'bg-short/[0.06]',
             )}
           >
-            <Pill tone={p.side}>
-              {p.side === 'short' ? 'SHORT' : 'LONG'}
-              <span className="num">{p.leverage}x</span>
-            </Pill>
+            <Pill tone={p.side}>{p.side === 'short' ? 'SHORT' : 'LONG'}</Pill>
 
             <span className="truncate text-xs font-semibold text-ink">{p.symbol}</span>
 

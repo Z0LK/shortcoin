@@ -33,7 +33,7 @@ const TABS: { key: Tab; label: string }[] = [
 ]
 
 const ORDER_COLS =
-  'grid grid-cols-[74px_96px_84px_72px_92px_92px_52px_84px_30px] items-center gap-x-2 px-3'
+  'grid grid-cols-[74px_96px_84px_72px_92px_92px_84px_30px] items-center gap-x-2 px-3'
 
 const STATUS_TONE: Record<Order['status'], 'accent' | 'long' | 'neutral'> = {
   open: 'accent',
@@ -96,7 +96,6 @@ function OrdersTable() {
         <span>Type</span>
         <span className="text-right">Price</span>
         <span className="text-right">Size</span>
-        <span className="text-right">Lev</span>
         <span className="text-right">Status</span>
         <span />
       </div>
@@ -128,7 +127,6 @@ function OrdersTable() {
             <span className="num text-mini text-ink-2">{abbr(o.size)}</span>
             <span className="num text-micro text-ink-4">{usdAbbr(o.size * o.price)}</span>
           </span>
-          <span className="num text-right text-mini text-ink-2">{o.leverage}x</span>
           <span className="flex justify-end">
             <Pill tone={STATUS_TONE[o.status]} className="uppercase">
               {o.status}

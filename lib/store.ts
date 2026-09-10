@@ -3,6 +3,9 @@
 /**
  * SHORTCOIN — client state.
  *
+ * There is no trading direction to hold: the product only sells, and the chart
+ * is always the inverse. What used to be a mode switch is now an invariant.
+ *
  * Deliberately NOT where prices live. Ticks arrive tens of times a second and
  * would re-render the entire terminal if they went through here; they are
  * delivered straight to the components that need them by `MarketEngine`
@@ -13,7 +16,7 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import type { InversionMode, Order, OrderType, Position, Side, Wallet } from './types'
+import type { InversionMode, Order, OrderType, Position, Wallet } from './types'
 import { getAsset } from './assets'
 import { liquidationPrice, unrealizedPnl } from './inversion'
 
@@ -33,20 +36,14 @@ const DEMO_WALLET: Wallet = {
 
 export interface OpenArgs {
   symbol: string
-  side: Side
-  /** Collateral in USD. */
+  /** Collateral in USD. Unlevered, so this is also the notional. */
   margin: number
-  leverage: number
   /** Mark price of the UNDERLYING at fill time. */
   price: number
 }
 
 interface State {
-  /** Direction the terminal is currently oriented to. Drives the whole accent. */
-  mode: Side
   inversion: InversionMode
-  /** Show the inverted (short) series on the chart instead of the underlying. */
-  inverted: boolean
 
   wallet: Wallet
   positions: Position[]
@@ -56,10 +53,7 @@ interface State {
   /** Last symbol the user looked at, for the "resume" affordance in the nav. */
   lastSymbol: string | null
 
-  setMode: (m: Side) => void
-  toggleMode: () => void
   setInversion: (m: InversionMode) => void
-  setInverted: (v: boolean) => void
 
   openPosition: (a: OpenArgs) => Position | null
   closePosition: (id: string, markPrice: number) => void
@@ -76,9 +70,7 @@ interface State {
 export const useStore = create<State>()(
   persist(
     (set, get) => ({
-  mode: 'long',
   inversion: 'reciprocal',
-  inverted: false,
 
   wallet: { ...DEMO_WALLET },
   positions: [],
@@ -86,37 +78,28 @@ export const useStore = create<State>()(
   watchlist: ['NVDA', 'TSLA', 'SPCX', 'COIN', 'MSTR'],
   lastSymbol: null,
 
-  setMode: (mode) => {
-    set({ mode, inverted: mode === 'short' })
-    if (typeof document !== 'undefined') {
-      document.documentElement.dataset.mode = mode
-    }
-  },
-
-  toggleMode: () => get().setMode(get().mode === 'long' ? 'short' : 'long'),
-
   setInversion: (inversion) => set({ inversion }),
-  setInverted: (inverted) => set({ inverted }),
 
-  openPosition: ({ symbol, side, margin, leverage, price }) => {
+  openPosition: ({ symbol, margin, price }) => {
     const asset = getAsset(symbol)
     if (!asset || margin <= 0 || price <= 0) return null
 
     const { wallet } = get()
     if (margin > wallet.balance) return null
 
-    const notionalUsd = margin * leverage
-    const size = notionalUsd / price
+    // Unlevered: the collateral IS the notional, so a $250 ticket sells $250
+    // of stock. Liquidation therefore sits just under twice the entry — the
+    // point at which the position has lost everything posted against it.
+    const size = margin / price
 
     const position: Position = {
       id: nextId('pos'),
       symbol,
-      side,
+      side: 'short',
       entry: price,
       size,
-      leverage,
       margin,
-      liquidation: liquidationPrice(side, price, leverage),
+      liquidation: liquidationPrice('short', price, 1),
       openedAt: Math.floor(Date.now() / 1000),
       fundingPaid: 0,
       borrowPaid: 0,
@@ -215,9 +198,6 @@ export const useStore = create<State>()(
 
 /** Order types the ticket offers. */
 export const ORDER_TYPES: OrderType[] = ['market', 'limit', 'stop']
-
-/** Leverage presets. 1x is included so the product is usable unlevered. */
-export const LEVERAGE_PRESETS = [1, 2, 3, 5, 10, 20]
 
 /** Quick-size presets in USD, mirroring gmgn's one-click buy buttons. */
 export const SIZE_PRESETS = [50, 100, 250, 500, 1000, 2500]

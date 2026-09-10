@@ -45,9 +45,8 @@ const ROUTE_HINT: Record<ShortRoute, string> = {
   none: 'There is no way to short this token anywhere today. SHORTCOIN is the only route.',
 }
 
-/** One-click ticket size. Deliberately unlevered — the row is not the desk. */
+/** One-click ticket size. The row is not the desk, so it keeps one default. */
 const QUICK_MARGIN = SIZE_PRESETS[1]
-const QUICK_LEVERAGE = 1
 
 const FUNDING_HINT =
   'Funding settles every 8h. A positive rate means longs pay shorts, so a short position collects it; a negative rate means the short side pays.'
@@ -70,7 +69,6 @@ function ScannerRowBase({ asset, index }: { asset: Asset; index: number }) {
   const router = useRouter()
   const live = useLivePrice(asset)
 
-  const mode = useStore((s) => s.mode)
   const openPosition = useStore((s) => s.openPosition)
   const toggleWatch = useStore((s) => s.toggleWatch)
   const watched = useStore((s) => s.watchlist.includes(asset.symbol))
@@ -86,16 +84,14 @@ function ScannerRowBase({ asset, index }: { asset: Asset; index: number }) {
       e.stopPropagation()
       const filled = openPosition({
         symbol: asset.symbol,
-        side: mode,
         margin: QUICK_MARGIN,
-        leverage: QUICK_LEVERAGE,
         price: live.price,
       })
       setAck(filled ? 'filled' : 'rejected')
       if (ackTimer.current) clearTimeout(ackTimer.current)
       ackTimer.current = setTimeout(() => setAck('idle'), 1100)
     },
-    [asset.symbol, live.price, mode, openPosition],
+    [asset.symbol, live.price, openPosition],
   )
 
   const si = shortInterestTone(asset.shortInterest)
@@ -221,13 +217,13 @@ function ScannerRowBase({ asset, index }: { asset: Asset; index: number }) {
 
       <td className={cn(TD, 'pr-3')}>
         <Button
-          variant={ack === 'rejected' ? 'outline' : mode}
+          variant={ack === 'rejected' ? 'outline' : 'short'}
           size="sm"
           onClick={quickTrade}
-          title={`Open a $${QUICK_MARGIN} ${mode} at market on ${asset.symbol}`}
+          title={`Sell $${QUICK_MARGIN} of ${asset.symbol} short at market`}
           className="num w-full tracking-[0.06em]"
         >
-          {ack === 'filled' ? 'FILLED' : ack === 'rejected' ? 'NO FUNDS' : mode.toUpperCase()}
+          {ack === 'filled' ? 'FILLED' : ack === 'rejected' ? 'NO FUNDS' : 'SHORT'}
         </Button>
       </td>
     </tr>

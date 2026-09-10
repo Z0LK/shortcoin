@@ -4,10 +4,10 @@
  * Chart panel: the instrument header, the interval strip, the OHLC readout and
  * the canvas.
  *
- * The header's job is to make the answer to "what am I looking at, and in which
- * direction?" impossible to get wrong. When the inverse is displayed the whole
- * strip is badged, the price shown is the INVERSE price, and the underlying is
- * kept visible alongside it so the two can never be confused.
+ * The header's job is to make the answer to "what am I looking at?" impossible
+ * to get wrong. The series is always the inverse, so the strip is permanently
+ * badged and the underlying is kept on screen beside it — the two prices are
+ * close together on a fresh anchor and must never be mistaken for each other.
  */
 
 import { useEffect, useRef, useState } from 'react'
@@ -34,9 +34,7 @@ export function ChartPanel({
   const [hover, setHover] = useState<Candle | null>(null)
   const [last, setLast] = useState<Candle | null>(null)
 
-  const inverted = useStore((s) => s.inverted)
   const inversion = useStore((s) => s.inversion)
-  const setInverted = useStore((s) => s.setInverted)
   const positions = useStore((s) => s.positions)
 
   const live = useLivePrice(asset)
@@ -50,7 +48,7 @@ export function ChartPanel({
     markRef.current?.(live.price)
   }, [live.price])
 
-  const shownPrice = inverted ? invertPrice(live.price, anchor, inversion) : live.price
+  const shownPrice = invertPrice(live.price, anchor, inversion)
   const bar = hover ?? last
   const up24 = asset.change24h >= 0
 
@@ -68,11 +66,9 @@ export function ChartPanel({
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <h1 className="truncate text-sm font-semibold">{asset.symbol}</h1>
-            {inverted && (
-              <Pill tone="short">
-                <Repeat2 size={9} /> INVERSE
-              </Pill>
-            )}
+            <Pill tone="short">
+              <Repeat2 size={9} /> INVERSE
+            </Pill>
             {asset.private && <Pill tone="info">PRIVATE</Pill>}
           </div>
           <p className="truncate text-mini text-ink-3">{asset.name}</p>
@@ -95,12 +91,10 @@ export function ChartPanel({
           </span>
         </div>
 
-        {inverted && (
-          <span className="num hidden shrink-0 whitespace-nowrap rounded-[4px] border border-line bg-sunken px-2 py-1 text-micro text-ink-3 xl:inline-block">
-            Underlying {fmtPrice(live.price)} · anchor {fmtPrice(anchor)} ·{' '}
-            {INVERSION_LABELS[inversion]}
-          </span>
-        )}
+        <span className="num hidden shrink-0 whitespace-nowrap rounded-[4px] border border-line bg-sunken px-2 py-1 text-micro text-ink-3 xl:inline-block">
+          Underlying {fmtPrice(live.price)} · anchor {fmtPrice(anchor)} ·{' '}
+          {INVERSION_LABELS[inversion]}
+        </span>
 
         <div className="ml-auto flex items-center gap-2">
           <div className="flex items-center rounded-[5px] border border-line bg-sunken p-[2px]">
@@ -117,28 +111,13 @@ export function ChartPanel({
               </button>
             ))}
           </div>
-
-          <button
-            onClick={() => setInverted(!inverted)}
-            aria-pressed={inverted}
-            title="Invert the chart into its short instrument"
-            className={cn(
-              'flex h-7 items-center gap-1.5 rounded-[5px] border px-2.5 text-mini font-semibold transition-colors',
-              inverted
-                ? 'border-short/40 bg-short/10 text-short'
-                : 'border-line bg-sunken text-ink-3 hover:text-ink',
-            )}
-          >
-            <Repeat2 size={12} />
-            Invert
-          </button>
         </div>
       </header>
 
       {/* ── OHLC readout ───────────────────────────────────────────────── */}
       <div className="flex h-6 shrink-0 items-center gap-3 border-b border-line px-3 text-micro">
         <span className="font-semibold text-ink-4">
-          {inverted ? 'INVERSE' : 'SPOT'} · {interval}
+          INVERSE · {interval}
         </span>
         {bar ? (
           <>
@@ -167,14 +146,15 @@ export function ChartPanel({
         ) : (
           <span className="text-ink-4">Hover the chart for OHLC</span>
         )}
-        <span className="ml-auto text-ink-4">Log scale · inversion is an exact mirror</span>
+        <span className="ml-auto text-ink-4">
+          Log scale · green means {asset.symbol} fell
+        </span>
       </div>
 
       <div className="min-h-0 flex-1">
         <PriceChart
           asset={asset}
           interval={interval}
-          inverted={inverted}
           inversion={inversion}
           positions={positions}
           onHover={setHover}

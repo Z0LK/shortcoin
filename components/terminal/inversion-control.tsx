@@ -33,8 +33,6 @@ const FORMULAS: Record<InversionMode, string> = {
 }
 
 export function InversionControl({ asset }: { asset: Asset }) {
-  const inverted = useStore((s) => s.inverted)
-  const setInverted = useStore((s) => s.setInverted)
   const inversion = useStore((s) => s.inversion)
   const setInversion = useStore((s) => s.setInversion)
 
@@ -50,32 +48,13 @@ export function InversionControl({ asset }: { asset: Asset }) {
       right={<span className="num text-micro text-ink-3">{INVERSION_LABELS[inversion]}</span>}
       bodyClassName="flex flex-col gap-2.5 p-3"
     >
-      {/* ── Chart orientation ──────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-3">
-        <span className="flex flex-col">
-          <span className="text-xs font-semibold text-ink">Inverted chart</span>
-          <span className="num text-mini text-ink-3">
-            Show {asset.symbol} as a short instrument
-          </span>
-        </span>
-        <button
-          role="switch"
-          aria-checked={inverted}
-          aria-label="Inverted chart"
-          onClick={() => setInverted(!inverted)}
-          className={cn(
-            'relative h-[18px] w-8 shrink-0 rounded-full border transition-colors duration-150',
-            inverted ? 'border-accent bg-accent' : 'border-line bg-sunken',
-          )}
-        >
-          <span
-            aria-hidden
-            className={cn(
-              'absolute left-0 top-[2px] size-3 rounded-full transition-transform duration-[180ms] ease-[cubic-bezier(0.32,0.72,0,1)]',
-              inverted ? 'translate-x-[17px] bg-accent-ink' : 'translate-x-[3px] bg-ink-3',
-            )}
-          />
-        </button>
+      {/* ── What is on screen ──────────────────────────────────────────────── */}
+      <div className="rounded-[5px] border border-short/30 bg-short/5 px-2.5 py-2">
+        <p className="text-xs font-semibold text-short">Chart is the inverse</p>
+        <p className="num mt-0.5 text-mini leading-relaxed text-ink-3">
+          Every candle you see is s{asset.symbol}, not {asset.symbol}. A green candle means{' '}
+          {asset.symbol} fell.
+        </p>
       </div>
 
       {/* ── Transform ──────────────────────────────────────────────────────── */}
@@ -145,7 +124,7 @@ export function InversionControl({ asset }: { asset: Asset }) {
         </div>
       )}
 
-      {inverted && (
+      {(
         <p className="text-micro leading-[1.45] text-ink-4">
           On the inverted series the liquidation level is drawn as a floor below price: the
           underlying rising is the inverse falling.

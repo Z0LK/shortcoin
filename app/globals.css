@@ -6,10 +6,10 @@
    The whole product is a dark terminal. There is no light theme: traders do not
    want one, and the chart's colour semantics only work against near-black.
 
-   The one idea that runs through everything: the interface has a DIRECTION.
-   `data-mode="long"` or `data-mode="short"` on <html> repoints a single accent
-   variable, and every accent surface in the app follows. Flipping the terminal
-   into short mode is therefore one attribute change, not a re-theme.
+   SHORTCOIN only sells. There is no long side to switch to, so the accent does
+   not swing: it is the short colour everywhere, permanently. Green and red keep
+   their ordinary meaning on price movement — on the inverted series a green
+   candle is the underlying falling, which is the trade working.
    =========================================================================== */
 
 :root {
@@ -50,10 +50,10 @@
   --chart-volume-up: #14472f;
   --chart-volume-down: #4a1620;
 
-  /* Accent follows the trading direction. */
-  --accent: var(--long);
-  --accent-soft: var(--long-soft);
-  --accent-ink: #04120b;
+  /* One direction, one accent. */
+  --accent: var(--short);
+  --accent-soft: var(--short-soft);
+  --accent-ink: #1a0509;
 
   --radius: 6px;
   --radius-sm: 4px;
@@ -67,11 +67,6 @@
   --subnav-h: 40px;
 }
 
-:root[data-mode="short"] {
-  --accent: var(--short);
-  --accent-soft: var(--short-soft);
-  --accent-ink: #1a0509;
-}
 
 @theme inline {
   --color-void: var(--void);

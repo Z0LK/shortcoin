@@ -2,10 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Search, Settings, Wallet2 } from 'lucide-react'
+import { ArrowDownRight, Search, Settings, Wallet2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Wordmark } from '@/components/shell/brand'
-import { ModeToggle } from '@/components/shell/mode-toggle'
 import { useStore } from '@/lib/store'
 import { marketPhase, PHASE_LABEL } from '@/lib/assets'
 import { usd } from '@/lib/format'
@@ -27,7 +26,6 @@ const PHASE_TONE: Record<MarketPhase, string> = {
 
 export function TopNav() {
   const pathname = usePathname()
-  const mode = useStore((s) => s.mode)
   const wallet = useStore((s) => s.wallet)
   const positions = useStore((s) => s.positions)
 
@@ -47,7 +45,7 @@ export function TopNav() {
   return (
     <header className="relative z-30 flex h-[var(--nav-h)] shrink-0 items-center gap-4 border-b border-line bg-surface px-3">
       <Link href="/" className="shrink-0">
-        <Wordmark side={mode} />
+        <Wordmark />
       </Link>
 
       <nav className="flex items-center gap-0.5">
@@ -95,7 +93,13 @@ export function TopNav() {
           <span className="text-ink-3">Tokens trade 24/7</span>
         </span>
 
-        <ModeToggle />
+        <span
+          className="num flex h-7 items-center gap-1.5 rounded-[5px] border border-short/40 bg-short/10 px-2.5 text-mini font-bold tracking-[0.08em] text-short"
+          title="SHORTCOIN only sells. Every chart is the inverse instrument and every fill is a short."
+        >
+          <ArrowDownRight size={12} />
+          SHORT ONLY
+        </span>
 
         <div className="flex h-7 items-center gap-2 rounded-[5px] border border-line bg-sunken px-2.5">
           <Wallet2 size={13} className="text-ink-3" />

@@ -3,22 +3,21 @@
 /**
  * The ticket.
  *
- * Everything the terminal does converges here: the direction selector writes to
- * the global mode, so flipping it re-points the accent for the entire app and
- * turns this panel red. The summary is deliberately unglamorous — a short's
- * liquidation sits ABOVE its entry, and a ticket that leaves that ambiguous is
- * the fastest way to lose a user their money.
+ * There is one direction and no leverage, so the ticket has one decision in it:
+ * how much. The summary is deliberately unglamorous — a short's liquidation
+ * sits ABOVE its entry, and a ticket that leaves that ambiguous is the fastest
+ * way to lose a user their money.
  */
 
 import { useEffect, useState } from 'react'
-import { ArrowDown, ArrowUp, Check, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowUp, Check, TrendingDown } from 'lucide-react'
 import { Button, Label, Meter, Panel } from '@/components/ui/primitives'
-import { LEVERAGE_PRESETS, ORDER_TYPES, SIZE_PRESETS, useStore } from '@/lib/store'
+import { ORDER_TYPES, SIZE_PRESETS, useStore } from '@/lib/store'
 import { borrowOver, fundingOver, liquidationPrice } from '@/lib/inversion'
 import { clamp01, pct, price as fmtPrice, rate, signedRate, signedUsd, usd } from '@/lib/format'
 import { CHAIN } from '@/lib/assets'
 import { cn } from '@/lib/utils'
-import type { Asset, OrderType, Side } from '@/lib/types'
+import type { Asset, OrderType } from '@/lib/types'
 
 /** Taker crosses the book, a resting limit does not — so they price differently. */
 const TAKER_FEE = 0.00045
@@ -72,8 +71,6 @@ function Row({
 }
 
 export function OrderTicket({ asset, markPrice }: { asset: Asset; markPrice: number }) {
-  const mode = useStore((s) => s.mode)
-  const setMode = useStore((s) => s.setMode)
   const wallet = useStore((s) => s.wallet)
   const openPosition = useStore((s) => s.openPosition)
   const placeOrder = useStore((s) => s.placeOrder)
@@ -81,7 +78,6 @@ export function OrderTicket({ asset, markPrice }: { asset: Asset; markPrice: num
   const [type, setType] = useState<OrderType>('market')
   const [priceInput, setPriceInput] = useState('')
   const [amount, setAmount] = useState('250')
-  const [leverage, setLeverage] = useState(2)
   const [confirmation, setConfirmation] = useState<string | null>(null)
 
   useEffect(() => {
@@ -90,21 +86,21 @@ export function OrderTicket({ asset, markPrice }: { asset: Asset; markPrice: num
     return () => clearTimeout(t)
   }, [confirmation])
 
-  const short = mode === 'short'
   const limit = parseNum(priceInput)
   const entry = type === 'market' ? markPrice : limit
   const margin = parseNum(amount)
-  const notionalUsd = margin * leverage
+  // Unlevered: the collateral is the notional.
+  const notionalUsd = margin
   const qty = entry > 0 ? notionalUsd / entry : 0
 
-  const liq = entry > 0 ? liquidationPrice(mode, entry, leverage, MAINTENANCE) : 0
+  const liq = entry > 0 ? liquidationPrice('short', entry, 1, MAINTENANCE) : 0
   // Room to liquidation as a fraction of entry: 1/L − mm. Falls off fast.
   const room = entry > 0 ? Math.abs(liq - entry) / entry : 0
   const risk = clamp01(1 - room)
 
   const fee = notionalUsd * (type === 'market' ? TAKER_FEE : MAKER_FEE)
-  const borrowDay = borrowOver(mode, asset.borrowFee, notionalUsd, 24)
-  const funding8h = fundingOver(mode, asset.fundingRate, notionalUsd, 8)
+  const borrowDay = borrowOver('short', asset.borrowFee, notionalUsd, 24)
+  const funding8h = fundingOver('short', asset.fundingRate, notionalUsd, 8)
 
   const blocked =
     margin <= 0
@@ -125,12 +121,12 @@ export function OrderTicket({ asset, markPrice }: { asset: Asset; markPrice: num
   const submit = () => {
     if (blocked) return
     if (type === 'market') {
-      const pos = openPosition({ symbol: asset.symbol, side: mode, margin, leverage, price: entry })
+      const pos = openPosition({ symbol: asset.symbol, margin, price: entry })
       if (!pos) return
       setConfirmation(`Filled ${fmtPrice(pos.size)} ${asset.symbol}`)
       return
     }
-    placeOrder({ symbol: asset.symbol, side: mode, type, price: entry, size: qty, leverage })
+    placeOrder({ symbol: asset.symbol, side: 'short', type, price: entry, size: qty })
     setConfirmation(`${TYPE_LABEL[type]} order resting at ${usd(entry)}`)
   }
 
@@ -144,53 +140,16 @@ export function OrderTicket({ asset, markPrice }: { asset: Asset; markPrice: num
       }
       bodyClassName="flex flex-col gap-3 p-3"
     >
-      {/* ── Direction ──────────────────────────────────────────────────────── */}
+      {/* ── What this ticket does ──────────────────────────────────────────── */}
       <div>
-        <div
-          role="radiogroup"
-          aria-label="Trade direction"
-          className="relative isolate grid h-9 grid-cols-2 rounded-[5px] border border-line bg-sunken p-[2px]"
-        >
-          <span
-            aria-hidden
-            className={cn(
-              'absolute inset-y-[2px] left-[2px] -z-10 w-[calc(50%-2px)] rounded-[3px]',
-              'transition-transform duration-[220ms] ease-[cubic-bezier(0.32,0.72,0,1)]',
-              short ? 'translate-x-full bg-short' : 'translate-x-0 bg-long',
-            )}
-          />
-          {(['long', 'short'] as Side[]).map((side) => {
-            const active = mode === side
-            const Icon = side === 'long' ? TrendingUp : TrendingDown
-            return (
-              <button
-                key={side}
-                role="radio"
-                aria-checked={active}
-                onClick={() => setMode(side)}
-                className={cn(
-                  'relative z-10 flex items-center justify-center gap-1.5 rounded-[3px] text-xs font-bold uppercase tracking-[0.1em] transition-colors duration-150',
-                  active ? 'text-accent-ink' : 'text-ink-3 hover:text-ink-2',
-                )}
-              >
-                <Icon size={14} strokeWidth={2.5} />
-                {side}
-              </button>
-            )
-          })}
+        <div className="flex h-9 items-center justify-center gap-2 rounded-[5px] border border-short/40 bg-short/10 text-xs font-bold uppercase tracking-[0.1em] text-short">
+          <TrendingDown size={14} strokeWidth={2.5} />
+          Sell short
         </div>
         <p className="mt-1.5 text-mini text-ink-3">
-          {short ? (
-            <>
-              You profit when <span className="num text-ink-2">{asset.symbol}</span>{' '}
-              <span className="text-short">falls</span>. Synthetic inverse, settled in {CHAIN.settlement}.
-            </>
-          ) : (
-            <>
-              You profit when <span className="num text-ink-2">{asset.symbol}</span>{' '}
-              <span className="text-long">rises</span>. Spot token, settled in {CHAIN.settlement}.
-            </>
-          )}
+          You profit when <span className="num text-ink-2">{asset.symbol}</span>{' '}
+          <span className="text-short">falls</span>. Synthetic inverse, unlevered, settled in{' '}
+          {CHAIN.settlement}.
         </p>
       </div>
 
@@ -287,68 +246,16 @@ export function OrderTicket({ asset, markPrice }: { asset: Asset; markPrice: num
         </span>
       </div>
 
-      {/* ── Leverage ───────────────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-baseline justify-between">
-          <Label>Leverage</Label>
-          <span className="num text-mini font-bold text-accent">{leverage}x</span>
-        </div>
-
-        <div className="grid grid-cols-6 gap-1">
-          {LEVERAGE_PRESETS.map((l) => (
-            <button
-              key={l}
-              onClick={() => setLeverage(l)}
-              aria-pressed={leverage === l}
-              className={cn(
-                'num h-[22px] rounded-[3px] border text-micro font-semibold transition-colors',
-                leverage === l
-                  ? 'border-accent/50 bg-accent-soft text-accent'
-                  : 'border-line bg-raised text-ink-3 hover:text-ink-2',
-              )}
-            >
-              {l}x
-            </button>
-          ))}
-        </div>
-
-        <input
-          type="range"
-          min={1}
-          max={20}
-          step={1}
-          value={leverage}
-          onChange={(e) => setLeverage(Number(e.target.value))}
-          aria-label="Leverage multiplier"
-          className="h-4 w-full cursor-pointer bg-transparent accent-accent"
-        />
-
-        {leverage > 10 && (
-          <span className="text-micro text-warn">
-            Above 10x a {pct(short ? room * 100 : -room * 100)} move ends the position. Funding and
-            borrow are charged on {usd(notionalUsd)} of exposure, not on your collateral.
-          </span>
-        )}
-      </div>
-
       {/* ── Summary ────────────────────────────────────────────────────────── */}
       <div className="rounded-[5px] border border-line bg-sunken px-2.5">
         <Row label={type === 'market' ? 'Entry price' : 'Working price'} value={usd(entry > 0 ? entry : markPrice)} />
         <Row
           label="Liquidation price"
-          title={
-            short
-              ? 'A short loses as the underlying rises, so liquidation sits above the entry.'
-              : 'A long loses as the underlying falls, so liquidation sits below the entry.'
-          }
+          title="A short loses as the underlying rises, so liquidation sits above the entry. Unlevered, that is roughly twice what you sold at."
           value={
             <span className="flex items-center gap-1">
-              <span className="text-micro font-medium text-ink-3">{short ? 'above' : 'below'}</span>
-              {short ? (
-                <ArrowUp size={11} className="text-short" />
-              ) : (
-                <ArrowDown size={11} className="text-short" />
-              )}
+              <span className="text-micro font-medium text-ink-3">above</span>
+              <ArrowUp size={11} className="text-short" />
               {usd(liq)}
             </span>
           }
@@ -360,18 +267,14 @@ export function OrderTicket({ asset, markPrice }: { asset: Asset; markPrice: num
         />
         <Row
           label="Borrow (annualised)"
-          title="Shorts pay borrow to whoever lends the underlying token. Longs pay none."
+          title="Borrow is the standing cost of being short this name. It accrues whether the price moves or not."
           value={
-            short ? (
-              <span>
-                {rate(asset.borrowFee)}{' '}
-                <span className="text-ink-4">· {signedUsd(borrowDay)}/day</span>
-              </span>
-            ) : (
-              <span className="text-ink-3">None on longs</span>
-            )
+            <span>
+              {rate(asset.borrowFee)}{' '}
+              <span className="text-ink-4">· {signedUsd(borrowDay)}/day</span>
+            </span>
           }
-          tone={short ? 'text-warn' : undefined}
+          tone="text-warn"
         />
         <Row
           label="Funding (per 8h)"
@@ -394,21 +297,21 @@ export function OrderTicket({ asset, markPrice }: { asset: Asset; markPrice: num
           <Label>Distance to liquidation</Label>
           <span
             className={cn('num text-mini font-bold', risk > 0.7 ? 'text-short' : 'text-ink')}
-            title={`${asset.symbol} only has to move ${rate(room)} ${short ? 'up' : 'down'} to wipe out ${usd(margin)} of collateral.`}
+            title={`${asset.symbol} has to rise ${rate(room)} to wipe out ${usd(margin)} of collateral.`}
           >
-            {pct(short ? room * 100 : -room * 100)}
+            {pct(room * 100)}
           </span>
         </div>
         <Meter value={risk} tone={risk > 0.7 ? 'short' : risk > 0.45 ? 'warn' : 'accent'} />
         <span className="text-micro text-ink-4">
-          {leverage}x leaves {rate(room)} of room {short ? 'above' : 'below'} the entry before the
-          position is closed for you.
+          Unlevered, so {asset.symbol} has to roughly double before the position is closed for you.
+          Borrow and funding erode that room over time.
         </span>
       </div>
 
       {/* ── Submit ─────────────────────────────────────────────────────────── */}
       <Button
-        variant={mode}
+        variant="short"
         size="lg"
         onClick={submit}
         disabled={!!blocked}
@@ -421,10 +324,8 @@ export function OrderTicket({ asset, markPrice }: { asset: Asset; markPrice: num
           </>
         ) : blocked ? (
           blocked
-        ) : short ? (
-          `Sell short ${asset.symbol}`
         ) : (
-          `Buy / Long ${asset.symbol}`
+          `Sell short ${asset.symbol}`
         )}
       </Button>
 

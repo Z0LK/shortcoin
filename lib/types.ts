@@ -10,6 +10,10 @@
 /** Unix timestamp in SECONDS (lightweight-charts uses seconds, not ms). */
 export type UtcSeconds = number
 
+/**
+ * Kept as a type because the position maths in `lib/inversion.ts` is written for
+ * both directions, but SHORTCOIN only ever opens shorts.
+ */
 export type Side = 'long' | 'short'
 
 /** Which synthetic-inverse transform is applied to build the short instrument. */
@@ -108,8 +112,7 @@ export interface Position {
   entry: number
   /** Position size in underlying units. */
   size: number
-  leverage: number
-  /** Collateral posted, in USD. */
+  /** Collateral posted, in USD. Unlevered, so this equals the notional at entry. */
   margin: number
   liquidation: number
   openedAt: UtcSeconds
@@ -128,7 +131,6 @@ export interface Order {
   type: OrderType
   price: number
   size: number
-  leverage: number
   status: OrderStatus
   createdAt: UtcSeconds
 }

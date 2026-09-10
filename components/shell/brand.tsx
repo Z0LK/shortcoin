@@ -5,12 +5,10 @@ import { cn } from '@/lib/utils'
 /**
  * The mark is the product thesis: one chart, reflected.
  *
- * A rising line above the axis, the same line falling below it. In short mode
- * the emphasis crosses over to the lower half — the logo itself flips with the
- * terminal, which is the cheapest possible way to keep the user oriented.
+ * A ghosted rising line above the axis, and the line SHORTCOIN actually trades
+ * below it. The half we deal in is the half that is lit.
  */
-export function Mark({ side = 'long', size = 22 }: { side?: 'long' | 'short'; size?: number }) {
-  const shortActive = side === 'short'
+export function Mark({ size = 22 }: { size?: number }) {
   return (
     <svg
       width={size}
@@ -27,8 +25,7 @@ export function Mark({ side = 'long', size = 22 }: { side?: 'long' | 'short'; si
         strokeWidth="2"
         strokeLinecap="square"
         strokeLinejoin="miter"
-        className="transition-opacity duration-300"
-        opacity={shortActive ? 0.28 : 1}
+        opacity={0.3}
       />
       {/* the axis of reflection */}
       <path d="M0 12 H24" stroke="var(--line-strong)" strokeWidth="1" strokeDasharray="2 2" />
@@ -39,17 +36,15 @@ export function Mark({ side = 'long', size = 22 }: { side?: 'long' | 'short'; si
         strokeWidth="2"
         strokeLinecap="square"
         strokeLinejoin="miter"
-        className="transition-opacity duration-300"
-        opacity={shortActive ? 1 : 0.28}
       />
     </svg>
   )
 }
 
-export function Wordmark({ side = 'long', className }: { side?: 'long' | 'short'; className?: string }) {
+export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={cn('flex items-center gap-2 select-none', className)}>
-      <Mark side={side} />
+      <Mark />
       <span className="text-[15px] font-semibold tracking-[-0.02em]">
         SHORT<span className="text-ink-3">COIN</span>
       </span>

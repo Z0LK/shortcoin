@@ -12,8 +12,10 @@ React 19 · TypeScript 5.9 · Tailwind v4 · lightweight-charts 5 · zustand 5 �
 
 - **Everything is fictional.** Never present simulated data as live. The honesty lines in the ticket
   and on `/how-it-works` are load-bearing, not boilerplate.
-- **Green is up, red is down — in both modes.** The accent colour repoints with the trading
-  direction; the long/short semantics never do. Inverting them would be clever and unusable.
+- **Short only, unlevered, always inverted.** There is no direction switch, no leverage control and
+  no way to see the underlying series. Do not reintroduce any of the three.
+- **Green is up, red is down.** On the inverse series that means a green candle is the underlying
+  falling — the trade working. Never repaint the candles to match the trade's sign.
 - **Every number gets `className="num"`** and goes through `lib/format.ts`. Never `toFixed` in a
   component: tabular figures are what stop digits jittering on every tick.
 - **No `Math.random()` or `Date.now()` during render.** Derive fake values from `lib/rng.ts`; resolve

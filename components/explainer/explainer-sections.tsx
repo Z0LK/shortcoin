@@ -84,7 +84,8 @@ export function TheInversion() {
         If nobody will lend you the asset, stop trying to borrow it and build its mirror instead.
         Take the price series P and transform it into a series S that rises exactly when P falls.
         Buying S — an ordinary long position, the one thing every venue supports — is then
-        economically a short of P.
+        economically a short of P. SHORTCOIN only ever does this: there is no long side to the
+        product, and no leverage. Every chart you see is already the inverse.
       </p>
       <p>Three transforms do this, and they are not interchangeable.</p>
 
@@ -202,7 +203,7 @@ export function LiquidationBackwards() {
         that on an inverted chart the liquidation level is a floor drawn below the current price,
         never a ceiling above it.
       </p>
-      <Formula note="Maintenance margin measured against entry notional. At 1x with no maintenance requirement the liquidation sits at exactly twice the entry — the same level where the linear mirror would cross zero, which is not a coincidence.">
+      <Formula note="SHORTCOIN is unlevered, so L = 1 and liquidation sits just under twice the entry — the same level where the linear mirror would cross zero, which is not a coincidence. It is also why there is no leverage control anywhere in the product: a synthetic short is already convex, and stacking leverage on convexity is how people are carried out.">
         P_liq = entry · (1 + 1/L − mm) &nbsp;&nbsp;→&nbsp;&nbsp; S_liq = A² / P_liq
       </Formula>
 

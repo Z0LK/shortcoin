@@ -5,14 +5,13 @@
  *
  * Two things make this different from a stock candlestick component:
  *
- *  1. It renders either the underlying or its synthetic inverse, and the switch
- *     is animated as a reflection — which is honest, because on the
- *     logarithmic scale this chart uses, the reciprocal transform IS an exact
- *     mirror (ln S = 2·ln A − ln P).
- *  2. Position overlays are drawn in whichever space is currently displayed, so
- *     the liquidation line lands ABOVE the price on the underlying and BELOW it
- *     on the inverse. Getting that backwards would be the most dangerous bug
- *     this product could ship.
+ *  1. It never plots the underlying. SHORTCOIN only sells, so the series on
+ *     screen is always the synthetic inverse — a green candle means the stock
+ *     fell and the trade is working. The log scale is what makes that inverse
+ *     an exact reflection rather than a lookalike (ln S = 2·ln A − ln P).
+ *  2. Position overlays are projected into inverse space too, which puts the
+ *     liquidation line BELOW the price rather than above it. Getting that
+ *     backwards would be the most dangerous bug this product could ship.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -37,6 +36,16 @@ import { generateCandles, type Interval } from '@/lib/sim'
 import type { Asset, Candle, InversionMode, Position } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
+/**
+ * Bars generated per interval. Deep enough that scrolling back is a real
+ * activity rather than hitting a wall after a screen and a half — 2000 one-day
+ * bars is roughly eight years of tape.
+ */
+const HISTORY_BARS = 2000
+
+/** Bars framed on first paint. The rest is scrollback. */
+const VISIBLE_BARS = 190
+
 function cssVar(name: string, fallback: string): string {
   if (typeof window === 'undefined') return fallback
   const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
@@ -50,7 +59,6 @@ export interface ChartHover {
 interface Props {
   asset: Asset
   interval: Interval
-  inverted: boolean
   inversion: InversionMode
   positions: Position[]
   onHover?: (c: Candle | null) => void
@@ -61,7 +69,6 @@ interface Props {
 export function PriceChart({
   asset,
   interval,
-  inverted,
   inversion,
   positions,
   onHover,
@@ -81,7 +88,7 @@ export function PriceChart({
 
   // Generated after mount so the server never has to agree on a timestamp.
   useEffect(() => {
-    const h = generateCandles(asset, interval, 340)
+    const h = generateCandles(asset, interval, HISTORY_BARS)
     workingRef.current = h[h.length - 1]
     setHistory(h)
   }, [asset, interval])
@@ -89,8 +96,8 @@ export function PriceChart({
   const anchor = history?.[0]?.open ?? asset.anchor
 
   const toDisplay = useMemo(
-    () => (c: Candle) => (inverted ? invertCandle(c, anchor, inversion) : c),
-    [inverted, anchor, inversion],
+    () => (c: Candle) => invertCandle(c, anchor, inversion),
+    [anchor, inversion],
   )
 
   // ── create ────────────────────────────────────────────────────────────────
@@ -206,7 +213,7 @@ export function PriceChart({
     const volume = volumeRef.current
     if (!candles || !volume || !history) return
 
-    const shown = inverted ? invertSeries(history, inversion, anchor) : history
+    const shown = invertSeries(history, inversion, anchor)
 
     candles.setData(
       shown.map<CandlestickData<Time>>((c) => ({
@@ -228,23 +235,30 @@ export function PriceChart({
       })),
     )
 
-    chartRef.current?.timeScale().fitContent()
+    // fitContent() would squash every bar we just generated into the panel.
+    // Frame the recent slice instead and leave the rest to be scrolled into.
+    chartRef.current?.timeScale().setVisibleLogicalRange({
+      from: Math.max(shown.length - VISIBLE_BARS, 0),
+      to: shown.length + 3,
+    })
     onLast?.(shown[shown.length - 1])
     // `onLast` is intentionally excluded: it changes identity every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [history, inverted, inversion, anchor])
+  }, [history, inversion, anchor])
 
-  // ── the flip ──────────────────────────────────────────────────────────────
-  const firstFlip = useRef(true)
+  // ── transform change ──────────────────────────────────────────────────────
+  // Switching transform redraws the whole series, so it gets the same brief
+  // wash the direction flip used to: without it the curve teleports.
+  const firstDraw = useRef(true)
   useEffect(() => {
-    if (firstFlip.current) {
-      firstFlip.current = false
+    if (firstDraw.current) {
+      firstDraw.current = false
       return
     }
     setFlipping(true)
     const t = setTimeout(() => setFlipping(false), 420)
     return () => clearTimeout(t)
-  }, [inverted])
+  }, [inversion])
 
   // ── position overlays ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -255,7 +269,7 @@ export function PriceChart({
     linesRef.current = []
 
     const mine = positions.filter((p) => p.symbol === asset.symbol)
-    const project = (p: number) => (inverted ? invertPrice(p, anchor, inversion) : p)
+    const project = (p: number) => invertPrice(p, anchor, inversion)
 
     mine.forEach((p) => {
       linesRef.current.push(
@@ -265,7 +279,7 @@ export function PriceChart({
           lineWidth: 1,
           lineStyle: LineStyle.Solid,
           axisLabelVisible: true,
-          title: `${p.side === 'short' ? 'SHORT' : 'LONG'} ${p.leverage}x`,
+          title: 'SHORT',
         }),
       )
       linesRef.current.push(
@@ -279,7 +293,7 @@ export function PriceChart({
         }),
       )
     })
-  }, [positions, asset.symbol, inverted, anchor, inversion])
+  }, [positions, asset.symbol, anchor, inversion])
 
   // ── live ticks ────────────────────────────────────────────────────────────
   useTickHandler(asset.symbol, (t) => {

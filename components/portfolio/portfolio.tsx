@@ -290,7 +290,6 @@ function OrdersTable({
               <th className="px-3 text-right font-semibold">Price</th>
               <th className="px-3 text-right font-semibold">Size</th>
               <th className="px-3 text-right font-semibold">Notional</th>
-              <th className="px-3 text-right font-semibold">Lev</th>
               <th className="px-3 text-right font-semibold">Age</th>
               <th className="px-3 text-left font-semibold">Status</th>
               <th className="px-3 text-right font-semibold">
@@ -334,7 +333,6 @@ function OrdersTable({
                   <td className="num px-3 text-right text-ink-2">
                     {usdAbbr(o.size * o.price)}
                   </td>
-                  <td className="num px-3 text-right text-ink-3">{o.leverage}x</td>
                   <td className="num px-3 text-right text-ink-3">
                     {now ? ago(o.createdAt, now) : '—'}
                   </td>

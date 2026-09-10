@@ -18,7 +18,7 @@ const numeric = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'SHORTCOIN — short any token',
   description:
-    'The first trading terminal for tokenized equities on Robinhood Chain that lets you go short. Every chart can be inverted into a synthetic short instrument.',
+    'The short-only trading terminal for tokenized equities on Robinhood Chain. Every chart is inverted into a synthetic short instrument.',
 }
 
 export const viewport: Viewport = {
@@ -30,7 +30,6 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="en"
-      data-mode="long"
       className={`${ui.variable} ${numeric.variable} h-full antialiased`}
       suppressHydrationWarning
     >
