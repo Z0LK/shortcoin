@@ -74,8 +74,17 @@ export interface Asset {
    * a tokenized equity, so its price is denominated in shares of NVDA or SPY.
    */
   quote: string
-  /** Days since the token was deployed. Only meaningful for coins. */
-  ageDays?: number
+  /** Hours since deployment. Only meaningful for coins — some are hours old. */
+  ageHours?: number
+  /**
+   * How far a Pons launch has climbed toward its graduation threshold, 0..100.
+   * Below 100 the token still trades on the launchpad's bonding curve rather
+   * than a full Uniswap pool, which is the single biggest thing to know about
+   * a token this young.
+   */
+  graduationPct?: number
+  /** Which launchpad deployed it, when one did. */
+  launchpad?: string
   /** True for tokenized private companies such as SpaceX. */
   private: boolean
   /** 0x… address on Robinhood Chain. */

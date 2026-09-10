@@ -28,6 +28,7 @@ import {
   SHORT_CENSUS,
   tokenizationWindowOpen,
 } from '@/lib/assets'
+import { searchAssets } from '@/lib/search'
 import { useStore } from '@/lib/store'
 import { abbr, usdAbbr } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -147,11 +148,9 @@ export function Scanner() {
     if (query.lens === 'hard') pool = pool.filter((a) => a.borrowFee > HARD_TO_BORROW)
     else if (query.lens === 'crowded') pool = pool.filter((a) => a.shortInterest > CROWDED_SHORT)
 
-    if (text) {
-      pool = pool.filter(
-        (a) => a.symbol.toLowerCase().includes(text) || a.name.toLowerCase().includes(text),
-      )
-    }
+    // A text query switches the table from "sorted book" to "search results",
+    // because relevance beats market cap the moment somebody types.
+    if (text) return searchAssets(pool, query.text, 200).map((h) => h.asset)
 
     const sorted = [...pool].sort((a, b) => compare(a, b, query.sort))
     return query.dir === 'desc' ? sorted.reverse() : sorted

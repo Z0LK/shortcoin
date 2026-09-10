@@ -12,6 +12,10 @@ import { rng, between } from '../lib/rng'
 
 const REGISTRY = readFileSync(new URL('./registry.txt', import.meta.url), 'utf8')
 const COINS = readFileSync(new URL('./coins.txt', import.meta.url), 'utf8')
+const PONS = readFileSync(new URL('./pons-launches.txt', import.meta.url), 'utf8')
+
+/** The moment the Pons snapshot was taken, used to age every launch from. */
+const SNAPSHOT = Date.parse('2026-09-10T22:00:00Z')
 
 /** The 44 tokens with a live Lighter perp — the only ones shortable via perps. */
 const LIGHTER_PERPS = new Set(
@@ -183,19 +187,74 @@ const coinSeeds = coinRows.map((r) => {
     vol: Number(vol.toFixed(3)),
     cls: 'coin' as const,
     quote: r.quote,
-    age: r.ageDays,
+    // coins.txt records age in days; the Asset carries hours.
+    age: r.ageDays * 24,
     tier: r.tier,
   }
 })
 
-const seeds = [...equitySeeds, ...coinSeeds]
+/**
+ * Tokens deployed through the Pons launchpad, straight from its public API.
+ *
+ * These are the long tail: hours old, five-figure market caps, most of them
+ * still climbing a bonding curve toward graduation, and — the detail that only
+ * exists on this chain — a majority quoted against SPCX and other stock tokens
+ * rather than a stablecoin.
+ */
+const ponsSeeds = PONS.split('\n')
+  .map((l) => l.trim())
+  .filter((l) => l && !l.startsWith('#'))
+  .map((l) => {
+    const [ticker, name, price, mcap, graduated, gradPct, quote, launchedAt, address] = l
+      .split('|')
+      .map((x) => x.trim())
+    const next = rng(`rhc:pons:${ticker}`)
+    const hours = Math.max(
+      Math.round((SNAPSHOT - Date.parse(`${launchedAt}T00:00:00Z`)) / 3_600_000),
+      1,
+    )
+    const graduatedFlag = graduated === '1'
+    return {
+      ticker,
+      name,
+      // A launch quoted against a stock token is its own category; the rest are
+      // just memecoins, graduated or not.
+      sector: !['USDG', 'ETH', 'cbBTC', 'WETH'].includes(quote)
+        ? 'Stock-paired meme'
+        : graduatedFlag
+          ? 'Memecoin'
+          : 'Launchpad',
+      price: Number(price),
+      address,
+      real: true,
+      route: 'none' as const,
+      collateralOnly: false,
+      wholeSharesOnly: false,
+      uiMultiplier: 1,
+      // Nothing is more volatile than a token that is hours old.
+      vol: Number((hours < 48 ? between(next, 2.6, 4.4) : between(next, 1.5, 2.6)).toFixed(3)),
+      cls: 'coin' as const,
+      quote,
+      age: hours,
+      tier: 0,
+      mcap: Number(mcap),
+      grad: Number(gradPct),
+      launchpad: 'Pons',
+    }
+  })
+
+const seeds = [
+  ...equitySeeds.map((x) => ({ ...x, mcap: 0, grad: -1, launchpad: '' })),
+  ...coinSeeds.map((x) => ({ ...x, mcap: 0, grad: -1, launchpad: '' })),
+  ...ponsSeeds,
+]
 
 const sectors = [...new Set(seeds.map((s) => s.sector))].sort()
 
 const counts = {
   total: seeds.length,
   equities: equitySeeds.length,
-  coins: coinSeeds.length,
+  coins: coinSeeds.length + ponsSeeds.length,
   borrow: seeds.filter((s) => s.route === 'borrow').length,
   perp: seeds.filter((s) => s.route === 'perp').length,
   none: seeds.filter((s) => s.route === 'none').length,
@@ -263,6 +322,11 @@ interface Seed {
   q: string
   age: number
   tier: number
+  /** Real market cap in USD for Pons launches; 0 when it should be derived. */
+  mc: number
+  /** Graduation progress 0..100, or -1 when the concept does not apply. */
+  gp: number
+  lp: string
 }
 
 const SEEDS: Seed[] = ${JSON.stringify(
@@ -282,6 +346,9 @@ const SEEDS: Seed[] = ${JSON.stringify(
     q: s.quote,
     age: s.age,
     tier: s.tier,
+    mc: s.mcap,
+    gp: s.grad,
+    lp: s.launchpad,
   })),
   null,
   0,
@@ -306,19 +373,24 @@ function build(seed: Seed): Asset {
   const change1h = change24h * between(next, 0.05, 0.5) + between(next, -1.4, 1.4) * (isCoin ? 6 : 1)
   const change7d = change24h * between(next, 0.6, 2.4)
 
-  // Depth. For equities the short route is a decent proxy for attention; for
-  // coins it is simply how established the token is.
+  // Depth. A Pons launch reports its real market cap, and everything about a
+  // token that size follows from it: a $5K token has a few thousand dollars of
+  // pool behind it, not a derived multiple.
+  const isPons = seed.mc > 0
   const tier = isCoin
-    ? [0.02, 0.12, 0.8, 4][seed.tier] ?? 0.05
+    ? ([0.02, 0.12, 0.8, 4] as const)[seed.tier] ?? 0.05
     : seed.r === 'borrow'
       ? 6
       : seed.r === 'perp'
         ? 2.4
         : 0.7
-  const liquidity = between(next, 0.4e6, 18e6) * tier
+
+  const marketCap = isPons ? seed.mc : 0
+  const liquidity = isPons
+    ? marketCap * between(next, 0.06, 0.3)
+    : between(next, 0.4e6, 18e6) * tier
   // Coins turn over their own float many times a day. Equities do not.
   const volume24h = liquidity * (isCoin ? between(next, 1.2, 14) : between(next, 0.4, 5.6))
-  const marketCap = liquidity * (isCoin ? between(next, 8, 60) : between(next, 40, 900))
 
   // Borrow is the price of a short, so it is expensive exactly where shorting is
   // hard — which on this chain is almost everywhere, and worst of all on coins
@@ -347,7 +419,9 @@ function build(seed: Seed): Asset {
     sector: seed.s,
     assetClass: seed.c,
     quote: seed.q,
-    ageDays: isCoin ? seed.age : undefined,
+    ageHours: isCoin ? seed.age : undefined,
+    graduationPct: seed.gp >= 0 ? seed.gp : undefined,
+    launchpad: seed.lp || undefined,
     private: seed.t === 'SPCX',
     address: seed.a,
     verifiedAddress: seed.real,
@@ -359,10 +433,13 @@ function build(seed: Seed): Asset {
     change7d,
     volume24h,
     liquidity,
-    marketCap,
-    holders: Math.floor(
-      between(next, 240, 96_000) * (isCoin ? 0.05 + seed.tier * 0.4 : seed.r === 'none' ? 0.4 : 1),
-    ),
+    marketCap: isPons ? marketCap : liquidity * (isCoin ? between(next, 8, 60) : between(next, 40, 900)),
+    holders: isPons
+      ? Math.floor(between(next, 8, 240))
+      : Math.floor(
+          between(next, 240, 96_000) *
+            (isCoin ? 0.05 + seed.tier * 0.4 : seed.r === 'none' ? 0.4 : 1),
+        ),
     borrowFee,
     fundingRate,
     shortInterest,
@@ -398,6 +475,18 @@ export const COIN_SECTORS: string[] = ${JSON.stringify(
 
 export const EQUITIES: Asset[] = ASSETS.filter((a) => a.assetClass === 'equity')
 export const COINS: Asset[] = ASSETS.filter((a) => a.assetClass === 'coin')
+
+/** Quote assets that are money rather than a company. */
+export const CASH_QUOTES = ['USDG', 'ETH', 'cbBTC', 'WETH'] as const
+
+/**
+ * True when a token's pool is quoted against a tokenized equity rather than
+ * money — the pairing Robinhood Chain invented. Shorting one of these is a bet
+ * on the coin RELATIVE to the share it is paired with, not against the dollar.
+ */
+export function isStockPaired(a: Asset): boolean {
+  return a.assetClass === 'coin' && !CASH_QUOTES.includes(a.quote as (typeof CASH_QUOTES)[number])
+}
 
 export const SHORT_ROUTE_LABEL: Record<ShortRoute, string> = {
   borrow: 'Spot borrow',

@@ -6,14 +6,20 @@
  * Keyboard-first because the target user does not reach for a mouse to change
  * chart. Opening it is also how the header search behaves, so there is exactly
  * one search surface in the product.
+ *
+ * Ranking lives in lib/search.ts. It matters here more than in most products:
+ * a hundred of these listings are memecoins whose tickers deliberately collide
+ * with the equities they are quoted against.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CornerDownLeft, Search } from 'lucide-react'
-import { ASSETS } from '@/lib/assets'
-import { pct, price } from '@/lib/format'
+import { ASSETS, isStockPaired } from '@/lib/assets'
+import { ageLabel, pct, price, shortAddress, usdAbbr } from '@/lib/format'
+import { looksLikeAddress, searchAssets } from '@/lib/search'
 import { cn } from '@/lib/utils'
+import { Pill } from '@/components/ui/primitives'
 
 export function CommandPalette() {
   const router = useRouter()
@@ -47,18 +53,8 @@ export function CommandPalette() {
     }
   }, [open])
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    const pool = q
-      ? ASSETS.filter(
-          (a) =>
-            a.symbol.toLowerCase().includes(q) ||
-            a.name.toLowerCase().includes(q) ||
-            (a.underlying ?? '').toLowerCase().includes(q),
-        )
-      : ASSETS
-    return pool.slice(0, 9)
-  }, [query])
+  const hits = useMemo(() => searchAssets(ASSETS, query, 12), [query])
+  const results = useMemo(() => hits.map((h) => h.asset), [hits])
 
   const commit = (i: number) => {
     const asset = results[i]
@@ -101,7 +97,7 @@ export function CommandPalette() {
                 commit(cursor)
               }
             }}
-            placeholder="Search a token, ticker or contract…"
+            placeholder="Search a ticker, coin, company or contract address…"
             className="h-12 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-4"
           />
           <kbd className="num rounded-[3px] border border-line px-1.5 py-0.5 text-micro text-ink-4">
@@ -111,43 +107,73 @@ export function CommandPalette() {
 
         <div className="max-h-[52vh] overflow-y-auto py-1.5">
           {results.length === 0 && (
-            <p className="px-3.5 py-8 text-center text-xs text-ink-3">
-              Nothing matches “{query}”.
-            </p>
+            <div className="px-3.5 py-8 text-center">
+              <p className="text-xs text-ink-3">Nothing matches “{query}”.</p>
+              <p className="mt-1 text-mini text-ink-4">
+                {looksLikeAddress(query)
+                  ? 'That contract is not in the listed universe. Only tokens indexed on Robinhood Chain appear here.'
+                  : 'Try a ticker, a company name, or paste a contract address.'}
+              </p>
+            </div>
           )}
 
-          {results.map((asset, i) => (
-            <button
-              key={asset.symbol}
-              onMouseEnter={() => setCursor(i)}
-              onClick={() => commit(i)}
-              className={cn(
-                'flex w-full items-center gap-3 px-3.5 py-2 text-left',
-                i === cursor ? 'bg-raised' : 'hover:bg-raised/50',
-              )}
-            >
-              <span
-                className="num grid size-6 shrink-0 place-items-center rounded-[4px] text-micro font-bold text-void"
-                style={{ background: `hsl(${asset.logoHue} 62% 58%)` }}
-              >
-                {asset.symbol.slice(0, 2)}
-              </span>
-              <span className="w-[86px] shrink-0 text-xs font-semibold text-ink">
-                {asset.symbol}
-              </span>
-              <span className="flex-1 truncate text-xs text-ink-3">{asset.name}</span>
-              <span className="num text-xs text-ink-2">{price(asset.price)}</span>
-              <span
+          {hits.map((hit, i) => {
+            const asset = hit.asset
+            const isCoin = asset.assetClass === 'coin'
+            return (
+              <button
+                key={asset.symbol}
+                onMouseEnter={() => setCursor(i)}
+                onClick={() => commit(i)}
                 className={cn(
-                  'num w-[62px] text-right text-xs',
-                  asset.change24h >= 0 ? 'text-long' : 'text-short',
+                  'flex w-full items-center gap-3 px-3.5 py-2 text-left',
+                  i === cursor ? 'bg-raised' : 'hover:bg-raised/50',
                 )}
               >
-                {pct(asset.change24h, 1)}
-              </span>
-              {i === cursor && <CornerDownLeft size={12} className="shrink-0 text-ink-4" />}
-            </button>
-          ))}
+                <span
+                  className="num grid size-6 shrink-0 place-items-center rounded-[4px] text-micro font-bold text-void"
+                  style={{ background: `hsl(${asset.logoHue} 62% 58%)` }}
+                >
+                  {asset.symbol.slice(0, 2)}
+                </span>
+
+                <span className="flex w-[128px] shrink-0 items-center gap-1.5">
+                  <span className="truncate text-xs font-semibold text-ink">{asset.symbol}</span>
+                  <Pill tone={isCoin ? 'accent' : 'neutral'}>{isCoin ? 'COIN' : 'STOCK'}</Pill>
+                </span>
+
+                <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                  <span className="truncate text-xs text-ink-3">{asset.name}</span>
+                  <span className="flex items-center gap-1.5 text-micro text-ink-4">
+                    {/* When the match came off the address, show the address —
+                        otherwise the row gives no clue why it is in the list. */}
+                    {hit.reason === 'address' ? (
+                      <span className="num text-info">{shortAddress(asset.address, 8, 6)}</span>
+                    ) : (
+                      <>
+                        <span>{usdAbbr(asset.liquidity)} liq</span>
+                        {asset.ageHours !== undefined && <span>· {ageLabel(asset.ageHours)}</span>}
+                        {isStockPaired(asset) && (
+                          <span className="num text-info">· /{asset.quote}</span>
+                        )}
+                      </>
+                    )}
+                  </span>
+                </span>
+
+                <span className="num text-xs text-ink-2">{price(asset.price)}</span>
+                <span
+                  className={cn(
+                    'num w-[62px] text-right text-xs',
+                    asset.change24h >= 0 ? 'text-long' : 'text-short',
+                  )}
+                >
+                  {pct(asset.change24h, 1)}
+                </span>
+                {i === cursor && <CornerDownLeft size={12} className="shrink-0 text-ink-4" />}
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>

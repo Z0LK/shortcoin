@@ -16,8 +16,9 @@ import { Star } from 'lucide-react'
 import { useLivePrice } from '@/components/market-provider'
 import { Button, Meter, Pill } from '@/components/ui/primitives'
 import { SIZE_PRESETS, useStore } from '@/lib/store'
-import { abbr, pct, price as fmtPrice, rate, signedRate, usdAbbr } from '@/lib/format'
+import { abbr, ageLabel, pct, price as fmtPrice, rate, signedRate, usdAbbr } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { isStockPaired } from '@/lib/assets'
 import type { Asset, ShortRoute } from '@/lib/types'
 import { CROWDED_SHORT, HARD_TO_BORROW } from './scanner-filters'
 
@@ -146,20 +147,33 @@ function ScannerRowBase({ asset, index }: { asset: Asset; index: number }) {
             <span className="flex min-w-0 items-center gap-1.5">
               <span className="truncate text-micro text-ink-3">{asset.name}</span>
               {!asset.private && <Pill className="shrink-0">{asset.sector}</Pill>}
-              {asset.ageDays !== undefined && (
+              {asset.ageHours !== undefined && (
                 <Pill
                   className="shrink-0"
-                  tone={asset.ageDays < 14 ? 'warn' : 'neutral'}
-                  title={`Deployed ${asset.ageDays} days ago. Anything under two weeks old has no price history worth trusting.`}
+                  tone={asset.ageHours < 336 ? 'warn' : 'neutral'}
+                  title={`Deployed ${ageLabel(asset.ageHours)} ago. Anything under two weeks old has no price history worth trusting.`}
                 >
-                  {asset.ageDays}d
+                  {ageLabel(asset.ageHours)}
                 </Pill>
               )}
-              {asset.quote !== 'USDG' && (
+              {asset.graduationPct !== undefined && (
+                <Pill
+                  className="shrink-0"
+                  tone={asset.graduationPct >= 100 ? 'long' : 'neutral'}
+                  title={
+                    asset.graduationPct >= 100
+                      ? `Graduated from ${asset.launchpad}: liquidity now sits in a full Uniswap pool.`
+                      : `${asset.graduationPct}% of the way to graduating from ${asset.launchpad}. Until it gets there the price comes off a bonding curve, not a pool.`
+                  }
+                >
+                  {asset.graduationPct >= 100 ? 'GRAD' : `${asset.graduationPct}%`}
+                </Pill>
+              )}
+              {isStockPaired(asset) && (
                 <Pill
                   className="shrink-0"
                   tone="info"
-                  title={`Stock-paired: this token's pool is quoted against ${asset.quote}, not a stablecoin, so its price moves with ${asset.quote} as well as with its own flow.`}
+                  title={`Stock-paired: this pool is quoted against the ${asset.quote} stock token, not money, so its price moves with ${asset.quote} as well as with its own flow.`}
                 >
                   /{asset.quote}
                 </Pill>

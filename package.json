@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "tsx scripts/inversion.test.ts",
+    "test": "tsx scripts/inversion.test.ts && tsx scripts/search.test.ts",
     "typecheck": "tsc --noEmit",
     "smoke": "tsx scripts/smoke.ts"
   },

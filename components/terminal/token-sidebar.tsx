@@ -12,16 +12,17 @@
 import { useEffect, useState } from 'react'
 import { Check, Copy, ExternalLink } from 'lucide-react'
 import { ShortDesk } from '@/components/terminal/short-desk'
-import { Label, Panel, Pill, Stat } from '@/components/ui/primitives'
+import { Label, Meter, Panel, Pill, Stat } from '@/components/ui/primitives'
 import { useLivePrice } from '@/components/market-provider'
 import {
   CHAIN,
   marketPhase,
   PHASE_LABEL,
+  isStockPaired,
   SHORT_ROUTE_LABEL,
   tokenizationWindowOpen,
 } from '@/lib/assets'
-import { abbr, price as fmtPrice, shortAddress, usdAbbr } from '@/lib/format'
+import { abbr, ageLabel, price as fmtPrice, shortAddress, usdAbbr } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Asset, MarketPhase, ShortRoute } from '@/lib/types'
 
@@ -117,11 +118,21 @@ export function TokenSidebar({ asset }: { asset: Asset }) {
         <div className="mt-2.5 flex flex-wrap items-center gap-1">
           <Pill>{asset.sector}</Pill>
           {asset.underlying && !asset.private && <Pill>Underlying {asset.underlying}</Pill>}
-          {asset.ageDays !== undefined && (
-            <Pill tone={asset.ageDays < 14 ? 'warn' : 'neutral'}>{asset.ageDays} days old</Pill>
+          {asset.ageHours !== undefined && (
+            <Pill tone={asset.ageHours < 336 ? 'warn' : 'neutral'}>
+              {ageLabel(asset.ageHours)} old
+            </Pill>
           )}
-          {asset.quote !== 'USDG' && (
-            <Pill tone="info" title={`Quoted against ${asset.quote}, not a stablecoin.`}>
+          {asset.launchpad && <Pill tone="info">Launched on {asset.launchpad}</Pill>}
+          {asset.assetClass === 'coin' && (
+            <Pill
+              tone={isStockPaired(asset) ? 'info' : 'neutral'}
+              title={
+                isStockPaired(asset)
+                  ? `Quoted against the ${asset.quote} stock token rather than money.`
+                  : `Quoted against ${asset.quote}.`
+              }
+            >
               Paired /{asset.quote}
             </Pill>
           )}
@@ -215,17 +226,32 @@ export function TokenSidebar({ asset }: { asset: Asset }) {
             authorised participant — the price is whatever the pool says it is, every second of
             every day.
           </p>
-          {asset.quote !== 'USDG' && (
+          {isStockPaired(asset) && (
             <p className="mt-2 text-mini leading-relaxed text-ink-3">
-              It is also a stock-paired meme: the pool is quoted in {asset.quote} rather than a
-              stablecoin, so shorting it is a bet on the coin <em>relative to</em> {asset.quote},
-              not against the dollar.
+              It is also a stock-paired meme: the pool is quoted in the {asset.quote} stock token
+              rather than money, so shorting it is a bet on the coin <em>relative to</em>{' '}
+              {asset.quote} — not against the dollar.
             </p>
           )}
-          {asset.ageDays !== undefined && asset.ageDays < 14 && (
+          {asset.graduationPct !== undefined && asset.graduationPct < 100 && (
+            <div className="mt-2.5">
+              <div className="mb-1 flex items-baseline justify-between">
+                <Label>Graduation</Label>
+                <span className="num text-mini font-semibold text-ink-2">
+                  {asset.graduationPct}%
+                </span>
+              </div>
+              <Meter value={asset.graduationPct / 100} tone="warn" />
+              <p className="mt-1.5 text-mini leading-relaxed text-ink-3">
+                Still on {asset.launchpad}&apos;s bonding curve. Until it graduates there is no
+                Uniswap pool behind the price — every buy walks the curve, and so does every exit.
+              </p>
+            </div>
+          )}
+          {asset.ageHours !== undefined && asset.ageHours < 336 && (
             <p className="mt-2 text-mini leading-relaxed text-warn">
-              {asset.ageDays} days old. Borrow on a token this young is punitive precisely because
-              nobody can price the risk of it going to zero overnight.
+              {ageLabel(asset.ageHours)} old. Borrow on a token this young is punitive precisely
+              because nobody can price the risk of it going to zero overnight.
             </p>
           )}
         </Panel>

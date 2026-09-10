@@ -72,6 +72,19 @@ export function ago(seconds: number, now = Math.floor(Date.now() / 1000)): strin
   return `${Math.floor(d / 86400)}d`
 }
 
+/**
+ * Age of a token, from hours. A Pons launch can be minutes old, so the unit has
+ * to shrink rather than rounding everything young down to zero days.
+ */
+export function ageLabel(hours: number): string {
+  if (!Number.isFinite(hours) || hours < 0) return '—'
+  if (hours < 1) return '<1h'
+  if (hours < 48) return `${Math.round(hours)}h`
+  const days = Math.round(hours / 24)
+  if (days < 90) return `${days}d`
+  return `${Math.round(days / 30)}mo`
+}
+
 export function clockTime(seconds: number): string {
   return new Date(seconds * 1000).toLocaleTimeString('en-US', {
     hour12: false,
