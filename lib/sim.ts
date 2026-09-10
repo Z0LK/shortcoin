@@ -138,6 +138,17 @@ export class MarketEngine {
     this.working.clear()
   }
 
+  /**
+   * Register an asset the engine was not constructed with. The coin universe is
+   * generated on demand, so most of what a user opens has never been seen by
+   * the engine before — without this, a tail token would sit frozen.
+   */
+  ensure(asset: Asset) {
+    if (this.assets.has(asset.symbol)) return
+    this.assets.set(asset.symbol, { ...asset })
+    this.random.set(asset.symbol, rng(seedFrom(asset.symbol) ^ 0x9e3779b9))
+  }
+
   snapshot(symbol: string): Asset | undefined {
     return this.assets.get(symbol)
   }
@@ -186,7 +197,7 @@ export class MarketEngine {
       const shock = (gaussian(next) * sigma) / Math.sqrt(ticksPerBar)
       const jump = next() < 0.0015 ? gaussian(next) * sigma * 4 : 0
 
-      const price = Math.max(asset.price * Math.exp(shock + jump), 1e-6)
+      const price = Math.max(asset.price * Math.exp(shock + jump), 1e-15)
       asset.price = price
 
       let bar = this.working.get(asset.symbol)

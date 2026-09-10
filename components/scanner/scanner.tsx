@@ -8,7 +8,7 @@
  * that costs people money.
  */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import {
   CROWDED_SHORT,
@@ -18,6 +18,8 @@ import {
   type SortKey,
 } from '@/components/scanner/scanner-filters'
 import { ScannerRow } from '@/components/scanner/scanner-row'
+import { useLaunchFeed } from '@/components/scanner/launch-feed'
+import { PONS_LAUNCH_TOTAL, PONS_LAUNCHES_PER_DAY } from '@/lib/universe'
 import { Label, Pill } from '@/components/ui/primitives'
 import {
   ASSETS,
@@ -88,6 +90,7 @@ const EQUITY_SECTORS = SECTORS.filter((s) => !COIN_SECTORS.includes(s))
 
 const DEFAULT_QUERY: ScannerQuery = {
   cls: 'all',
+  feed: 'trending',
   sector: 'All',
   text: '',
   lens: 'all',
@@ -156,6 +159,24 @@ export function Scanner() {
     return query.dir === 'desc' ? sorted.reverse() : sorted
   }, [query, watchlist])
 
+  // The launch tape. Enabled only while the coin tab is showing it, so the
+  // timers do not run behind the equities table.
+  const feedMode = query.cls === 'coin' && query.feed === 'new'
+  const feed = useLaunchFeed(feedMode)
+
+  const sentinel = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!feedMode || !sentinel.current) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) feed.loadMore()
+      },
+      { rootMargin: '600px' },
+    )
+    io.observe(sentinel.current)
+    return () => io.disconnect()
+  }, [feedMode, feed])
+
   const totalVolume = useMemo(() => rows.reduce((s, a) => s + a.volume24h, 0), [rows])
   const noRoute = useMemo(() => rows.filter((a) => a.shortRoute === 'none').length, [rows])
 
@@ -172,18 +193,43 @@ export function Scanner() {
     <div className="flex h-full min-h-0 flex-col">
       {/* ── market strip ─────────────────────────────────────────────────── */}
       <div className="flex h-11 shrink-0 items-center gap-5 border-b border-line bg-surface px-3">
-        <span className="flex items-baseline gap-1.5">
-          <span className="num text-sm font-semibold text-ink">{rows.length}</span>
-          <Label>tokens</Label>
-        </span>
-        <span className="flex items-baseline gap-1.5">
-          <span className="num text-sm font-semibold text-ink">{usdAbbr(totalVolume)}</span>
-          <Label>24h volume</Label>
-        </span>
-        <span className="flex items-baseline gap-1.5">
-          <span className="num text-sm font-semibold text-short">{noRoute}</span>
-          <Label>with no short route</Label>
-        </span>
+        {feedMode ? (
+          <>
+            <span className="flex items-baseline gap-1.5">
+              <span className="num text-sm font-semibold text-ink">
+                {PONS_LAUNCH_TOTAL.toLocaleString('en-US')}
+              </span>
+              <Label>launched on Pons</Label>
+            </span>
+            <span className="flex items-baseline gap-1.5">
+              <span className="num text-sm font-semibold text-ink">
+                {PONS_LAUNCHES_PER_DAY.toLocaleString('en-US')}
+              </span>
+              <Label>per day</Label>
+            </span>
+            <span className="flex items-baseline gap-1.5">
+              <span className="num text-sm font-semibold text-short">
+                {feed.liveCount.toLocaleString('en-US')}
+              </span>
+              <Label>since you opened this</Label>
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="flex items-baseline gap-1.5">
+              <span className="num text-sm font-semibold text-ink">{rows.length}</span>
+              <Label>tokens</Label>
+            </span>
+            <span className="flex items-baseline gap-1.5">
+              <span className="num text-sm font-semibold text-ink">{usdAbbr(totalVolume)}</span>
+              <Label>24h volume</Label>
+            </span>
+            <span className="flex items-baseline gap-1.5">
+              <span className="num text-sm font-semibold text-short">{noRoute}</span>
+              <Label>with no short route</Label>
+            </span>
+          </>
+        )}
 
         <span className="ml-auto flex items-center gap-3 text-mini">
           <span className="flex items-center gap-1.5">
@@ -204,10 +250,27 @@ export function Scanner() {
               MINT WINDOW CLOSED
             </Pill>
           )}
-          <span className="text-ink-4">
-            {SHORT_CENSUS.equities} stock tokens · {SHORT_CENSUS.coins} coins ·{' '}
-            {SHORT_CENSUS.none} with no short route anywhere
-          </span>
+          {feedMode ? (
+            <button
+              onClick={() => feed.setLive(!feed.live)}
+              className={cn(
+                'flex items-center gap-1.5 rounded-[5px] border px-2 py-1 text-mini font-semibold transition-colors',
+                feed.live
+                  ? 'border-short/40 bg-short/10 text-short'
+                  : 'border-line bg-sunken text-ink-3 hover:text-ink',
+              )}
+            >
+              <span
+                className={cn('size-1.5 rounded-full bg-current', feed.live && 'pulse-dot')}
+              />
+              {feed.live ? 'LIVE' : 'PAUSED'}
+            </button>
+          ) : (
+            <span className="text-ink-4">
+              {SHORT_CENSUS.equities} stock tokens · {SHORT_CENSUS.coins} coins ·{' '}
+              {SHORT_CENSUS.none} with no short route anywhere
+            </span>
+          )}
         </span>
       </div>
 
@@ -260,13 +323,36 @@ export function Scanner() {
           </thead>
 
           <tbody>
-            {rows.map((asset, i) => (
-              <ScannerRow key={asset.symbol} asset={asset} index={i + 1} />
-            ))}
+            {feedMode
+              ? feed.rows.map((row, i) => (
+                  <ScannerRow
+                    key={row.asset.symbol}
+                    asset={row.asset}
+                    index={i + 1}
+                    ageHours={
+                      row.bornAt === null
+                        ? undefined
+                        : // `tick` is in the dependency chain on purpose: it is
+                          // what makes a live row's age count upward.
+                          (feed.tick, (Date.now() - row.bornAt) / 3_600_000)
+                    }
+                  />
+                ))
+              : rows.map((asset, i) => (
+                  <ScannerRow key={asset.symbol} asset={asset} index={i + 1} />
+                ))}
           </tbody>
         </table>
 
-        {rows.length === 0 && (
+        {feedMode && (
+          <div ref={sentinel} className="flex h-16 items-center justify-center">
+            <span className="text-micro uppercase tracking-[0.12em] text-ink-4">
+              Loading more of the tail…
+            </span>
+          </div>
+        )}
+
+        {!feedMode && rows.length === 0 && (
           <div className="grid place-items-center py-24 text-center">
             <p className="text-xs text-ink-2">Nothing matches this filter.</p>
             <p className="mt-1 text-mini text-ink-4">

@@ -42,8 +42,17 @@ export const CROWDED_SHORT = 0.45
 /** Stock tokens, native coins, or the whole chain. */
 export type ClassTab = 'all' | 'equity' | 'coin'
 
+/**
+ * Coins have two shapes. "Trending" is a finite, sortable book of the names
+ * anyone has heard of. "New launches" is the tape coming off Pons, which never
+ * ends and cannot be meaningfully sorted — the same split gmgn draws between
+ * its Trending table and its Trenches feed.
+ */
+export type FeedTab = 'trending' | 'new'
+
 export interface ScannerQuery {
   cls: ClassTab
+  feed: FeedTab
   sector: SectorTab
   text: string
   lens: Lens
@@ -120,7 +129,9 @@ export function ScannerFilters({
               role="tab"
               aria-selected={active}
               title={c.hint}
-              onClick={() => onChange({ cls: c.key, sector: 'All' })}
+              onClick={() =>
+                onChange({ cls: c.key, sector: 'All', feed: c.key === 'coin' ? query.feed : 'trending' })
+              }
               className={cn(
                 'rounded-[3px] px-2 py-[3px] text-mini font-semibold transition-colors',
                 active ? 'bg-raised text-ink' : 'text-ink-3 hover:text-ink-2',
@@ -132,6 +143,43 @@ export function ScannerFilters({
           )
         })}
       </div>
+
+      {query.cls === 'coin' && (
+        <div
+          role="tablist"
+          aria-label="Coin feed"
+          className="flex shrink-0 items-center rounded-[5px] border border-line bg-sunken p-[2px]"
+        >
+          {(
+            [
+              { key: 'trending' as const, label: 'Trending', hint: 'The coins with a market cap worth the name' },
+              { key: 'new' as const, label: 'New launches', hint: 'Live tape off the Pons launchpad — about one every four seconds' },
+            ]
+          ).map((f) => {
+            const active = query.feed === f.key
+            return (
+              <button
+                key={f.key}
+                role="tab"
+                aria-selected={active}
+                title={f.hint}
+                onClick={() => onChange({ feed: f.key })}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-[3px] px-2 py-[3px] text-mini font-semibold transition-colors',
+                  active ? 'bg-raised text-ink' : 'text-ink-3 hover:text-ink-2',
+                )}
+              >
+                {f.key === 'new' && (
+                  <span
+                    className={cn('size-1.5 rounded-full', active ? 'pulse-dot bg-short' : 'bg-ink-4')}
+                  />
+                )}
+                {f.label}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       <div
         role="tablist"

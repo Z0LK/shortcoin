@@ -14,16 +14,19 @@ import { OrderTicket } from '@/components/terminal/order-ticket'
 import { InversionControl } from '@/components/terminal/inversion-control'
 import { ActivityPanel } from '@/components/terminal/activity-panel'
 import { TokenSidebar } from '@/components/terminal/token-sidebar'
+import { useMarket } from '@/components/market-provider'
 import { useStore } from '@/lib/store'
 import type { Asset } from '@/lib/types'
 
 export function Terminal({ asset }: { asset: Asset }) {
   const [mark, setMark] = useState(asset.price)
   const setLastSymbol = useStore((s) => s.setLastSymbol)
+  const engine = useMarket()
 
   useEffect(() => {
     setLastSymbol(asset.symbol)
-  }, [asset.symbol, setLastSymbol])
+    engine?.ensure(asset)
+  }, [asset, setLastSymbol, engine])
 
   const onMark = useCallback((p: number) => setMark(p), [])
 

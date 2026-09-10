@@ -66,7 +66,16 @@ function shortInterestTone(si: number): { text: string; meter: 'short' | 'warn' 
   return { text: 'text-ink-2', meter: 'accent' }
 }
 
-function ScannerRowBase({ asset, index }: { asset: Asset; index: number }) {
+function ScannerRowBase({
+  asset,
+  index,
+  ageHours,
+}: {
+  asset: Asset
+  index: number
+  /** Overrides the asset's own age for rows arriving live off the tape. */
+  ageHours?: number
+}) {
   const router = useRouter()
   const live = useLivePrice(asset)
 
@@ -147,13 +156,13 @@ function ScannerRowBase({ asset, index }: { asset: Asset; index: number }) {
             <span className="flex min-w-0 items-center gap-1.5">
               <span className="truncate text-micro text-ink-3">{asset.name}</span>
               {!asset.private && <Pill className="shrink-0">{asset.sector}</Pill>}
-              {asset.ageHours !== undefined && (
+              {(ageHours ?? asset.ageHours) !== undefined && (
                 <Pill
                   className="shrink-0"
-                  tone={asset.ageHours < 336 ? 'warn' : 'neutral'}
-                  title={`Deployed ${ageLabel(asset.ageHours)} ago. Anything under two weeks old has no price history worth trusting.`}
+                  tone={(ageHours ?? asset.ageHours)! < 336 ? 'warn' : 'neutral'}
+                  title={`Deployed ${ageLabel((ageHours ?? asset.ageHours)!)} ago. Anything under two weeks old has no price history worth trusting.`}
                 >
-                  {ageLabel(asset.ageHours)}
+                  {ageLabel((ageHours ?? asset.ageHours)!)}
                 </Pill>
               )}
               {asset.graduationPct !== undefined && (

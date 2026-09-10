@@ -23,12 +23,35 @@ export function usdAbbr(n: number): string {
  * Price with a precision that adapts to magnitude — a $0.0031 token and a
  * $1,842 token should not share a decimal count.
  */
+const SUBSCRIPTS = '₀₁₂₃₄₅₆₇₈₉'
+
+/** 7 → "₇". Used to count the zeros in a sub-satoshi price. */
+function subscript(n: number): string {
+  return String(n)
+    .split('')
+    .map((d) => SUBSCRIPTS[Number(d)])
+    .join('')
+}
+
 export function price(n: number): string {
   if (!Number.isFinite(n)) return '—'
   const a = Math.abs(n)
+
   // Exactly zero is a number, not a sub-penny price: it gets two decimals like
   // any other dollar figure, never the eight a 1e-8 token would earn.
-  const digits = a === 0 ? 2 : a >= 1 ? 2 : a >= 0.01 ? 4 : a >= 0.0001 ? 6 : 8
+  if (a === 0) return '0.00'
+
+  // Below a millionth, spelling out the zeros wastes the column and is unreadable
+  // at a glance. Count them instead — 0.0₇9124 — which is how every memecoin
+  // terminal renders this and how traders actually say it out loud.
+  if (a < 1e-6) {
+    const exponent = Math.floor(Math.log10(a))
+    const zeros = -exponent - 1
+    const significant = Math.round(a / Math.pow(10, exponent - 3))
+    return `${n < 0 ? '−' : ''}0.0${subscript(zeros)}${significant}`
+  }
+
+  const digits = a >= 1 ? 2 : a >= 0.01 ? 4 : a >= 0.0001 ? 6 : 8
   return n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })
 }
 
@@ -78,7 +101,9 @@ export function ago(seconds: number, now = Math.floor(Date.now() / 1000)): strin
  */
 export function ageLabel(hours: number): string {
   if (!Number.isFinite(hours) || hours < 0) return '—'
-  if (hours < 1) return '<1h'
+  const seconds = hours * 3600
+  if (seconds < 60) return `${Math.max(Math.round(seconds), 1)}s`
+  if (hours < 1) return `${Math.round(hours * 60)}m`
   if (hours < 48) return `${Math.round(hours)}h`
   const days = Math.round(hours / 24)
   if (days < 90) return `${days}d`
