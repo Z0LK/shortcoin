@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SHORTCOIN
 
-## Getting Started
+A trading terminal for tokenized equities on **Robinhood Chain** — with the one thing no other
+on-chain venue offers: you can go **short**.
 
-First, run the development server:
+Every spot token venue is structurally long-only. SHORTCOIN builds the missing side of the trade out
+of the price series itself: it transforms a token's chart into a synthetic **inverse** instrument, so
+buying the inverse is economically a short of the underlying.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+> **Everything here is a simulation.** Prices, candles, fills, balances and holders are generated in
+> your browser. No order reaches a venue and no wallet is connected. What *is* real: the ticker
+> symbols, company names, sector taxonomy, on-chain contract addresses, and the count of how many of
+> these tokens can actually be shorted somewhere today.
+
+---
+
+## The wedge, in one number
+
+Robinhood Chain carries **195** tokenized equities.
+
+| Short route available today | Tokens |
+| --- | --- |
+| Spot borrow market (all currently with nothing supplied) | 5 |
+| Perpetual future on another venue | 39 |
+| **Nothing at all** | **151** — 77% of the chain |
+
+That last row is the product.
+
+---
+
+## The inversion
+
+Three transforms turn a price series `P` into a short-exposure series `S`. All are strictly
+decreasing, so **the high and the low swap** when a candle is inverted — `sHigh = f(pLow)`.
+
+| Mode | Formula | Behaviour |
+| --- | --- | --- |
+| **Reciprocal** (default) | `S = A² / P` | Convex. Never negative, loss capped at stake, upside uncapped. |
+| Linear mirror | `S = 2A − P` | Absolute PnL matches a classic short exactly. Goes negative above `2A`. |
+| Compounded −1x | `Sₜ = Sₜ₋₁·(1 − rₜ)` | What a −1x daily-rebalanced ETF really does, decay included. |
+
+The reciprocal is the default because on a **logarithmic** axis it is an exact reflection at every
+horizon, with no path dependence:
+
+```
+ln S = 2·ln A − ln P    ⟹    ln(S₁/S₀) = −ln(P₁/P₀)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Which is why every chart defaults to a log scale: flipping the terminal is a true mirror, not a
+lookalike.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Carry is charged, not hidden.** A continuously rebalanced −1x is worth the reciprocal times
+`exp(−σ²T)`. On a 40%-vol name that is roughly 16% a year of volatility drag on top of borrow and
+funding, and the interface says so.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Liquidation runs the other way.** A short is liquidated when the underlying *rises*, so on an
+inverted chart the liquidation line is a floor below the price, never a ceiling.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Running it
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Dev server on :3000 (Turbopack) |
+| `npm run build` | Production build — prerenders all 195 terminals |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | 25 assertions over the inversion engine |
+| `npm run smoke` | End-to-end check of assets, simulator and inversion |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Screens
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Route | What it is |
+| --- | --- |
+| `/` | Scanner — 195 tokens, sortable, live, with the SHORT DESK lens |
+| `/t/[symbol]` | Terminal — chart, order ticket, book, instrument rail |
+| `/portfolio` | Positions, net exposure by direction and sector, equity curve |
+| `/how-it-works` | The mechanism, with an interactive inversion demo |
+
+Press **S** anywhere to flip the terminal between long and short. **⌘K** opens the command palette.
+
+---
+
+## Layout
+
+```
+app/                     routes (App Router, no src/)
+components/
+  chart/                 lightweight-charts wrapper + instrument header
+  scanner/               the discover table
+  terminal/              ticket, activity panel, instrument rail, short desk
+  portfolio/             exposure, equity curve
+  explainer/             the interactive inversion demo
+  shell/                 nav, tape, command palette, the flip control
+  ui/primitives.tsx      Panel, Pill, Meter, Stat, Button, Label
+lib/
+  inversion.ts           the maths engine — unit tested
+  sim.ts                 fake market: candle generation + tick loop
+  assets.ts              GENERATED by scripts/gen-assets.ts, do not edit
+  store.ts               zustand: direction, wallet, book (persisted)
+  format.ts              every number in the product goes through here
+docs/STACK-NOTES.md      verified API facts — trust this over memory
+```
+
+`lib/assets.ts` is generated. Edit `scripts/registry.txt` or `scripts/gen-assets.ts` and re-run
+`npx tsx scripts/gen-assets.ts`.
+
+---
+
+## Going real
+
+The data layer sits behind one module (`lib/sim.ts`), so swapping the simulator for a feed touches
+nothing else.
+
+On **Lighter** — evaluated and rejected for the frontend. `elliottech/lighter-python` is not pure
+Python: it ships 8–18 MB Go-cgo signer binaries loaded through ctypes. The official TypeScript
+package `zklighter-perps` ships uncompiled sources and **no signer at all**. Its public REST/WS
+market data needs no SDK and is genuinely pleasant from TypeScript; order signing would need a
+`lighter-go` sidecar. Full findings in `docs/STACK-NOTES.md`.

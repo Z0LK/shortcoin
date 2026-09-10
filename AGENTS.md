@@ -1,9 +1,43 @@
-<!-- BEGIN:nextjs-agent-rules -->
+# SHORTCOIN — working notes
 
-# This is NOT the Next.js you know
+Read `README.md` for what the product is, and `docs/STACK-NOTES.md` for verified API facts. Trust
+that file over recollection: it was written by reading the installed packages, not from memory.
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+## Stack
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+Next.js 16 (App Router, no `src/`, Turbopack is the default — the `--turbopack` flag is obsolete) ·
+React 19 · TypeScript 5.9 · Tailwind v4 · lightweight-charts 5 · zustand 5 · lucide-react · motion.
 
-<!-- END:nextjs-agent-rules -->
+## Rules that are easy to break
+
+- **Everything is fictional.** Never present simulated data as live. The honesty lines in the ticket
+  and on `/how-it-works` are load-bearing, not boilerplate.
+- **Green is up, red is down — in both modes.** The accent colour repoints with the trading
+  direction; the long/short semantics never do. Inverting them would be clever and unusable.
+- **Every number gets `className="num"`** and goes through `lib/format.ts`. Never `toFixed` in a
+  component: tabular figures are what stop digits jittering on every tick.
+- **No `Math.random()` or `Date.now()` during render.** Derive fake values from `lib/rng.ts`; resolve
+  wall-clock things inside `useEffect`. Both break hydration.
+- `Math.log` and `Math.exp` are not bit-identical between Node and the browser. Anything computed
+  with them that reaches the DOM must be rounded first — this already bit the SVG demo once.
+- **Prices live outside React.** Ticks go straight from `MarketEngine` to the component that needs
+  them via `useTickHandler`. Routing them through context would re-render the whole terminal.
+- **Position maths runs on underlying prices, never inverted ones.** The inversion is a lens for the
+  chart and the ticket; the book stays honest.
+- `lib/assets.ts` is **generated**. Edit `scripts/registry.txt` or `scripts/gen-assets.ts`.
+
+## Tailwind v4 traps
+
+Default border colour is `currentColor` and buttons are `cursor: default` — both are pinned globally
+in `app/globals.css`, so do not "fix" them locally. `outline-none` is now `outline-hidden`; the
+important modifier goes last (`flex!`); `shadow`/`rounded`/`blur` all shifted one step down. There is
+no `tailwind.config.js` and there should not be — tokens live in `@theme` inside `app/globals.css`.
+
+## Before claiming something works
+
+```bash
+npm run typecheck && npm test && npm run build
+```
+
+`npm test` covers the inversion engine, including the log-mirror identity and the volatility-drag
+closed form. If you touch `lib/inversion.ts`, those assertions are the contract.
