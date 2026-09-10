@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation'
 import { CornerDownLeft, Search } from 'lucide-react'
 import { ASSETS, isStockPaired } from '@/lib/assets'
 import { ageLabel, pct, price, shortAddress, usdAbbr } from '@/lib/format'
+import { useStore } from '@/lib/store'
 import { looksLikeAddress, searchAssets } from '@/lib/search'
 import { cn } from '@/lib/utils'
 import { Pill } from '@/components/ui/primitives'
@@ -38,6 +39,7 @@ type ChainLookup =
 
 export function CommandPalette() {
   const router = useRouter()
+  const unit = useStore((s) => s.unit)
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [cursor, setCursor] = useState(0)
@@ -270,7 +272,9 @@ export function CommandPalette() {
                   </span>
                 </span>
 
-                <span className="num text-xs text-ink-2">{price(asset.price)}</span>
+                <span className="num text-xs text-ink-2">
+                  {unit === 'mcap' ? usdAbbr(asset.marketCap) : price(asset.price)}
+                </span>
                 <span
                   className={cn(
                     'num w-[62px] text-right text-xs',

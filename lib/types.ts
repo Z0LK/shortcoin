@@ -36,6 +36,13 @@ export type Sector = string
 export type ShortRoute = 'borrow' | 'perp' | 'none'
 
 /**
+ * Supply on these tokens is fixed, so market cap is price times a constant.
+ * That makes the two units interchangeable on a chart — and one of them is
+ * legible when the other is nine zeros and a digit.
+ */
+export type DisplayUnit = 'mcap' | 'price'
+
+/**
  * Two very different things live on this chain. Tokenized equities track a share
  * and inherit its trading calendar; native coins track nothing, trade genuinely
  * around the clock, and can be a few days old. Almost every rule that differs

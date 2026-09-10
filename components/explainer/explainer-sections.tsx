@@ -94,7 +94,11 @@ export function TheInversion() {
         economically a short of P. SHORTCOIN only ever does this: there is no long side to the
         product, and no leverage. Every chart you see is already the inverse.
       </p>
-      <p>Three transforms do this, and they are not interchangeable.</p>
+      <p>
+        Three transforms do this, and they are not interchangeable. SHORTCOIN ships exactly one of
+        them — the reciprocal — and the other two are here because the reason it won is the whole
+        argument.
+      </p>
 
       <Formula note="The default. Never touches zero, never goes negative, loss capped at your stake, upside uncapped. A is the session anchor, so the inverse starts at the same price as the underlying.">
         reciprocal &nbsp; S = A² / P
@@ -114,7 +118,7 @@ export function TheInversion() {
         and no path dependence:
       </p>
 
-      <Formula note="Which is why every chart in SHORTCOIN defaults to a log scale. The flip is a true mirror, not something that merely looks like one.">
+      <Formula note="Which is why every chart in SHORTCOIN is on a log scale, and why this is the only transform the product offers. The other two are real instruments, but one can print a negative price and the other is path dependent — neither belongs behind a one-click short.">
         ln S = 2·ln A − ln P &nbsp;&nbsp;⟹&nbsp;&nbsp; ln(S₁/S₀) = −ln(P₁/P₀)
       </Formula>
 

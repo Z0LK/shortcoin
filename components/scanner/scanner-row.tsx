@@ -82,6 +82,10 @@ function ScannerRowBase({
   const openPosition = useStore((s) => s.openPosition)
   const toggleWatch = useStore((s) => s.toggleWatch)
   const watched = useStore((s) => s.watchlist.includes(asset.symbol))
+  const unit = useStore((s) => s.unit)
+
+  // Supply is fixed, so the live market cap is the live price times a constant.
+  const supply = asset.price > 0 ? asset.marketCap / asset.price : 0
 
   const [ack, setAck] = useState<'idle' | 'filled' | 'rejected'>('idle')
   const ackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -201,7 +205,7 @@ function ScannerRowBase({
             live.dir < 0 && 'flash-down',
           )}
         >
-          {fmtPrice(live.price)}
+          {unit === 'mcap' && supply > 0 ? usdAbbr(live.price * supply) : fmtPrice(live.price)}
         </span>
       </td>
 
@@ -217,7 +221,9 @@ function ScannerRowBase({
 
       <td className={cn(TD, 'num text-right text-mini text-ink-2')}>{usdAbbr(asset.volume24h)}</td>
       <td className={cn(TD, 'num text-right text-mini text-ink-2')}>{usdAbbr(asset.liquidity)}</td>
-      <td className={cn(TD, 'num text-right text-mini text-ink-2')}>{usdAbbr(asset.marketCap)}</td>
+      <td className={cn(TD, 'num text-right text-mini text-ink-2')}>
+        {unit === 'mcap' ? fmtPrice(asset.price) : usdAbbr(asset.marketCap)}
+      </td>
       <td className={cn(TD, 'num text-right text-mini text-ink-3')}>{abbr(asset.holders)}</td>
 
       <td className={TD}>

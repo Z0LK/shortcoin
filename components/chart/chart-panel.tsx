@@ -17,8 +17,8 @@ import { Pill } from '@/components/ui/primitives'
 import { useLivePrice } from '@/components/market-provider'
 import { useStore } from '@/lib/store'
 import { INTERVALS, type Interval } from '@/lib/sim'
-import { invertPrice, INVERSION_LABELS } from '@/lib/inversion'
-import { abbr, pct, price as fmtPrice } from '@/lib/format'
+import { invertPrice } from '@/lib/inversion'
+import { abbr, pct, price as fmtPrice, usdAbbr } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Asset, Candle } from '@/lib/types'
 
@@ -34,8 +34,14 @@ export function ChartPanel({
   const [hover, setHover] = useState<Candle | null>(null)
   const [last, setLast] = useState<Candle | null>(null)
 
-  const inversion = useStore((s) => s.inversion)
   const positions = useStore((s) => s.positions)
+  const unit = useStore((s) => s.unit)
+  const setUnit = useStore((s) => s.setUnit)
+
+  // Supply is fixed on these tokens, so it falls straight out of the two
+  // figures we already carry and market cap is just a constant scale.
+  const supply = asset.price > 0 ? asset.marketCap / asset.price : 1
+  const scale = unit === 'mcap' ? supply : 1
 
   const live = useLivePrice(asset)
   const anchor = asset.anchor
@@ -48,7 +54,8 @@ export function ChartPanel({
     markRef.current?.(live.price)
   }, [live.price])
 
-  const shownPrice = invertPrice(live.price, anchor, inversion)
+  const shownPrice = invertPrice(live.price, anchor)
+  const headline = unit === 'mcap' ? usdAbbr(shownPrice * supply) : fmtPrice(shownPrice)
   const bar = hover ?? last
   const up24 = asset.change24h >= 0
 
@@ -83,7 +90,7 @@ export function ChartPanel({
               live.dir < 0 && 'text-short',
             )}
           >
-            {fmtPrice(shownPrice)}
+            {headline}
           </span>
           <span className={cn('num flex items-center gap-0.5 text-xs', up24 ? 'text-long' : 'text-short')}>
             {up24 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
@@ -92,11 +99,35 @@ export function ChartPanel({
         </div>
 
         <span className="num hidden shrink-0 whitespace-nowrap rounded-[4px] border border-line bg-sunken px-2 py-1 text-micro text-ink-3 xl:inline-block">
-          Underlying {fmtPrice(live.price)} · anchor {fmtPrice(anchor)} ·{' '}
-          {INVERSION_LABELS[inversion]}
+          {unit === 'mcap' ? 'MC' : 'Price'} · underlying {fmtPrice(live.price)} · anchor{' '}
+          {fmtPrice(anchor)} · Reciprocal
         </span>
 
         <div className="ml-auto flex items-center gap-2">
+          <div
+            className="flex items-center rounded-[5px] border border-line bg-sunken p-[2px]"
+            title="Supply is fixed, so market cap is price times a constant. Cap is the default because a token quoted at 0.0₉2 is unreadable on an axis."
+          >
+            {(
+              [
+                { key: 'mcap' as const, label: 'MC' },
+                { key: 'price' as const, label: 'PRICE' },
+              ]
+            ).map((u) => (
+              <button
+                key={u.key}
+                onClick={() => setUnit(u.key)}
+                aria-pressed={unit === u.key}
+                className={cn(
+                  'num rounded-[3px] px-2 py-[3px] text-micro font-semibold transition-colors',
+                  unit === u.key ? 'bg-raised text-ink' : 'text-ink-3 hover:text-ink-2',
+                )}
+              >
+                {u.label}
+              </button>
+            ))}
+          </div>
+
           <div className="flex items-center rounded-[5px] border border-line bg-sunken p-[2px]">
             {INTERVALS.map((i) => (
               <button
@@ -132,7 +163,7 @@ export function ChartPanel({
               <span key={k} className="flex items-center gap-1">
                 <span className="text-ink-4">{k}</span>
                 <span className={cn('num', bar.close >= bar.open ? 'text-long' : 'text-short')}>
-                  {fmtPrice(v)}
+                  {unit === 'mcap' ? abbr(v) : fmtPrice(v)}
                 </span>
               </span>
             ))}
@@ -147,7 +178,7 @@ export function ChartPanel({
           <span className="text-ink-4">Hover the chart for OHLC</span>
         )}
         <span className="ml-auto text-ink-4">
-          Log scale · green means {asset.symbol} fell
+          {unit === 'mcap' ? 'Market cap' : 'Price'} · log scale · green means {asset.symbol} fell
         </span>
       </div>
 
@@ -155,7 +186,7 @@ export function ChartPanel({
         <PriceChart
           asset={asset}
           interval={interval}
-          inversion={inversion}
+          scale={scale}
           positions={positions}
           onHover={setHover}
           onLast={setLast}

@@ -106,6 +106,7 @@ function compare(a: Asset, b: Asset, key: SortKey): number {
 export function Scanner() {
   const [query, setQuery] = useState<ScannerQuery>(DEFAULT_QUERY)
   const watchlist = useStore((s) => s.watchlist)
+  const unit = useStore((s) => s.unit)
 
   // Wall-clock state is resolved after mount so the server and the first client
   // render cannot disagree.
@@ -289,6 +290,14 @@ export function Scanner() {
             <tr className="h-[var(--head-h)] bg-surface">
               {COLUMNS.map((col, i) => {
                 const active = col.key && query.sort === col.key
+                // The live column carries whichever unit the app is set to, and
+                // the static column carries the other one.
+                const label =
+                  unit === 'mcap' && col.label === 'PRICE'
+                    ? 'MC'
+                    : unit === 'mcap' && col.label === 'MCAP'
+                      ? 'PRICE'
+                      : col.label
                 return (
                   <th
                     key={`${col.label}-${i}`}
@@ -312,7 +321,7 @@ export function Scanner() {
                         col.align === 'right' && 'flex-row-reverse',
                       )}
                     >
-                      {col.label}
+                      {label}
                       {active &&
                         (query.dir === 'desc' ? <ArrowDown size={9} /> : <ArrowUp size={9} />)}
                     </span>

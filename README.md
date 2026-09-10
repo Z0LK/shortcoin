@@ -64,17 +64,14 @@ a tokenized equity rather than a stablecoin, so shorting them is a bet relative 
 
 ## The inversion
 
-Three transforms turn a price series `P` into a short-exposure series `S`. All are strictly
-decreasing, so **the high and the low swap** when a candle is inverted — `sHigh = f(pLow)`.
+The product ships **one** transform: `S = A² / P`. Any strictly decreasing map would invert a
+series — and **the high and the low swap** when a candle goes through one, `sHigh = f(pLow)` — but
+only the reciprocal is safe behind a one-click short. The linear mirror `S = 2A − P` prints a
+negative price above `2A`; the compounded −1x is path dependent. `/how-it-works` compares all three,
+because the comparison is the argument for the one that shipped.
 
-| Mode | Formula | Behaviour |
-| --- | --- | --- |
-| **Reciprocal** (default) | `S = A² / P` | Convex. Never negative, loss capped at stake, upside uncapped. |
-| Linear mirror | `S = 2A − P` | Absolute PnL matches a classic short exactly. Goes negative above `2A`. |
-| Compounded −1x | `Sₜ = Sₜ₋₁·(1 − rₜ)` | What a −1x daily-rebalanced ETF really does, decay included. |
-
-The reciprocal is the default because on a **logarithmic** axis it is an exact reflection at every
-horizon, with no path dependence:
+The reciprocal wins because on a **logarithmic** axis it is an exact reflection at every horizon,
+with no path dependence:
 
 ```
 ln S = 2·ln A − ln P    ⟹    ln(S₁/S₀) = −ln(P₁/P₀)
@@ -121,6 +118,12 @@ npm run dev
 
 **⌘K** opens the command palette. Positions are unlevered, so the collateral you post is the
 notional you sell, and liquidation sits just under twice the entry.
+
+**Charts are denominated in market cap by default.** Supply is fixed on these tokens, so cap is
+price times a constant and the two units are interchangeable — but one of them is legible. A
+memecoin at `0.0₉2` renders as `0.00` in every axis label a charting library will give you; the
+same token at `$202.99K` does not. An MC / PRICE switch sits next to the interval strip and governs
+the chart, the scanner's live column and the search results together.
 
 ---
 

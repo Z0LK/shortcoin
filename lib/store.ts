@@ -3,8 +3,9 @@
 /**
  * SHORTCOIN — client state.
  *
- * There is no trading direction to hold: the product only sells, and the chart
- * is always the inverse. What used to be a mode switch is now an invariant.
+ * There is no trading direction to hold, and no transform to pick: the product
+ * only sells, the chart is always the inverse, and the inverse is always the
+ * reciprocal. What used to be three switches is now three invariants.
  *
  * Deliberately NOT where prices live. Ticks arrive tens of times a second and
  * would re-render the entire terminal if they went through here; they are
@@ -16,7 +17,7 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import type { InversionMode, Order, OrderType, Position, Wallet } from './types'
+import type { DisplayUnit, Order, OrderType, Position, Wallet } from './types'
 import { getAsset } from './assets'
 import { liquidationPrice, unrealizedPnl } from './inversion'
 
@@ -43,7 +44,13 @@ export interface OpenArgs {
 }
 
 interface State {
-  inversion: InversionMode
+  /**
+   * What the chart and the headline number are denominated in. Market cap by
+   * default: a token priced at 0.0₉2 is unreadable on an axis, and traders on
+   * this chain talk in caps anyway.
+   */
+  unit: DisplayUnit
+  setUnit: (u: DisplayUnit) => void
 
   wallet: Wallet
   positions: Position[]
@@ -52,8 +59,6 @@ interface State {
 
   /** Last symbol the user looked at, for the "resume" affordance in the nav. */
   lastSymbol: string | null
-
-  setInversion: (m: InversionMode) => void
 
   openPosition: (a: OpenArgs) => Position | null
   closePosition: (id: string, markPrice: number) => void
@@ -70,15 +75,14 @@ interface State {
 export const useStore = create<State>()(
   persist(
     (set, get) => ({
-  inversion: 'reciprocal',
+  unit: 'mcap',
+  setUnit: (unit) => set({ unit }),
 
   wallet: { ...DEMO_WALLET },
   positions: [],
   orders: [],
   watchlist: ['NVDA', 'TSLA', 'SPCX', 'COIN', 'MSTR'],
   lastSymbol: null,
-
-  setInversion: (inversion) => set({ inversion }),
 
   openPosition: ({ symbol, margin, price }) => {
     const asset = getAsset(symbol)
@@ -190,7 +194,7 @@ export const useStore = create<State>()(
         positions: s.positions,
         orders: s.orders,
         watchlist: s.watchlist,
-        inversion: s.inversion,
+        unit: s.unit,
       }),
     },
   ),

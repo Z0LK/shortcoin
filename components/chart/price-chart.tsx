@@ -32,8 +32,9 @@ import {
 } from 'lightweight-charts'
 import { useTickHandler } from '@/components/market-provider'
 import { invertCandle, invertSeries, invertPrice } from '@/lib/inversion'
+import { abbr, price as fmtPrice } from '@/lib/format'
 import { generateCandles, type Interval } from '@/lib/sim'
-import type { Asset, Candle, InversionMode, Position } from '@/lib/types'
+import type { Asset, Candle, Position } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
 /**
@@ -59,7 +60,13 @@ export interface ChartHover {
 interface Props {
   asset: Asset
   interval: Interval
-  inversion: InversionMode
+  /**
+   * Multiplier applied to every plotted value. Supply when the chart is
+   * denominated in market cap, 1 when it is in price. Inversion commutes with
+   * a constant scale — A²/P times k equals (A·k)²/(P·k) — so the transform runs
+   * in price space and the result is scaled on the way out.
+   */
+  scale: number
   positions: Position[]
   onHover?: (c: Candle | null) => void
   onLast?: (c: Candle) => void
@@ -69,12 +76,17 @@ interface Props {
 export function PriceChart({
   asset,
   interval,
-  inversion,
+  scale,
   positions,
   onHover,
   onLast,
   className,
 }: Props) {
+  // Held in a ref because the series is created once and must not be rebuilt
+  // when the unit changes.
+  const formatterRef = useRef<(v: number) => string>((v) => fmtPrice(v))
+  formatterRef.current = (v: number) => (scale === 1 ? fmtPrice(v) : abbr(v))
+
   const holder = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
   const candleRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
@@ -96,8 +108,8 @@ export function PriceChart({
   const anchor = history?.[0]?.open ?? asset.anchor
 
   const toDisplay = useMemo(
-    () => (c: Candle) => invertCandle(c, anchor, inversion),
-    [anchor, inversion],
+    () => (c: Candle) => invertCandle(c, anchor),
+    [anchor],
   )
 
   // ── create ────────────────────────────────────────────────────────────────
@@ -151,6 +163,14 @@ export function PriceChart({
     })
 
     const candles = chart.addSeries(CandlestickSeries, {
+      // lightweight-charts formats to two decimals by default, which turns
+      // every token under half a cent into a column of 0.00 — on the axis, on
+      // the crosshair label and on the last-price tag. Ours never does that.
+      priceFormat: {
+        type: 'custom',
+        minMove: 1e-12,
+        formatter: (value: number) => formatterRef.current(value),
+      },
       upColor: cssVar('--chart-up', '#21d07a'),
       downColor: cssVar('--chart-down', '#ff3b47'),
       wickUpColor: cssVar('--chart-up', '#21d07a'),
@@ -213,15 +233,15 @@ export function PriceChart({
     const volume = volumeRef.current
     if (!candles || !volume || !history) return
 
-    const shown = invertSeries(history, inversion, anchor)
+    const shown = invertSeries(history, 'reciprocal', anchor)
 
     candles.setData(
       shown.map<CandlestickData<Time>>((c) => ({
         time: c.time as UTCTimestamp,
-        open: c.open,
-        high: c.high,
-        low: c.low,
-        close: c.close,
+        open: c.open * scale,
+        high: c.high * scale,
+        low: c.low * scale,
+        close: c.close * scale,
       })),
     )
 
@@ -241,14 +261,15 @@ export function PriceChart({
       from: Math.max(shown.length - VISIBLE_BARS, 0),
       to: shown.length + 3,
     })
-    onLast?.(shown[shown.length - 1])
+    const last = shown[shown.length - 1]
+    onLast?.({ ...last, open: last.open * scale, high: last.high * scale, low: last.low * scale, close: last.close * scale })
     // `onLast` is intentionally excluded: it changes identity every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [history, inversion, anchor])
+  }, [history, anchor, scale])
 
-  // ── transform change ──────────────────────────────────────────────────────
-  // Switching transform redraws the whole series, so it gets the same brief
-  // wash the direction flip used to: without it the curve teleports.
+  // ── symbol change ─────────────────────────────────────────────────────────
+  // Swapping instrument redraws the whole series, so it gets a brief wash:
+  // without it the curve teleports.
   const firstDraw = useRef(true)
   useEffect(() => {
     if (firstDraw.current) {
@@ -258,7 +279,7 @@ export function PriceChart({
     setFlipping(true)
     const t = setTimeout(() => setFlipping(false), 420)
     return () => clearTimeout(t)
-  }, [inversion])
+  }, [asset.symbol])
 
   // ── position overlays ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -269,7 +290,7 @@ export function PriceChart({
     linesRef.current = []
 
     const mine = positions.filter((p) => p.symbol === asset.symbol)
-    const project = (p: number) => invertPrice(p, anchor, inversion)
+    const project = (p: number) => invertPrice(p, anchor) * scale
 
     mine.forEach((p) => {
       linesRef.current.push(
@@ -293,7 +314,7 @@ export function PriceChart({
         }),
       )
     })
-  }, [positions, asset.symbol, anchor, inversion])
+  }, [positions, asset.symbol, anchor, scale])
 
   // ── live ticks ────────────────────────────────────────────────────────────
   useTickHandler(asset.symbol, (t) => {
@@ -306,10 +327,10 @@ export function PriceChart({
 
     candles.update({
       time: c.time as UTCTimestamp,
-      open: c.open,
-      high: c.high,
-      low: c.low,
-      close: c.close,
+      open: c.open * scale,
+      high: c.high * scale,
+      low: c.low * scale,
+      close: c.close * scale,
     })
     volume.update({
       time: c.time as UTCTimestamp,
@@ -319,7 +340,7 @@ export function PriceChart({
           ? cssVar('--chart-volume-up', '#14472f')
           : cssVar('--chart-volume-down', '#4a1620'),
     })
-    onLast?.(c)
+    onLast?.({ ...c, open: c.open * scale, high: c.high * scale, low: c.low * scale, close: c.close * scale })
   })
 
   return (
