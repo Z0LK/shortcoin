@@ -240,42 +240,31 @@ body {
   background: radial-gradient(125% 100% at 50% 38%, transparent 42%, var(--void) 100%);
 }
 
-/* The pointer does not carry a light: it uncovers a dot matrix that is there
-   all along, plus a thin ring so the hit point stays legible. */
+/* The pointer does not carry a light: it barely uncovers a dot matrix that is
+   there all along. Wide and faint on purpose — it should read as a breath on
+   the glass, not as a spotlight. */
 .cursor-reveal {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-image: radial-gradient(rgba(138, 123, 255, 0.85) 1px, transparent 1.4px);
-  background-size: 22px 22px;
+  opacity: 0.55;
+  background-image: radial-gradient(rgba(138, 123, 255, 0.5) 1px, transparent 1.5px);
+  background-size: 26px 26px;
   mask-image: radial-gradient(
-    circle 190px at var(--cx, -999px) var(--cy, -999px),
-    #000 0%,
-    rgba(0, 0, 0, 0.35) 45%,
-    transparent 72%
+    circle 300px at var(--cx, -999px) var(--cy, -999px),
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.3) 40%,
+    rgba(0, 0, 0, 0.08) 68%,
+    transparent 88%
   );
   -webkit-mask-image: radial-gradient(
-    circle 190px at var(--cx, -999px) var(--cy, -999px),
-    #000 0%,
-    rgba(0, 0, 0, 0.35) 45%,
-    transparent 72%
+    circle 300px at var(--cx, -999px) var(--cy, -999px),
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.3) 40%,
+    rgba(0, 0, 0, 0.08) 68%,
+    transparent 88%
   );
-}
-.cursor-ring {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 26px;
-  height: 26px;
-  margin: -13px 0 0 -13px;
-  border-radius: 50%;
-  border: 1px solid rgba(53, 232, 255, 0.5);
-  box-shadow: 0 0 22px rgba(53, 232, 255, 0.25), inset 0 0 12px rgba(138, 123, 255, 0.3);
-  pointer-events: none;
-  z-index: 0;
-  transform: translate3d(var(--cx, -999px), var(--cy, -999px), 0);
-  transition: transform 0.09s linear;
 }
 
 @layer components {

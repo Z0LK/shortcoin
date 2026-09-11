@@ -11,9 +11,9 @@ import { useRehydrateStore } from '@/lib/store'
 
 /**
  * The fixed layers behind every screen: a slow aurora of three drifting blobs,
- * scanlines, grain and a vignette. The pointer carries no light of its own —
- * it uncovers a dot matrix that is always there, and a thin ring marks where
- * it is. Panels are smoked glass laid over all of it.
+ * scanlines, grain and a vignette. The pointer carries no light of its own: it
+ * faintly uncovers a dot matrix that is always there. Panels are smoked glass
+ * laid over all of it.
  */
 function Backdrop() {
   const layers = useRef<HTMLDivElement>(null)
@@ -51,7 +51,6 @@ function Backdrop() {
       <div className="bg-layer bg-vignette" />
       <div ref={layers}>
         <div className="cursor-reveal" />
-        <div className="cursor-ring" />
       </div>
     </div>
   )
