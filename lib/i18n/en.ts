@@ -21,6 +21,9 @@ export const en: Record<MessageKey, string> = {
   'nav.alerts': 'Barrier alerts',
   'nav.language': 'Language',
 
+  'home.kicker': 'Robinhood Chain · capped short',
+  'home.title1': 'Bet against',
+  'home.title2': 'any token.',
   'home.tagline':
     'Bet against any eligible token. Loss capped at your collateral, gain capped at 100%.',
 

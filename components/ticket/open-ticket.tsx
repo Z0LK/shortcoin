@@ -253,7 +253,7 @@ export function OpenTicket({ token }: { token: TokenRow }) {
     : null
 
   return (
-    <section className="flex flex-col gap-3 border border-line bg-surface p-3">
+    <section className="glass flex flex-col gap-3.5 p-4 sm:p-5">
       <header className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">{t('ticket.title')}</h2>
         <button
@@ -266,7 +266,7 @@ export function OpenTicket({ token }: { token: TokenRow }) {
       </header>
 
       {showHelp && (
-        <ul className="flex flex-col gap-1.5 rounded-[5px] border border-line bg-sunken p-2.5">
+        <ul className="flex flex-col gap-1.5 rounded-xl border border-line bg-sunken p-2.5">
           {(['ticket.help.1', 'ticket.help.2', 'ticket.help.3'] as const).map((k) => (
             <li key={k} className="flex gap-2 text-mini leading-relaxed text-ink-2">
               <span className="text-short">•</span>
@@ -286,7 +286,7 @@ export function OpenTicket({ token }: { token: TokenRow }) {
             {t('ticket.balance')} {formatUsdg(balance)}
           </span>
         </div>
-        <div className="flex h-11 items-center rounded-[5px] border border-line bg-sunken px-3 focus-within:border-line-strong">
+        <div className="flex h-11 items-center rounded-xl border border-line bg-sunken px-3 focus-within:border-line-acid">
           <span className="text-ink-4">$</span>
           <input
             id="collateral"
@@ -302,7 +302,7 @@ export function OpenTicket({ token }: { token: TokenRow }) {
             <button
               key={f}
               onClick={() => setFraction(f)}
-              className="h-8 rounded-[4px] border border-line bg-raised text-mini font-semibold text-ink-2 hover:text-ink"
+              className="h-8 rounded-lg border border-line bg-raised text-mini font-semibold text-ink-2 hover:text-ink"
             >
               {f === 1 ? t('ticket.max') : `${f * 100}%`}
             </button>
@@ -348,20 +348,20 @@ export function OpenTicket({ token }: { token: TokenRow }) {
           </KV>
         </div>
       ) : (
-        <p className="rounded-[5px] border border-line bg-sunken p-2.5 text-mini text-ink-3">
+        <p className="rounded-xl border border-line bg-sunken p-2.5 text-mini text-ink-3">
           {quoting ? t('ticket.requoting') : blocked ?? t('ticket.requoting')}
         </p>
       )}
 
       {/* ── rates and cost ─────────────────────────────────────────────── */}
       {q && (
-        <div className="flex flex-col gap-2 rounded-[5px] border border-line bg-sunken p-2.5">
+        <div className="flex flex-col gap-2 rounded-xl border border-line bg-sunken p-2.5">
           <div className="grid grid-cols-2 gap-2" title={t('ticket.rateHint')}>
-            <div className={cn('rounded-[4px] p-1 transition-colors duration-700', changed.has('dailyRateBps') && 'bg-warn/15')}>
+            <div className={cn('rounded-lg p-1 transition-colors duration-700', changed.has('dailyRateBps') && 'bg-warn/15')}>
               <p className="text-micro text-ink-4">{t('ticket.rate')}</p>
               <p className="num text-sm font-semibold text-ink">{formatBps(q.dailyRateBps)}</p>
             </div>
-            <div className={cn('rounded-[4px] p-1 transition-colors duration-700', changed.has('marginalRateBps') && 'bg-warn/15')}>
+            <div className={cn('rounded-lg p-1 transition-colors duration-700', changed.has('marginalRateBps') && 'bg-warn/15')}>
               <p className="text-micro text-ink-4">{t('ticket.marginal')}</p>
               <p className={cn('num text-sm font-semibold', q.marginalRateBps > q.dailyRateBps * 1.5 ? 'text-warn' : 'text-ink')}>
                 {formatBps(q.marginalRateBps)}
@@ -372,7 +372,7 @@ export function OpenTicket({ token }: { token: TokenRow }) {
             <p className="mb-1 text-micro text-ink-4">{t('ticket.cost')}</p>
             <div className="grid grid-cols-3 gap-1 text-center">
               {([1, 7, 30] as const).map((d) => (
-                <div key={d} className="rounded-[4px] border border-line bg-surface py-1">
+                <div key={d} className="rounded-lg border border-line bg-surface py-1">
                   <p className="text-micro text-ink-4">{t(`ticket.cost.${d}d` as MessageKey)}</p>
                   <p className="num text-mini font-semibold text-ink">
                     {formatUsdg(BigInt(Math.round(daily * d * Number(USDG_UNIT))))}
@@ -382,7 +382,7 @@ export function OpenTicket({ token }: { token: TokenRow }) {
             </div>
           </div>
 
-          <div className={cn('rounded-[4px] transition-colors duration-700', changed.has('utilizationAfter') && 'bg-warn/15')}>
+          <div className={cn('rounded-lg transition-colors duration-700', changed.has('utilizationAfter') && 'bg-warn/15')}>
             <div className="mb-1 flex justify-between text-micro text-ink-4">
               <span>{t('ticket.utilization')}</span>
               <span className="num">
@@ -393,7 +393,7 @@ export function OpenTicket({ token }: { token: TokenRow }) {
             <UtilizationBar before={q.utilizationBefore} after={q.utilizationAfter} />
           </div>
 
-          <div className={cn('rounded-[4px] transition-colors duration-700', changed.has('backing') && 'bg-warn/15')} title={t('ticket.backingHint')}>
+          <div className={cn('rounded-lg transition-colors duration-700', changed.has('backing') && 'bg-warn/15')} title={t('ticket.backingHint')}>
             <p className="mb-1 text-micro text-ink-4">{t('ticket.backing')}</p>
             <div className="flex h-2 w-full overflow-hidden rounded-full">
               <div className="bg-info" style={{ width: `${q.backing.treasuryBps / 100}%` }} />
@@ -414,11 +414,11 @@ export function OpenTicket({ token }: { token: TokenRow }) {
       {/* ── clocks ─────────────────────────────────────────────────────── */}
       {q && (
         <div className="grid grid-cols-2 gap-2 text-micro">
-          <div className="rounded-[4px] border border-line p-1.5" title={t('ticket.payoutEligibleHint')}>
+          <div className="rounded-lg border border-line p-1.5" title={t('ticket.payoutEligibleHint')}>
             <p className="text-ink-4">{t('ticket.payoutEligible')}</p>
             <Countdown until={q.payoutEligibleAt} className="text-mini text-ink-2" />
           </div>
-          <div className="rounded-[4px] border border-line p-1.5">
+          <div className="rounded-lg border border-line p-1.5">
             <p className="text-ink-4">{t('ticket.quoteExpires')}</p>
             <Countdown until={q.expiresAt} className={cn('text-mini', q.expiresAt - now < 5000 ? 'text-warn' : 'text-ink-2')} />
           </div>
@@ -426,7 +426,7 @@ export function OpenTicket({ token }: { token: TokenRow }) {
       )}
 
       {q && startingMark !== null && startingMark < -0.01 && (
-        <p className="rounded-[4px] border border-warn/30 bg-warn/10 p-2 text-mini leading-relaxed text-warn">
+        <p className="rounded-lg border border-warn/30 bg-warn/10 p-2 text-mini leading-relaxed text-warn">
           {t('ticket.startsBelow', {
             pct: formatPct(startingMark, 0),
             twap: formatMicroPrice(settlementMarkNow),
@@ -434,15 +434,15 @@ export function OpenTicket({ token }: { token: TokenRow }) {
         </p>
       )}
 
-      {notice && <p className="rounded-[4px] border border-warn/30 bg-warn/10 p-2 text-mini text-warn">{notice}</p>}
-      {sendError && <p className="rounded-[4px] border border-short/30 bg-short/10 p-2 text-mini text-short">{sendError}</p>}
+      {notice && <p className="rounded-lg border border-warn/30 bg-warn/10 p-2 text-mini text-warn">{notice}</p>}
+      {sendError && <p className="rounded-lg border border-short/30 bg-short/10 p-2 text-mini text-short">{sendError}</p>}
 
       {/* ── action ─────────────────────────────────────────────────────── */}
       {needsApproval && !blocked ? (
         <button
           onClick={approve}
           disabled={phase !== 'idle'}
-          className="h-11 w-full rounded-[5px] border border-short/50 bg-short/10 text-sm font-semibold text-short transition-colors hover:bg-short/20 disabled:opacity-50"
+          className="h-11 w-full rounded-full border border-line-acid bg-acid/[0.07] text-sm font-semibold text-acid transition-colors hover:bg-acid/15 disabled:opacity-50"
         >
           {phase === 'approving' ? t('ticket.approving') : t('ticket.approve', { amount: formatUsdg(q!.collateral).replace('$', '') })}
         </button>
@@ -451,7 +451,7 @@ export function OpenTicket({ token }: { token: TokenRow }) {
       <button
         onClick={open}
         disabled={!!blocked || !q || needsApproval || phase !== 'idle' || quoting}
-        className="h-12 w-full rounded-[5px] bg-short text-sm font-bold text-[#1a0509] transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35"
+        className="h-12 w-full btn-primary text-sm"
       >
         {phase === 'opening' ? t('ticket.opening') : t('ticket.open')}
       </button>

@@ -3,73 +3,81 @@
 /* ===========================================================================
    SHORTCOIN — design tokens
    ---------------------------------------------------------------------------
-   The whole product is a dark terminal. There is no light theme: traders do not
-   want one, and the chart's colour semantics only work against near-black.
+   Black glass, lime signal. Same family as the project's marketing sites:
+   green-black ground, translucent panels with a lit top edge, one acid lime
+   accent, Space Grotesk for words and DM Mono for figures and labels.
 
-   SHORTCOIN only sells. There is no long side to switch to, so the accent does
-   not swing: it is the short colour everywhere, permanently. Green and red keep
-   their ordinary meaning on price movement — on the inverted series a green
-   candle is the underlying falling, which is the trade working.
+   Lime is the brand and the call to action. It is not a direction: green and
+   red keep their ordinary meaning on price movement and PnL, everywhere.
    =========================================================================== */
 
 :root {
-  /* Surfaces — five steps of near-black, each one hairline apart */
-  --void: #060709;
-  --surface: #0b0d11;
-  --raised: #12151b;
-  --overlay: #171b22;
-  --sunken: #030405;
+  /* Brand */
+  --acid: #c5f82a;
+  --acid-2: #7fe36b;
+  --acid-dim: rgba(197, 248, 42, 0.16);
+
+  /* Surfaces. The page ground is opaque; panels are glass laid over the
+     background layers. `--overlay` stays opaque: menus and sticky headers sit
+     on top of moving content and must not let it through. */
+  --void: #050705;
+  --ground-2: #080b07;
+  --surface: rgba(255, 255, 255, 0.028);
+  --raised: rgba(255, 255, 255, 0.055);
+  --overlay: #0c100b;
+  --sunken: rgba(0, 0, 0, 0.32);
 
   /* Lines */
-  --line: #1c2029;
-  --line-strong: #2a303b;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --line-acid: rgba(197, 248, 42, 0.28);
 
   /* Ink */
-  --ink: #eceef2;
-  --ink-2: #949ba8;
-  --ink-3: #5c6472;
-  --ink-4: #3a404b;
+  --ink: #f4f7f2;
+  --ink-2: #a7b2a3;
+  --ink-3: #6d766b;
+  --ink-4: #4f584c;
 
-  /* Direction semantics. Green is up, red is down — always, everywhere,
-     including in short mode. Inverting these would be clever and unusable. */
-  --long: #21d07a;
-  --long-dim: #178c53;
-  --long-soft: #0f2a1e;
-  --short: #ff3b47;
+  /* Direction semantics. Green is up, red is down — always. */
+  --long: #2fd98a;
+  --long-dim: #1c8f5a;
+  --long-soft: #0d2a1c;
+  --short: #ff4d5a;
   --short-soft: #2c1015;
 
-  --warn: #f5a623;
-  --info: #4c8dff;
-  --neutral: #6b7280;
+  --warn: #f5b134;
+  --info: #5b9dff;
+  --neutral: #6d766b;
 
   /* Chart */
-  --chart-up: #21d07a;
-  --chart-down: #ff3b47;
-  --chart-grid: #12161d;
-  --chart-crosshair: #566072;
-  --chart-volume-up: #14472f;
-  --chart-volume-down: #4a1620;
+  --chart-up: #2fd98a;
+  --chart-down: #ff4d5a;
+  --chart-grid: rgba(255, 255, 255, 0.035);
+  --chart-crosshair: #5d6a58;
+  --chart-volume-up: #123f2a;
+  --chart-volume-down: #45161d;
 
-  /* One direction, one accent. */
-  --accent: var(--short);
-  --accent-soft: var(--short-soft);
-  --accent-ink: #1a0509;
+  /* One accent: the brand. */
+  --accent: var(--acid);
+  --accent-soft: var(--acid-dim);
+  --accent-ink: #0a1206;
 
-  --radius: 6px;
-  --radius-sm: 4px;
-  --radius-lg: 10px;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* Density — the numbers that make it feel like a terminal, not a website */
-  --row-h: 40px;
-  --row-h-tight: 32px;
-  --head-h: 32px;
-  --nav-h: 48px;
-  --subnav-h: 40px;
+  /* Density */
+  --row-h: 44px;
+  --row-h-tight: 34px;
+  --head-h: 42px;
+  --nav-h: 60px;
+  --subnav-h: 44px;
 }
-
 
 @theme inline {
   --color-void: var(--void);
+  --color-ground-2: var(--ground-2);
   --color-surface: var(--surface);
   --color-raised: var(--raised);
   --color-overlay: var(--overlay);
@@ -77,12 +85,15 @@
 
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
+  --color-line-acid: var(--line-acid);
 
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
   --color-ink-4: var(--ink-4);
 
+  --color-acid: var(--acid);
+  --color-acid-2: var(--acid-2);
   --color-long: var(--long);
   --color-long-soft: var(--long-soft);
   --color-short: var(--short);
@@ -100,8 +111,6 @@
 
   --radius-DEFAULT: var(--radius);
 
-  /* Type scale. 11px exists because a scanner column header at 12px wastes a
-     row of pixels we would rather give to data. */
   --text-micro: 10px;
   --text-mini: 11px;
   --text-xs: 12px;
@@ -113,14 +122,11 @@
   --text-3xl: 34px;
 }
 
-/* Tailwind v4 changed the default border colour to `currentColor`, which on a
-   dark terminal paints every bare `border` as a glowing hairline. Pin it. */
+/* Tailwind v4 defaults borders to `currentColor`. Pin it to the hairline. */
 * {
   border-color: var(--line);
 }
 
-/* v4's preflight sets buttons to `cursor: default`. Left alone, every control
-   in the product feels dead under the pointer. */
 button:not(:disabled),
 [role="button"]:not([aria-disabled="true"]),
 summary {
@@ -142,12 +148,147 @@ body {
   overscroll-behavior: none;
 }
 
+::selection {
+  background: var(--acid);
+  color: #0a1206;
+}
+
 /* Every number in the product is tabular, so columns never dance on tick. */
 .num {
   font-family: var(--font-numeric), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "zero" 1;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  /* DM Mono stops at 500; anything heavier is a smeared faux-bold. */
+  font-weight: 500;
+}
+
+/* Mono uppercase label — the sites' `.mono`. */
+.mono {
+  font-family: var(--font-numeric), ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+/* ── Background layers ──────────────────────────────────────────────────── */
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 35%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 35%, transparent 100%);
+}
+.bg-glow {
+  background:
+    radial-gradient(900px 520px at 82% -4%, rgba(197, 248, 42, 0.11), transparent 62%),
+    radial-gradient(700px 520px at 6% 46%, rgba(127, 227, 107, 0.06), transparent 64%),
+    radial-gradient(900px 420px at 50% 112%, rgba(197, 248, 42, 0.07), transparent 66%);
+}
+.bg-noise {
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.cursor-glow {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 520px;
+  height: 520px;
+  margin: -260px 0 0 -260px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(197, 248, 42, 0.07), transparent 62%);
+  transform: translate3d(var(--cx, -999px), var(--cy, -999px), 0);
+}
+
+@layer components {
+/* ── Glass ──────────────────────────────────────────────────────────────── */
+.glass {
+  position: relative;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.022));
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.glass::before {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(197, 248, 42, 0.5), transparent);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.glass-hover {
+  transition: border-color 0.35s var(--ease), transform 0.35s var(--ease);
+}
+.glass-hover:hover {
+  border-color: var(--line-acid);
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+.btn-primary {
+  background: var(--acid);
+  color: #0a1206;
+  border-radius: 999px;
+  font-weight: 700;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), opacity 0.2s;
+}
+.btn-primary:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 34px rgba(197, 248, 42, 0.28), 0 0 0 4px var(--acid-dim);
+}
+.btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+.btn-ghost {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-2);
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.25s var(--ease), background 0.25s var(--ease), color 0.25s;
+}
+.btn-ghost:not(:disabled):hover {
+  border-color: var(--line-acid);
+  background: rgba(197, 248, 42, 0.06);
+  color: var(--ink);
+}
+
+/* Segmented control: a pill track, pill thumbs. */
+.seg {
+  display: flex;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.3);
+}
+.seg > * {
+  border-radius: 999px !important;
+}
+
+/* Big display type, for page heads. */
+.display {
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+}
+.text-glow {
+  color: var(--acid);
+  text-shadow: 0 0 60px rgba(197, 248, 42, 0.35);
+}
 }
 
 /* ── Scrollbars ─────────────────────────────────────────────────────────── */
@@ -159,12 +300,12 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
+  background: #1d231b;
   border-radius: 999px;
   border: 3px solid var(--void);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #39414f;
+  background: #2c3529;
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
@@ -172,13 +313,11 @@ body {
 
 /* ── Focus ──────────────────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 1px solid var(--accent);
-  outline-offset: 1px;
+  outline: 1px solid var(--acid);
+  outline-offset: 2px;
 }
 
-/* ── Tick flash ─────────────────────────────────────────────────────────────
-   A cell briefly washes in the direction it moved. This is the single most
-   important piece of feedback in a live scanner: it tells you WHERE to look. */
+/* ── Tick flash ─────────────────────────────────────────────────────────── */
 @keyframes flash-up {
   0% {
     background-color: color-mix(in oklab, var(--long) 26%, transparent);
@@ -209,7 +348,7 @@ body {
     opacity: 1;
   }
   50% {
-    opacity: 0.25;
+    opacity: 0.3;
   }
 }
 .pulse-dot {
@@ -231,7 +370,16 @@ body {
   animation-play-state: paused;
 }
 
-/* A hairline that reads as engraved rather than drawn. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.rise-in {
+  animation: rise-in 0.6s var(--ease) both;
+}
+
 .hairline-t {
   box-shadow: inset 0 1px 0 var(--line);
 }

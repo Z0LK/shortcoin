@@ -94,14 +94,19 @@ export function TwapChart({
         background: { color: 'transparent' },
         textColor: css('--ink-3', '#5c6472'),
         fontSize: 10,
-        fontFamily: 'var(--font-numeric), ui-monospace, monospace',
+        // A canvas font string cannot resolve var(): read the loaded family.
+        fontFamily: `${css('--font-numeric', '')}, ui-monospace, monospace`.replace(/^, /, ''),
         attributionLogo: false,
       },
       grid: {
         vertLines: { color: css('--chart-grid', '#12161d') },
         horzLines: { color: css('--chart-grid', '#12161d') },
       },
-      crosshair: { mode: CrosshairMode.Normal },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: { color: css('--chart-crosshair', '#5d6a58'), labelBackgroundColor: '#1a2116' },
+        horzLine: { color: css('--chart-crosshair', '#5d6a58'), labelBackgroundColor: '#1a2116' },
+      },
       rightPriceScale: {
         borderColor: css('--line', '#1c2029'),
         mode: PriceScaleMode.Logarithmic,
@@ -226,8 +231,8 @@ export function TwapChart({
   })
 
   return (
-    <section className="flex min-h-[320px] flex-1 flex-col border border-line bg-surface">
-      <header className="flex flex-wrap items-center gap-2 border-b border-line px-3 py-1.5">
+    <section className="glass flex min-h-[320px] flex-1 flex-col overflow-hidden">
+      <header className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-2.5">
         <span className="flex items-center gap-3 text-micro">
           <span className="flex items-center gap-1 text-ink-2">
             <span className="h-2 w-2 rounded-[1px] bg-long" /> {t('token.chart.legendSpot')}
@@ -241,26 +246,26 @@ export function TwapChart({
         </span>
         <div className="ml-auto flex items-center gap-1.5">
           {supply > 0 && (
-            <div className="flex rounded-[5px] border border-line bg-sunken p-[2px]">
+            <div className="seg">
               {(['mcap', 'price'] as const).map((u) => (
                 <button
                   key={u}
                   onClick={() => setUnit(u)}
                   aria-pressed={unit === u}
-                  className={cn('num rounded-[3px] px-2 py-[2px] text-micro font-semibold', unit === u ? 'bg-raised text-ink' : 'text-ink-3')}
+                  className={cn('num rounded-md px-2 py-[2px] text-micro font-semibold', unit === u ? 'bg-acid text-accent-ink' : 'text-ink-3 hover:text-ink')}
                 >
                   {u === 'mcap' ? 'MC' : 'PRICE'}
                 </button>
               ))}
             </div>
           )}
-          <div className="flex rounded-[5px] border border-line bg-sunken p-[2px]">
+          <div className="seg">
             {INTERVALS.map((i) => (
               <button
                 key={i}
                 onClick={() => setIntervalValue(i)}
                 aria-pressed={interval === i}
-                className={cn('num rounded-[3px] px-2 py-[2px] text-micro font-semibold', interval === i ? 'bg-raised text-ink' : 'text-ink-3')}
+                className={cn('num rounded-md px-2 py-[2px] text-micro font-semibold', interval === i ? 'bg-acid text-accent-ink' : 'text-ink-3 hover:text-ink')}
               >
                 {i}
               </button>
@@ -269,7 +274,7 @@ export function TwapChart({
         </div>
       </header>
       <div ref={holder} className="min-h-0 flex-1" />
-      <p className="border-t border-line px-3 py-1 text-micro text-ink-4">{t('token.chart.why')}</p>
+      <p className="border-t border-line px-4 py-2 text-micro text-ink-3">{t('token.chart.why')}</p>
     </section>
   )
 }

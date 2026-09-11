@@ -110,18 +110,18 @@ export function PayoffChart({
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-micro font-semibold uppercase tracking-[0.09em] text-ink-4">{t('payoff.title')}</span>
+        <span className="mono text-[9.5px] font-medium text-ink-3">{t('payoff.title')}</span>
         <div className="flex items-center gap-1">
           <span className="text-micro text-ink-4">{t('payoff.horizon')}</span>
-          <div className="flex rounded-[4px] border border-line bg-sunken p-[2px]">
+          <div className="seg">
             {([0, 7, 30] as const).map((h) => (
               <button
                 key={h}
                 onClick={() => setHorizon(h)}
                 aria-pressed={horizon === h}
                 className={cn(
-                  'rounded-[3px] px-1.5 py-[2px] text-micro font-semibold',
-                  horizon === h ? 'bg-raised text-ink' : 'text-ink-3',
+                  'rounded-md px-1.5 py-[2px] text-micro font-semibold',
+                  horizon === h ? 'bg-acid text-accent-ink' : 'text-ink-3 hover:text-ink',
                 )}
               >
                 {t(`payoff.horizon.${h}`)}
@@ -223,9 +223,9 @@ export function PayoffChart({
         </g>
 
         {/* The payoff itself */}
-        <polyline points={geo.pts.join(' ')} fill="none" stroke="var(--ink)" strokeWidth="1.8" strokeLinejoin="round" />
+        <polyline points={geo.pts.join(" ")} fill="none" stroke="var(--acid)" strokeWidth="1.8" strokeLinejoin="round" style={{ filter: "drop-shadow(0 0 6px rgba(197,248,42,0.45))" }} />
         {geo.kinks.map((k) => (
-          <circle key={k.m} cx={geo.x(k.m)} cy={geo.y(k.v)} r="2.2" fill="var(--ink)" />
+          <circle key={k.m} cx={geo.x(k.m)} cy={geo.y(k.v)} r="2.2" fill="var(--acid)" />
         ))}
 
         {/* Where an open position is right now */}

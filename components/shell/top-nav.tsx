@@ -53,8 +53,8 @@ export function TopNav() {
   }
 
   return (
-    <header className="relative z-30 flex shrink-0 flex-col border-b border-line bg-surface">
-      <div className="flex h-[var(--nav-h)] items-center gap-3 px-3">
+    <header className="relative z-30 flex shrink-0 flex-col border-b border-line bg-[rgba(5,7,5,0.72)] backdrop-blur-[18px]">
+      <div className="flex h-[var(--nav-h)] items-center gap-3 px-3 sm:gap-4 sm:px-5">
         <Link href="/" className="shrink-0">
           <Wordmark />
         </Link>
@@ -62,14 +62,15 @@ export function TopNav() {
         <span
           title={t('nav.mode.paper.hint')}
           className={cn(
-            'num rounded-[3px] border px-1.5 py-[1px] text-micro font-bold tracking-[0.08em]',
-            mode === 'mainnet' ? 'border-long/40 text-long' : 'border-warn/50 bg-warn/10 text-warn',
+            'mono flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] font-medium',
+            mode === 'mainnet' ? 'border-long/40 text-long' : 'border-warn/40 bg-warn/[0.06] text-warn',
           )}
         >
+          <span className="pulse-dot size-1.5 rounded-full bg-current" />
           {t(`nav.mode.${mode}` as MessageKey)}
         </span>
 
-        <nav className="hidden items-center gap-0.5 md:flex">
+        <nav className="ml-2 hidden items-center gap-1 md:flex">
           {LINKS.map((l) => {
             const active = l.href === '/' ? pathname === '/' : pathname.startsWith(l.href)
             return (
@@ -77,14 +78,20 @@ export function TopNav() {
                 key={l.href}
                 href={l.href}
                 className={cn(
-                  'relative rounded-[5px] px-2.5 py-1.5 text-xs font-medium transition-colors',
-                  active ? 'bg-raised text-ink' : 'text-ink-3 hover:bg-raised/60 hover:text-ink-2',
+                  'group relative px-2.5 py-2 text-[13px] font-medium transition-colors',
+                  active ? 'text-ink' : 'text-ink-3 hover:text-ink',
                 )}
               >
                 {t(l.key)}
                 {l.href === '/positions' && openCount > 0 && (
-                  <span className="num ml-1 rounded-[3px] bg-short/15 px-1 text-micro font-bold text-short">{openCount}</span>
+                  <span className="num ml-1.5 rounded-full bg-acid px-1.5 py-px text-micro font-medium text-accent-ink">{openCount}</span>
                 )}
+                <span
+                  className={cn(
+                    'absolute inset-x-2.5 -bottom-px h-px origin-left bg-acid transition-transform duration-300',
+                    active ? 'scale-x-100 shadow-[0_0_12px_rgba(197,248,42,0.7)]' : 'scale-x-0 group-hover:scale-x-100',
+                  )}
+                />
               </Link>
             )
           })}
@@ -92,22 +99,22 @@ export function TopNav() {
 
         <button
           onClick={openSearch}
-          className="ml-auto flex h-8 min-w-0 flex-1 items-center gap-2 rounded-[5px] border border-line bg-sunken px-2.5 text-left text-xs text-ink-3 transition-colors hover:border-line-strong sm:max-w-[360px]"
+          className="btn-ghost ml-auto flex h-9 min-w-0 flex-1 items-center gap-2 px-3.5 text-left text-xs text-ink-3 sm:max-w-[360px]"
           aria-label={t('nav.search')}
         >
           <Search size={13} className="shrink-0" />
           <span className="hidden flex-1 truncate sm:inline">{t('nav.search')}</span>
-          <kbd className="num hidden rounded-[3px] border border-line bg-raised px-1.5 py-0.5 text-micro text-ink-3 lg:inline">
+          <kbd className="num hidden rounded-full border border-line bg-raised px-2 py-0.5 text-micro text-ink-3 lg:inline">
             ⌘K
           </kbd>
         </button>
 
         <div className="flex shrink-0 items-center gap-1.5">
           <div
-            className="hidden h-8 items-center gap-2 rounded-[5px] border border-line bg-sunken px-2.5 sm:flex"
+            className="hidden h-9 items-center gap-2 rounded-full border border-line-acid bg-acid/[0.05] px-3.5 sm:flex"
             title={t('nav.balance')}
           >
-            <Wallet2 size={13} className="text-ink-3" />
+            <Wallet2 size={13} className="text-acid" />
             <span className="num text-mini font-semibold">{formatUsdg(account.data?.usdgBalance ?? 0n)}</span>
           </div>
 
@@ -117,7 +124,7 @@ export function TopNav() {
             title={t('nav.alerts')}
             aria-label={t('nav.alerts')}
             className={cn(
-              'grid size-8 place-items-center rounded-[5px] border border-line bg-sunken transition-colors',
+              'btn-ghost grid size-9 place-items-center',
               alerts ? 'text-warn' : 'text-ink-4',
             )}
           >
@@ -127,7 +134,7 @@ export function TopNav() {
           <button
             onClick={() => setLocale(locale === 'fr' ? 'en' : 'fr')}
             title={t('nav.language')}
-            className="num grid h-8 w-10 place-items-center rounded-[5px] border border-line bg-sunken text-micro font-bold text-ink-2 hover:text-ink"
+            className="btn-ghost mono grid h-9 w-11 place-items-center text-[10px] font-medium"
           >
             {locale === 'fr' ? 'EN' : 'FR'}
           </button>
@@ -135,7 +142,7 @@ export function TopNav() {
       </div>
 
       {/* Phone: the links, as a strip. */}
-      <nav className="flex gap-1 overflow-x-auto border-t border-line px-2 py-1 md:hidden">
+      <nav className="flex gap-1.5 overflow-x-auto border-t border-line px-3 py-1.5 md:hidden">
         {LINKS.map((l) => {
           const active = l.href === '/' ? pathname === '/' : pathname.startsWith(l.href)
           return (
@@ -143,8 +150,8 @@ export function TopNav() {
               key={l.href}
               href={l.href}
               className={cn(
-                'whitespace-nowrap rounded-[4px] px-2.5 py-1 text-mini font-medium',
-                active ? 'bg-raised text-ink' : 'text-ink-3',
+                'whitespace-nowrap rounded-full border px-3 py-1 text-mini font-medium',
+                active ? 'border-line-acid bg-acid/[0.08] text-acid' : 'border-transparent text-ink-3',
               )}
             >
               {t(l.key)}

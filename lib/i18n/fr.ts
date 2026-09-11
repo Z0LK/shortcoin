@@ -27,6 +27,9 @@ export const fr = {
   'nav.alerts': 'Alertes barrière',
   'nav.language': 'Langue',
 
+  'home.kicker': 'Robinhood Chain · short plafonné',
+  'home.title1': 'Pariez contre',
+  'home.title2': 'tout token.',
   'home.tagline':
     'Pariez à la baisse sur n’importe quel token éligible. Perte plafonnée à votre collatéral, gain plafonné à 100%.',
 

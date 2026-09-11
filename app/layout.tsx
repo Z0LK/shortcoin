@@ -1,15 +1,16 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, JetBrains_Mono } from 'next/font/google'
+import { DM_Mono, Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import { AppChrome } from '@/components/shell/app-chrome'
 
-const ui = Inter({
+const ui = Space_Grotesk({
   variable: '--font-ui',
   subsets: ['latin'],
   display: 'swap',
 })
 
-const numeric = JetBrains_Mono({
+const numeric = DM_Mono({
+  weight: ['300', '400', '500'],
   variable: '--font-numeric',
   subsets: ['latin'],
   display: 'swap',
@@ -18,11 +19,11 @@ const numeric = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'SHORTCOIN — short any token',
   description:
-    'The short-only trading terminal for tokenized equities on Robinhood Chain. Every chart is inverted into a synthetic short instrument.',
+    'The short-only trading terminal for tokenized equities on Robinhood Chain. Pre-funded, capped shorts with a knock-out barrier.',
 }
 
 export const viewport: Viewport = {
-  themeColor: '#060709',
+  themeColor: '#050705',
   colorScheme: 'dark',
 }
 

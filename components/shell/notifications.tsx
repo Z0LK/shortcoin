@@ -137,7 +137,7 @@ export function Notifications() {
           <div
             key={toast.id}
             className={cn(
-              'pointer-events-auto flex gap-3 rounded-lg border bg-overlay p-3 shadow-2xl shadow-black/50',
+              'pointer-events-auto flex gap-3 rounded-2xl border bg-overlay p-3.5 shadow-[0_18px_50px_rgba(0,0,0,0.6)]',
               TONE[toast.tone],
             )}
           >

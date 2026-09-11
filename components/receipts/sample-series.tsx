@@ -56,7 +56,7 @@ export function SampleSeries({
   return (
     <div className="flex flex-col gap-2">
       {path && (
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-[4px] border border-line bg-surface" role="img" aria-label={t('positions.samples')}>
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-lg border border-line bg-surface" role="img" aria-label={t('positions.samples')}>
           {path.th !== null && (
             <g>
               <line x1="0" x2={W} y1={path.th} y2={path.th} stroke="var(--short)" strokeDasharray="3 3" />
@@ -70,10 +70,10 @@ export function SampleSeries({
           <path d={path.d} fill="none" stroke="var(--info)" strokeWidth="1.3" />
         </svg>
       )}
-      <div className="max-h-[260px] overflow-y-auto rounded-[4px] border border-line">
+      <div className="max-h-[260px] overflow-y-auto rounded-lg border border-line">
         <table className="w-full border-collapse">
           <thead className="sticky top-0 bg-surface">
-            <tr className="text-micro font-semibold uppercase tracking-[0.08em] text-ink-4">
+            <tr className="mono text-[9.5px] font-medium text-ink-3">
               <th className="px-2 py-1 text-left">{t('receipt.at')}</th>
               <th className="px-2 py-1 text-right">{t('receipt.price')}</th>
             </tr>

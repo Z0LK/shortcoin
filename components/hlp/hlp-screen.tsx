@@ -30,9 +30,9 @@ import { cn } from '@/lib/utils'
 
 function Stat({ label, value, hint, tone }: { label: string; value: React.ReactNode; hint?: string; tone?: string }) {
   return (
-    <div className="flex flex-col gap-0.5 border border-line bg-surface p-3" title={hint}>
-      <span className="text-micro font-semibold uppercase tracking-[0.08em] text-ink-4">{label}</span>
-      <span className={cn('num text-base font-semibold text-ink', tone)}>{value}</span>
+    <div className="glass glass-hover flex flex-col gap-2 p-4" title={hint}>
+      <span className="mono text-[9.5px] font-medium text-ink-3">{label}</span>
+      <span className={cn('num text-[19px] text-acid', tone)}>{value}</span>
     </div>
   )
 }
@@ -50,7 +50,7 @@ export function HlpScreen() {
   const pool = data.data?.pool
   const me = data.data?.account
   if (!pool || !me) {
-    return <div className="grid h-full place-items-center text-micro uppercase tracking-[0.12em] text-ink-4">{t('common.loading')}</div>
+    return <div className="grid h-full place-items-center mono text-[10px] text-ink-3">{t('common.loading')}</div>
   }
 
   const amount = parseUsdg(input)
@@ -77,13 +77,16 @@ export function HlpScreen() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="mx-auto flex max-w-[1100px] flex-col gap-3 p-3">
-        <header>
-          <h1 className="text-lg font-semibold">{t('hlp.title')}</h1>
-          <p className="mt-1 max-w-[70ch] text-xs text-ink-3">{t('hlp.subtitle')}</p>
+      <div className="mx-auto flex max-w-[1100px] flex-col gap-3 p-3 sm:gap-4 sm:p-6">
+        <header className="rise-in">
+          <p className="mono flex items-center gap-2 text-[10px] text-ink-3">
+            <span className="size-1.5 rounded-full bg-acid" /> 03 — {t('nav.hlp')}
+          </p>
+          <h1 className="display mt-2 text-[clamp(2rem,5vw,3.2rem)] text-glow">{t('hlp.title')}</h1>
+          <p className="mt-2 max-w-[70ch] text-[13px] leading-relaxed text-ink-2">{t('hlp.subtitle')}</p>
         </header>
 
-        <div className="grid grid-cols-2 gap-px bg-line sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           <Stat label={t('hlp.nav')} value={formatUsdgCompact(pool.nav)} />
           <Stat label={t('hlp.sharePrice')} value={formatMicroPrice(pool.sharePrice)} />
           <Stat
@@ -95,7 +98,7 @@ export function HlpScreen() {
         </div>
 
         {/* Reserved vs unreserved: the split that decides what can leave. */}
-        <section className="border border-line bg-surface p-3">
+        <section className="glass p-4">
           <div className="mb-1.5 flex justify-between text-mini">
             <span className="flex items-center gap-1 font-semibold text-ink" title={t('hlp.reservedHint')}>
               <Lock size={11} className="text-warn" /> {t('hlp.reserved')} {formatUsdgCompact(pool.reserved)}
@@ -116,8 +119,8 @@ export function HlpScreen() {
 
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           {/* ── your position ────────────────────────────────────────────── */}
-          <section className="flex flex-col gap-3 border border-line bg-surface p-3">
-            <h2 className="text-sm font-semibold">{t('hlp.yours')}</h2>
+          <section className="glass flex flex-col gap-3 p-4">
+            <h2 className="text-sm font-semibold tracking-[-0.01em]">{t('hlp.yours')}</h2>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-micro text-ink-4">{t('hlp.value')}</p>
@@ -131,7 +134,7 @@ export function HlpScreen() {
 
             <div
               className={cn(
-                'flex items-center gap-2 rounded-[5px] border p-2.5',
+                'flex items-center gap-2 rounded-xl border p-2.5',
                 locked ? 'border-warn/40 bg-warn/10' : 'border-line bg-sunken',
               )}
             >
@@ -148,26 +151,26 @@ export function HlpScreen() {
               </div>
             </div>
 
-            <div className="rounded-[5px] border border-short/30 bg-short/5 p-2.5" title={t('hlp.drawdownHint')}>
+            <div className="rounded-xl border border-short/30 bg-short/5 p-2.5" title={t('hlp.drawdownHint')}>
               <p className="text-micro text-ink-4">{t('hlp.drawdown')}</p>
               <p className="num text-base font-semibold text-short">{formatUsdg(-me.maxDrawdown)}</p>
               <p className="mt-1 text-micro leading-relaxed text-ink-3">{t('hlp.drawdownHint')}</p>
             </div>
 
             <div className="flex flex-col gap-2 border-t border-line pt-3">
-              <div className="flex rounded-[5px] border border-line bg-sunken p-[2px]">
+              <div className="seg">
                 {(['deposit', 'withdraw'] as const).map((m) => (
                   <button
                     key={m}
                     onClick={() => setMode(m)}
                     aria-pressed={mode === m}
-                    className={cn('flex-1 rounded-[3px] py-1 text-mini font-semibold', mode === m ? 'bg-raised text-ink' : 'text-ink-3')}
+                    className={cn('flex-1 rounded-md py-1 text-mini font-semibold', mode === m ? 'bg-acid text-accent-ink' : 'text-ink-3 hover:text-ink')}
                   >
                     {t(`hlp.${m}` as MessageKey)}
                   </button>
                 ))}
               </div>
-              <div className="flex h-10 items-center rounded-[5px] border border-line bg-sunken px-3">
+              <div className="flex h-10 items-center rounded-xl border border-line bg-sunken px-3">
                 <input
                   inputMode="decimal"
                   value={input}
@@ -187,7 +190,7 @@ export function HlpScreen() {
               <button
                 onClick={submit}
                 disabled={busy || !amount || amount <= 0n || amount > max || (mode === 'withdraw' && locked)}
-                className="h-10 rounded-[5px] bg-accent text-xs font-semibold text-accent-ink hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35"
+                className="h-10 rounded-xl bg-accent text-xs font-semibold text-accent-ink hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35"
               >
                 {busy ? t(mode === 'deposit' ? 'hlp.depositing' : 'hlp.withdrawing') : t(`hlp.${mode}` as MessageKey)}
               </button>
@@ -195,8 +198,8 @@ export function HlpScreen() {
           </section>
 
           {/* ── exposure ─────────────────────────────────────────────────── */}
-          <section className="flex flex-col gap-2 border border-line bg-surface p-3">
-            <h2 className="text-sm font-semibold">{t('hlp.exposure')}</h2>
+          <section className="flex flex-col gap-2 glass p-3">
+            <h2 className="text-sm font-semibold tracking-[-0.01em]">{t('hlp.exposure')}</h2>
             <div className="flex flex-col">
               {pool.perTokenExposure.map((e) => {
                 const share = Number((e.reserved * 10_000n) / pool.nav) / 10_000

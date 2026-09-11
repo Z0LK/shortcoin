@@ -187,18 +187,23 @@ export function HowItWorks() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <article className="mx-auto max-w-[760px] px-5 pb-24">
-        <header className="py-10">
-          <p className="mb-3 text-micro font-semibold uppercase tracking-[0.12em] text-short">{c.kicker}</p>
-          <h1 className="text-2xl font-semibold leading-tight tracking-[-0.02em] sm:text-3xl">{c.title}</h1>
+      <article className="mx-auto max-w-[780px] px-5 pb-24">
+        <header className="rise-in py-14">
+          <p className="mono mb-4 flex items-center gap-2 text-[10px] text-acid">
+            <span className="pulse-dot size-1.5 rounded-full bg-acid shadow-[0_0_10px_var(--acid)]" />
+            {c.kicker}
+          </p>
+          <h1 className="display text-[clamp(2.1rem,6vw,3.8rem)]">{c.title}</h1>
           <p className="mt-4 text-base leading-relaxed text-ink-2">{c.lede}</p>
         </header>
 
         {c.sections.map((s, i) => (
           <section key={s.title} className="border-t border-line py-8">
             <div className="mb-3 flex items-baseline gap-3">
-              <span className="num text-mini text-ink-4">{String(i + 1).padStart(2, '0')}</span>
-              <h2 className="text-lg font-semibold">{s.title}</h2>
+              <span className="mono rounded-full border border-line-acid px-2.5 py-1 text-[10px] text-acid">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <h2 className="text-[19px] font-semibold tracking-[-0.02em]">{s.title}</h2>
             </div>
             <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-2">
               {s.body.map((p) => (
@@ -208,14 +213,14 @@ export function HowItWorks() {
                 <ul className="flex flex-col gap-2">
                   {s.list.map((item) => (
                     <li key={item} className="flex gap-2.5">
-                      <span className="mt-[3px] size-1.5 shrink-0 rounded-full bg-short" />
+                      <span className="mt-[3px] size-1.5 shrink-0 rounded-full bg-acid" />
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
               )}
               {i === 1 && (
-                <div className="mt-2 rounded-lg border border-line bg-surface p-3">
+                <div className="glass mt-3 p-4">
                   <p className="mb-2 text-micro text-ink-4">{c.example}</p>
                   <PayoffChart
                     params={{
@@ -238,7 +243,7 @@ export function HowItWorks() {
         <div className="border-t border-line py-8">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-[5px] bg-short px-4 py-2.5 text-xs font-semibold text-[#1a0509] hover:brightness-110"
+            className="inline-flex items-center gap-2 btn-primary px-4 py-2.5 text-xs"
           >
             {c.cta} <ArrowRight size={13} />
           </Link>

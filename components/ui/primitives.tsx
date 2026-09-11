@@ -9,7 +9,7 @@ export function Label({ children, className }: { children: ReactNode; className?
   return (
     <span
       className={cn(
-        'text-micro font-semibold uppercase tracking-[0.09em] text-ink-4',
+        'mono text-[9.5px] font-medium text-ink-3',
         className,
       )}
     >
@@ -32,9 +32,9 @@ export function Panel({
   bodyClassName?: string
 }) {
   return (
-    <section className={cn('flex min-h-0 flex-col border border-line bg-surface', className)}>
+    <section className={cn('glass flex min-h-0 flex-col', className)}>
       {(title || right) && (
-        <header className="flex h-[var(--head-h)] shrink-0 items-center justify-between border-b border-line px-3">
+        <header className="flex h-[var(--head-h)] shrink-0 items-center justify-between border-b border-line px-4">
           <Label>{title}</Label>
           {right}
         </header>
@@ -57,7 +57,7 @@ export function Pill({
   title?: string
 }) {
   const tones: Record<string, string> = {
-    neutral: 'border-line bg-raised text-ink-2',
+    neutral: 'border-line bg-white/[0.03] text-ink-2',
     long: 'border-long/25 bg-long/10 text-long',
     short: 'border-short/25 bg-short/10 text-short',
     warn: 'border-warn/25 bg-warn/10 text-warn',
@@ -68,7 +68,7 @@ export function Pill({
     <span
       title={title}
       className={cn(
-        'inline-flex items-center gap-1 rounded-[3px] border px-1.5 py-[1px] text-micro font-semibold',
+        'inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-micro font-medium',
         tones[tone],
         className,
       )}
@@ -143,21 +143,21 @@ export function Button({
   size?: 'sm' | 'md' | 'lg'
 }) {
   const variants: Record<string, string> = {
-    accent: 'bg-accent text-accent-ink hover:brightness-110',
-    long: 'bg-long text-[#04120b] hover:brightness-110',
-    short: 'bg-short text-[#1a0509] hover:brightness-110',
-    ghost: 'bg-raised text-ink-2 hover:bg-overlay hover:text-ink',
-    outline: 'border border-line bg-transparent text-ink-2 hover:border-line-strong hover:text-ink',
+    accent: 'btn-primary',
+    long: 'rounded-full bg-long text-[#04120b] hover:brightness-110',
+    short: 'rounded-full bg-short text-[#1a0509] hover:brightness-110',
+    ghost: 'btn-ghost',
+    outline: 'btn-ghost',
   }
   const sizes: Record<string, string> = {
-    sm: 'h-6 px-2 text-micro',
-    md: 'h-7 px-3 text-mini',
-    lg: 'h-9 px-4 text-xs',
+    sm: 'h-7 px-3 text-micro',
+    md: 'h-8 px-4 text-mini',
+    lg: 'h-10 px-5 text-xs',
   }
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-1.5 rounded-[5px] font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-40',
+        'inline-flex items-center justify-center gap-1.5 rounded-full font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40',
         variants[variant],
         sizes[size],
         className,

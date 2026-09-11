@@ -42,7 +42,7 @@ export function RiskPortal() {
       aria-labelledby="risk-title"
       className="fixed inset-0 z-[60] flex items-end justify-center bg-black/80 p-0 backdrop-blur-[2px] sm:items-center sm:p-4"
     >
-      <div className="w-full max-w-[460px] rounded-t-lg border border-line-strong bg-surface p-5 shadow-2xl sm:rounded-lg">
+      <div className="glass w-full max-w-[460px] rounded-b-none bg-[#0c100b] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.7)] sm:rounded-b-[20px]">
         <div className="mb-4 flex items-center gap-2">
           <ShieldAlert size={18} className="text-short" />
           <h2 id="risk-title" className="text-base font-semibold">
@@ -55,7 +55,7 @@ export function RiskPortal() {
             <label
               key={key}
               className={cn(
-                'flex cursor-pointer items-start gap-3 rounded-[5px] border p-3 transition-colors',
+                'flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors',
                 checked[i] ? 'border-short/40 bg-short/5' : 'border-line bg-sunken hover:border-line-strong',
               )}
             >
@@ -63,7 +63,7 @@ export function RiskPortal() {
                 type="checkbox"
                 checked={checked[i]}
                 onChange={(e) => setChecked((c) => c.map((v, j) => (j === i ? e.target.checked : v)))}
-                className="mt-0.5 size-4 shrink-0 accent-[var(--short)]"
+                className="mt-0.5 size-4 shrink-0 accent-[var(--acid)]"
               />
               <span className="text-sm leading-snug text-ink">{t(key)}</span>
             </label>
@@ -73,7 +73,7 @@ export function RiskPortal() {
         <button
           disabled={!ready}
           onClick={acknowledge}
-          className="mt-5 h-11 w-full rounded-[5px] bg-short text-sm font-semibold text-[#1a0509] transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35"
+          className="mt-5 h-11 w-full btn-primary text-sm"
         >
           {t('risk.accept')}
         </button>

@@ -61,7 +61,7 @@ export function AddressChip({
         }}
         aria-label={copied ? t('address.copied') : t('address.copy')}
         title={copied ? t('address.copied') : t('address.copy')}
-        className="grid size-5 place-items-center rounded-[3px] text-ink-4 transition-colors hover:bg-raised hover:text-ink-2"
+        className="grid size-5 place-items-center rounded-md text-ink-4 transition-colors hover:bg-raised hover:text-ink-2"
       >
         {copied ? <Check size={11} className="text-long" /> : <Copy size={11} />}
       </button>
@@ -72,7 +72,7 @@ export function AddressChip({
         onClick={(e) => e.stopPropagation()}
         aria-label={t('address.explorer')}
         title={t('address.explorer')}
-        className="grid size-5 place-items-center rounded-[3px] text-ink-4 transition-colors hover:bg-raised hover:text-info"
+        className="grid size-5 place-items-center rounded-md text-ink-4 transition-colors hover:bg-raised hover:text-info"
       >
         <ExternalLink size={10} />
       </a>
