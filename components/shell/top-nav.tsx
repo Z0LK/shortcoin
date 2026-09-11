@@ -3,9 +3,12 @@
 /**
  * Top bar.
  *
- * Carries the three things that must be visible on every screen: which mode
- * this is (paper never passes for mainnet), the USDG balance, and the way to
- * search. Plus the language switch (§7.8) and the barrier-alert toggle (§7.6).
+ * Carries the USDG balance and the way to search, plus the language switch
+ * (§7.8) and the barrier-alert toggle (§7.6).
+ *
+ * The mode badge used to sit next to the wordmark and was removed on request.
+ * Paper mode still says so where it decides something — on the ticket, above
+ * the button that would send the transaction.
  *
  * On a phone the links collapse into a horizontally scrolling strip under the
  * brand rather than a hamburger — three destinations do not need a menu.
@@ -15,7 +18,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Bell, BellOff, Search, Wallet2 } from 'lucide-react'
 import { Wordmark } from '@/components/shell/brand'
-import { useAdapterQuery, useRuntime } from '@/components/protocol/provider'
+import { useAdapterQuery } from '@/components/protocol/provider'
 import { formatUsdg } from '@/lib/protocol/fixed'
 import { useStore } from '@/lib/store'
 import { useT, type MessageKey } from '@/lib/i18n'
@@ -31,7 +34,6 @@ const LINKS: { href: string; key: MessageKey }[] = [
 export function TopNav() {
   const { t, locale } = useT()
   const pathname = usePathname()
-  const rt = useRuntime()
   const setLocale = useStore((s) => s.setLocale)
   const alerts = useStore((s) => s.barrierAlerts)
   const setAlerts = useStore((s) => s.setBarrierAlerts)
@@ -39,7 +41,6 @@ export function TopNav() {
   const positions = useAdapterQuery((a) => a.listPositions(), [], { everyMs: 3000 })
   const openCount = (positions.data ?? []).filter((p) => p.status === 'OPEN').length
 
-  const mode = rt?.mode ?? 'paper'
   const openSearch = () => window.dispatchEvent(new CustomEvent('shortcoin:command-palette'))
 
   const toggleAlerts = async () => {
@@ -58,17 +59,6 @@ export function TopNav() {
         <Link href="/" className="shrink-0">
           <Wordmark />
         </Link>
-
-        <span
-          title={t('nav.mode.paper.hint')}
-          className={cn(
-            'mono flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] font-medium',
-            mode === 'mainnet' ? 'border-long/40 text-long' : 'border-warn/40 bg-warn/[0.06] text-warn',
-          )}
-        >
-          <span className="pulse-dot size-1.5 rounded-full bg-current" />
-          {t(`nav.mode.${mode}` as MessageKey)}
-        </span>
 
         <nav className="ml-2 hidden items-center gap-1 md:flex">
           {LINKS.map((l) => {
