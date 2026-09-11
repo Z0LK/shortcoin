@@ -1,12 +1,12 @@
 'use client'
 
 /**
- * Price chart for the token sheet: spot candles with both TWAPs laid over them.
+ * Price chart for the token sheet: spot candles.
  *
- * SPEC §4A asks for exactly this, and it is also the best defence against the
- * "your price is wrong" support ticket (§5): the chart shows the spot the user
- * sees on DexScreener AND the two averages the protocol actually settles on,
- * on the same axis, so the gap between them is visible before it is a surprise.
+ * The settlement averages used to be drawn over them; they were removed on
+ * request and now live as figures on the identity panel and as the two marks
+ * on every position. The settlement price levels of an open position are still
+ * drawn here as horizontal lines, so entry, barrier and cap stay visible.
  *
  * No inversion. The chart shows the token as it trades.
  *
@@ -21,7 +21,6 @@ import {
   createChart,
   CrosshairMode,
   HistogramSeries,
-  LineSeries,
   LineStyle,
   PriceScaleMode,
   type IChartApi,
@@ -76,8 +75,6 @@ export function TwapChart({
   const chartRef = useRef<IChartApi | null>(null)
   const candleRef = useRef<ISeriesApi<'Candlestick'> | null>(null)
   const volRef = useRef<ISeriesApi<'Histogram'> | null>(null)
-  const t24Ref = useRef<ISeriesApi<'Line'> | null>(null)
-  const t72Ref = useRef<ISeriesApi<'Line'> | null>(null)
   const linesRef = useRef<IPriceLine[]>([])
   const formatRef = useRef<(v: number) => string>(formatMicroPrice)
   formatRef.current = (v: number) => (scale === 1 ? formatMicroPrice(v) : `$${abbr(v)}`)
@@ -126,25 +123,6 @@ export function TwapChart({
       wickDownColor: css('--chart-down', '#ff3b47'),
       borderVisible: false,
     })
-    // The two settlement averages. Distinct colours and dash patterns so they
-    // stay distinguishable for anyone who cannot rely on hue.
-    t24Ref.current = chart.addSeries(LineSeries, {
-      priceFormat,
-      color: css('--info', '#4c8dff'),
-      lineWidth: 2,
-      priceLineVisible: false,
-      lastValueVisible: true,
-      title: 'TWAP24',
-    })
-    t72Ref.current = chart.addSeries(LineSeries, {
-      priceFormat,
-      color: css('--warn', '#f5a623'),
-      lineWidth: 2,
-      lineStyle: LineStyle.Dashed,
-      priceLineVisible: false,
-      lastValueVisible: true,
-      title: 'TWAP72',
-    })
     volRef.current = chart.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: '' })
     volRef.current.priceScale().applyOptions({ scaleMargins: { top: 0.84, bottom: 0 } })
 
@@ -172,10 +150,6 @@ export function TwapChart({
         close: c.close * scale,
       })),
     )
-    const line = (pts: { time: number; value: number }[]) =>
-      pts.filter((p) => Number.isFinite(p.value)).map((p) => ({ time: p.time as UTCTimestamp, value: p.value * scale }))
-    t24Ref.current?.setData(line(h.twap24h))
-    t72Ref.current?.setData(line(h.twap72h))
     volRef.current?.setData(
       h.candles.map((c) => ({ time: c.time as UTCTimestamp, value: c.volume, color: c.close >= c.open ? up : down })),
     )
@@ -236,12 +210,6 @@ export function TwapChart({
         <span className="flex items-center gap-3 text-micro">
           <span className="flex items-center gap-1 text-ink-2">
             <span className="h-2 w-2 rounded-[1px] bg-long" /> {t('token.chart.legendSpot')}
-          </span>
-          <span className="flex items-center gap-1 text-info">
-            <span className="h-0.5 w-3 bg-info" /> {t('token.chart.legendT24')}
-          </span>
-          <span className="flex items-center gap-1 text-warn">
-            <span className="h-0.5 w-3 border-t-2 border-dashed border-warn" /> {t('token.chart.legendT72')}
           </span>
         </span>
         <div className="ml-auto flex items-center gap-1.5">

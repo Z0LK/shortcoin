@@ -114,8 +114,6 @@ export const en: Record<MessageKey, string> = {
   'token.concentration': 'Largest cluster',
   'token.concentration.mock': 'simulated — the analysis pipeline does not exist yet',
   'token.chart.legendSpot': 'Spot',
-  'token.chart.legendT24': 'TWAP 24h',
-  'token.chart.legendT72': 'TWAP 72h',
   'token.chart.why': 'Settlement runs on the TWAPs, not the spot. Spot is shown for context.',
   'token.notFound': 'Token not found',
   'token.back': 'Back to the list',

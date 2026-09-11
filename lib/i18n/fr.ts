@@ -127,8 +127,6 @@ export const fr = {
   'token.concentration': 'Plus gros cluster',
   'token.concentration.mock': 'donnée simulée — le pipeline d’analyse n’existe pas encore',
   'token.chart.legendSpot': 'Spot',
-  'token.chart.legendT24': 'TWAP 24h',
-  'token.chart.legendT72': 'TWAP 72h',
   'token.chart.why':
     'Le règlement se fait sur les TWAP, pas sur le spot. Le spot est affiché pour contexte.',
   'token.notFound': 'Token introuvable',
