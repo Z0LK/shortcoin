@@ -15,10 +15,11 @@
 
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ArrowUpRight, Search, Star, X } from 'lucide-react'
 import { useAdapterQuery, useProtocolEvents, useRuntime } from '@/components/protocol/provider'
 import { useLivePrice } from '@/components/market-provider'
-import { AddressChip, StatusBadge } from '@/components/ui/protocol-ui'
+import { AddressChip, StatusBadge, useStatusReason } from '@/components/ui/protocol-ui'
 import { Label, Pill } from '@/components/ui/primitives'
 import { formatBps, formatMicroPrice, formatPct, formatUsdgCompact, fixedToNumber } from '@/lib/protocol/fixed'
 import type { TokenSort } from '@/lib/protocol/adapter'
@@ -40,16 +41,11 @@ const MAX_FEED = 3000
 // Row
 // ---------------------------------------------------------------------------
 
-const Row = memo(function Row({
-  row,
-  index,
-  bornAt,
-}: {
-  row: TokenRow
-  index: number
-  bornAt?: number
-}) {
-  const { t } = useT()
+/**
+ * Everything a row or a card shows, derived once. The table and the mobile
+ * cards read the same figures from here so the two layouts cannot disagree.
+ */
+function useRowView(row: TokenRow, bornAt?: number) {
   const asset = resolveAsset(row.symbol)
   const unit = useStore((s) => s.unit)
   const watched = useStore((s) => s.watchlist.includes(row.symbol))
@@ -63,6 +59,29 @@ const Row = memo(function Row({
 
   const remainingPct = 1 - row.utilization
   const age = bornAt ? (Date.now() - bornAt) / 3_600_000 : asset?.ageHours
+  const priceText = unit === 'mcap' && supply > 0 ? usdAbbr(spot * supply) : formatMicroPrice(spot)
+  // Literal class names, so Tailwind's scanner sees every one of them.
+  const tone =
+    remainingPct < 0.15
+      ? { text: 'text-short', bg: 'bg-short' }
+      : remainingPct < 0.35
+        ? { text: 'text-warn', bg: 'bg-warn' }
+        : { text: 'text-long', bg: 'bg-long' }
+
+  return { asset, unit, watched, toggleWatch, live, remainingPct, age, priceText, tone }
+}
+
+const Row = memo(function Row({
+  row,
+  index,
+  bornAt,
+}: {
+  row: TokenRow
+  index: number
+  bornAt?: number
+}) {
+  const { t } = useT()
+  const { asset, watched, toggleWatch, live, remainingPct, age, priceText } = useRowView(row, bornAt)
 
   return (
     <tr className="group h-[var(--row-h)] border-b border-line transition-colors hover:bg-raised">
@@ -148,7 +167,7 @@ const Row = memo(function Row({
             live.dir < 0 && 'flash-down',
           )}
         >
-          {unit === 'mcap' && supply > 0 ? usdAbbr(spot * supply) : formatMicroPrice(spot)}
+          {priceText}
         </span>
       </td>
 
@@ -173,6 +192,136 @@ const Row = memo(function Row({
   )
 })
 
+
+/**
+ * The same row as a card, for phones (SPEC 7.9). One column, the status and
+ * the remaining capacity readable at a glance, and a full-width button: a
+ * 24px "Ouvrir" in a table cell is not a touch target.
+ *
+ * The card is not one big link. It holds the address chip's own copy and
+ * explorer controls, and links cannot nest. Tapping anywhere else opens the
+ * sheet.
+ */
+const Card = memo(function Card({ row, bornAt }: { row: TokenRow; bornAt?: number }) {
+  const { t } = useT()
+  const router = useRouter()
+  const reason = useStatusReason(row)
+  const { asset, unit, watched, toggleWatch, live, remainingPct, age, priceText, tone } = useRowView(row, bornAt)
+  const href = `/t/${row.symbol}`
+
+  return (
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={() => router.push(href)}
+      onKeyDown={(e) => e.key === 'Enter' && router.push(href)}
+      className="flex cursor-pointer flex-col gap-2.5 border-b border-line bg-surface px-3 py-3 active:bg-raised"
+    >
+      <div className="flex items-start gap-2.5">
+        <span
+          aria-hidden
+          className="num grid size-9 shrink-0 place-items-center rounded-[5px] text-mini font-bold text-[#0a0c10]"
+          style={{ background: `hsl(${asset?.logoHue ?? 200} 58% 60%)` }}
+        >
+          {row.symbol.slice(0, 2)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className="truncate text-sm font-semibold text-ink">{row.symbol}</span>
+            {age !== undefined && (
+              <Pill tone={age < 24 ? 'info' : 'neutral'} className="shrink-0">
+                {ageLabel(age)}
+              </Pill>
+            )}
+          </div>
+          <p className="truncate text-mini text-ink-3">{row.name}</p>
+          <AddressChip address={row.address} head={6} tail={4} className="mt-0.5" />
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleWatch(row.symbol)
+            }}
+            aria-pressed={watched}
+            aria-label={row.symbol}
+            className={cn('grid size-8 place-items-center rounded-[4px]', watched ? 'text-warn' : 'text-ink-4')}
+          >
+            <Star size={15} fill={watched ? 'currentColor' : 'none'} />
+          </button>
+        </div>
+      </div>
+
+      <div className="-mt-1">
+        <StatusBadge info={row.status} row={row} />
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
+        <div className="col-span-3 flex flex-col gap-1">
+          <div className="flex items-baseline justify-between text-micro">
+            <span className="text-ink-4">{t('list.col.capacity')}</span>
+            <span className="num">
+              <span className={cn('font-semibold', tone.text)}>{formatPct(remainingPct, 0)}</span>
+              <span className="text-ink-4"> · {formatUsdgCompact(row.remainingNotional)}</span>
+            </span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-line">
+            <div className={cn('h-full', tone.bg)} style={{ width: `${remainingPct * 100}%` }} />
+          </div>
+        </div>
+        <div>
+          <p className="text-micro text-ink-4">{t('list.col.rate')}</p>
+          <p className="num text-xs font-semibold text-ink">{formatBps(row.dailyRateBps)}</p>
+        </div>
+        <div>
+          <p className="text-micro text-ink-4">{t('list.col.depth')}</p>
+          <p className="num text-xs text-ink-2">{formatUsdgCompact(row.quoteDepth)}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-micro text-ink-4">{unit === 'mcap' ? 'MC' : t('list.col.spot')}</p>
+          <p
+            key={live.seq}
+            className={cn(
+              'num inline-block rounded-[3px] px-1 text-xs text-ink-2',
+              live.dir > 0 && 'flash-up',
+              live.dir < 0 && 'flash-down',
+            )}
+          >
+            {priceText}
+          </p>
+        </div>
+      </div>
+
+      {row.status.canOpen ? (
+        <Link
+          href={href}
+          onClick={(e) => e.stopPropagation()}
+          className="flex h-11 items-center justify-center gap-1 rounded-[5px] bg-short text-xs font-bold text-[#1a0509] active:brightness-110"
+        >
+          {t('list.open')} <ArrowUpRight size={13} />
+        </Link>
+      ) : (
+        <p className="rounded-[5px] border border-line px-2.5 py-2 text-center text-micro leading-snug text-ink-3">
+          {reason}
+        </p>
+      )}
+    </div>
+  )
+})
+
+/** Phones get cards, everything wider gets the table, never both at once. */
+function useIsMobile() {
+  const [mobile, setMobile] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    const update = () => setMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+  return mobile
+}
+
 // ---------------------------------------------------------------------------
 // List
 // ---------------------------------------------------------------------------
@@ -190,6 +339,7 @@ export function TokenList() {
   const [text, setText] = useState('')
 
   const feedMode = cls === 'coin' && feed === 'new'
+  const isMobile = useIsMobile()
 
   // ── listed ─────────────────────────────────────────────────────────────
   const listed = useAdapterQuery((a) => a.listTokens({ sort }), [sort], { everyMs: 5000 })
@@ -366,8 +516,15 @@ export function TokenList() {
         )}
       </div>
 
-      {/* ── table ─────────────────────────────────────────────────────── */}
+      {/* ── table, or cards on a phone ────────────────────────────────── */}
       <div className="min-h-0 flex-1 overflow-auto">
+        {isMobile ? (
+          <div className="flex flex-col">
+            {feedMode
+              ? tape.map((item) => <Card key={item.row.address} row={item.row} bornAt={item.bornAt} />)
+              : rows.map((row) => <Card key={row.address} row={row} />)}
+          </div>
+        ) : (
         <table className="w-full min-w-[720px] border-collapse">
           <thead className="sticky top-0 z-10 bg-surface">
             <tr className="h-[var(--head-h)] border-b border-line text-micro font-semibold uppercase tracking-[0.08em] text-ink-4">
@@ -392,6 +549,7 @@ export function TokenList() {
               : rows.map((row, i) => <Row key={row.address} row={row} index={i + 1} />)}
           </tbody>
         </table>
+        )}
 
         {feedMode && (
           <div ref={sentinel} className="flex h-14 items-center justify-center text-micro uppercase tracking-[0.12em] text-ink-4">
