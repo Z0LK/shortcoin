@@ -24,9 +24,9 @@ const TapeItem = memo(function TapeItem({ asset }: { asset: Asset }) {
   return (
     <Link
       href={`/t/${asset.symbol}`}
-      className="flex shrink-0 items-center gap-2 px-4 transition-colors hover:bg-acid/[0.06]"
+      className="flex shrink-0 items-center gap-2 px-4 transition-colors hover:bg-sig/[0.06]"
     >
-      <i aria-hidden className="not-italic text-acid">✦</i>
+      <i aria-hidden className="not-italic text-sig">✦</i>
       <span className="mono text-[10px] text-ink-2">{asset.symbol}</span>
       <span
         key={live.seq}
@@ -47,7 +47,7 @@ const TapeItem = memo(function TapeItem({ asset }: { asset: Asset }) {
 
 export function TickerTape() {
   return (
-    <div className="relative flex h-8 shrink-0 items-center overflow-hidden border-b border-line bg-acid/[0.035]">
+    <div className="relative flex h-8 shrink-0 items-center overflow-hidden border-b border-line bg-sig/[0.035]">
       <div className="marquee flex w-max items-center">
         {[0, 1].map((copy) => (
           <div key={copy} className="flex items-center" aria-hidden={copy === 1}>

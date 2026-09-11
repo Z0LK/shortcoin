@@ -188,7 +188,7 @@ export function PositionList({ positions, compact = false }: { positions: Positi
               <Fragment key={p.id}>
                 <tr
                   className={cn(
-                    'border-b border-line/60 align-middle transition-colors hover:bg-acid/[0.035]',
+                    'border-b border-line/60 align-middle transition-colors hover:bg-sig/[0.035]',
                     danger && 'bg-short/[0.07]',
                   )}
                 >
@@ -306,7 +306,7 @@ export function PositionsScreen() {
         <header className="rise-in flex flex-wrap items-end gap-4">
           <div>
             <p className="mono flex items-center gap-2 text-[10px] text-ink-3">
-              <span className="size-1.5 rounded-full bg-acid" /> 02 — {t('nav.positions')}
+              <span className="size-1.5 rounded-full bg-sig" /> 02 — {t('nav.positions')}
             </p>
             <h1 className="display mt-2 text-[clamp(2rem,5vw,3.2rem)] text-glow">{t('positions.title')}</h1>
           </div>
@@ -318,7 +318,7 @@ export function PositionsScreen() {
                 aria-pressed={tab === k}
                 className={cn(
                   'px-3 py-1 text-mini font-semibold transition-colors',
-                  tab === k ? 'bg-acid text-accent-ink' : 'text-ink-3 hover:text-ink',
+                  tab === k ? 'bg-sig text-accent-ink' : 'text-ink-3 hover:text-ink',
                 )}
               >
                 {t(`positions.${k}` as MessageKey)} <span className="num opacity-60">{k === 'open' ? open.length : closed.length}</span>

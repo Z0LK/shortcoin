@@ -113,7 +113,7 @@ export function CommandPalette() {
       onMouseDown={() => setOpen(false)}
     >
       <div
-        className="glass w-full max-w-[620px] overflow-hidden bg-[#0c100b] shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+        className="glass w-full max-w-[620px] overflow-hidden bg-[#0c0e1a] shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2.5 border-b border-line px-3.5">
@@ -200,7 +200,7 @@ export function CommandPalette() {
                   onClick={() => go(r)}
                   className={cn(
                     'flex w-full cursor-pointer items-center gap-3 px-3.5 py-2 text-left',
-                    i === cursor ? 'bg-acid/[0.09] text-ink' : 'hover:bg-white/[0.04]',
+                    i === cursor ? 'bg-sig/[0.09] text-ink' : 'hover:bg-white/[0.04]',
                   )}
                 >
                   <span

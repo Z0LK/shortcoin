@@ -53,7 +53,7 @@ export function TopNav() {
   }
 
   return (
-    <header className="relative z-30 flex shrink-0 flex-col border-b border-line bg-[rgba(5,7,5,0.72)] backdrop-blur-[18px]">
+    <header className="relative z-30 flex shrink-0 flex-col border-b border-line bg-[rgba(5,6,14,0.72)] backdrop-blur-[18px]">
       <div className="flex h-[var(--nav-h)] items-center gap-3 px-3 sm:gap-4 sm:px-5">
         <Link href="/" className="shrink-0">
           <Wordmark />
@@ -84,12 +84,12 @@ export function TopNav() {
               >
                 {t(l.key)}
                 {l.href === '/positions' && openCount > 0 && (
-                  <span className="num ml-1.5 rounded-full bg-acid px-1.5 py-px text-micro font-medium text-accent-ink">{openCount}</span>
+                  <span className="num ml-1.5 rounded-full bg-sig px-1.5 py-px text-micro font-medium text-accent-ink">{openCount}</span>
                 )}
                 <span
                   className={cn(
-                    'absolute inset-x-2.5 -bottom-px h-px origin-left bg-acid transition-transform duration-300',
-                    active ? 'scale-x-100 shadow-[0_0_12px_rgba(197,248,42,0.7)]' : 'scale-x-0 group-hover:scale-x-100',
+                    'absolute inset-x-2.5 -bottom-px h-px origin-left bg-sig transition-transform duration-300',
+                    active ? 'scale-x-100 shadow-[0_0_12px_rgba(138,123,255,0.75)]' : 'scale-x-0 group-hover:scale-x-100',
                   )}
                 />
               </Link>
@@ -111,10 +111,10 @@ export function TopNav() {
 
         <div className="flex shrink-0 items-center gap-1.5">
           <div
-            className="hidden h-9 items-center gap-2 rounded-full border border-line-acid bg-acid/[0.05] px-3.5 sm:flex"
+            className="hidden h-9 items-center gap-2 rounded-full border border-line-sig bg-sig/[0.05] px-3.5 sm:flex"
             title={t('nav.balance')}
           >
-            <Wallet2 size={13} className="text-acid" />
+            <Wallet2 size={13} className="text-sig" />
             <span className="num text-mini font-semibold">{formatUsdg(account.data?.usdgBalance ?? 0n)}</span>
           </div>
 
@@ -151,7 +151,7 @@ export function TopNav() {
               href={l.href}
               className={cn(
                 'whitespace-nowrap rounded-full border px-3 py-1 text-mini font-medium',
-                active ? 'border-line-acid bg-acid/[0.08] text-acid' : 'border-transparent text-ink-3',
+                active ? 'border-line-sig bg-sig/[0.08] text-sig' : 'border-transparent text-ink-3',
               )}
             >
               {t(l.key)}

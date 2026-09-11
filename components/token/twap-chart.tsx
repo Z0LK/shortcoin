@@ -104,8 +104,8 @@ export function TwapChart({
       },
       crosshair: {
         mode: CrosshairMode.Normal,
-        vertLine: { color: css('--chart-crosshair', '#5d6a58'), labelBackgroundColor: '#1a2116' },
-        horzLine: { color: css('--chart-crosshair', '#5d6a58'), labelBackgroundColor: '#1a2116' },
+        vertLine: { color: css('--chart-crosshair', '#5d6a58'), labelBackgroundColor: '#1b1f3a' },
+        horzLine: { color: css('--chart-crosshair', '#5d6a58'), labelBackgroundColor: '#1b1f3a' },
       },
       rightPriceScale: {
         borderColor: css('--line', '#1c2029'),
@@ -252,7 +252,7 @@ export function TwapChart({
                   key={u}
                   onClick={() => setUnit(u)}
                   aria-pressed={unit === u}
-                  className={cn('num rounded-md px-2 py-[2px] text-micro font-semibold', unit === u ? 'bg-acid text-accent-ink' : 'text-ink-3 hover:text-ink')}
+                  className={cn('num rounded-md px-2 py-[2px] text-micro font-semibold', unit === u ? 'bg-sig text-accent-ink' : 'text-ink-3 hover:text-ink')}
                 >
                   {u === 'mcap' ? 'MC' : 'PRICE'}
                 </button>
@@ -265,7 +265,7 @@ export function TwapChart({
                 key={i}
                 onClick={() => setIntervalValue(i)}
                 aria-pressed={interval === i}
-                className={cn('num rounded-md px-2 py-[2px] text-micro font-semibold', interval === i ? 'bg-acid text-accent-ink' : 'text-ink-3 hover:text-ink')}
+                className={cn('num rounded-md px-2 py-[2px] text-micro font-semibold', interval === i ? 'bg-sig text-accent-ink' : 'text-ink-3 hover:text-ink')}
               >
                 {i}
               </button>

@@ -84,7 +84,7 @@ const Row = memo(function Row({
   const { asset, watched, toggleWatch, live, remainingPct, age, priceText } = useRowView(row, bornAt)
 
   return (
-    <tr className="group h-[var(--row-h)] border-b border-line/60 transition-colors hover:bg-acid/[0.035]">
+    <tr className="group h-[var(--row-h)] border-b border-line/60 transition-colors hover:bg-sig/[0.035]">
       <td className="px-2 pl-4">
         <div className="flex items-center gap-1">
           <button
@@ -106,14 +106,14 @@ const Row = memo(function Row({
         <Link href={`/t/${row.symbol}`} className="flex min-w-0 items-center gap-2">
           <span
             aria-hidden
-            className="num grid size-7 shrink-0 place-items-center rounded-[9px] text-micro font-medium text-[#0a0c10] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)]"
+            className="num grid size-7 shrink-0 place-items-center rounded-[9px] text-micro font-medium text-[#07060f] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)]"
             style={{ background: `hsl(${asset?.logoHue ?? 200} 58% 60%)` }}
           >
             {row.symbol.slice(0, 2)}
           </span>
           <span className="flex min-w-0 flex-col leading-tight">
             <span className="flex items-center gap-1.5">
-              <span className="truncate text-[13px] font-semibold tracking-[-0.01em] text-ink transition-colors group-hover:text-acid">
+              <span className="truncate text-[13px] font-semibold tracking-[-0.01em] text-ink transition-colors group-hover:text-sig">
                 {row.symbol}
               </span>
               {age !== undefined && (
@@ -215,12 +215,12 @@ const Card = memo(function Card({ row, bornAt }: { row: TokenRow; bornAt?: numbe
       tabIndex={0}
       onClick={() => router.push(href)}
       onKeyDown={(e) => e.key === 'Enter' && router.push(href)}
-      className="glass flex cursor-pointer flex-col gap-3 rounded-[18px] p-3.5 active:border-line-acid"
+      className="glass flex cursor-pointer flex-col gap-3 rounded-[18px] p-3.5 active:border-line-sig"
     >
       <div className="flex items-start gap-2.5">
         <span
           aria-hidden
-          className="num grid size-10 shrink-0 place-items-center rounded-[12px] text-mini font-medium text-[#0a0c10] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)]"
+          className="num grid size-10 shrink-0 place-items-center rounded-[12px] text-mini font-medium text-[#07060f] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)]"
           style={{ background: `hsl(${asset?.logoHue ?? 200} 58% 60%)` }}
         >
           {row.symbol.slice(0, 2)}
@@ -427,7 +427,7 @@ export function TokenList() {
   const tab = (active: boolean) =>
     cn(
       'whitespace-nowrap px-3 py-1 text-mini font-semibold transition-colors',
-      active ? 'bg-acid text-accent-ink' : 'text-ink-3 hover:text-ink',
+      active ? 'bg-sig text-accent-ink' : 'text-ink-3 hover:text-ink',
     )
 
   return (
@@ -436,11 +436,11 @@ export function TokenList() {
       <div className="rise-in flex shrink-0 flex-wrap items-end gap-x-8 gap-y-3">
         <div className="min-w-0">
           <p className="mono flex items-center gap-2 text-[10px] text-ink-3">
-            <span className="pulse-dot size-1.5 rounded-full bg-acid shadow-[0_0_10px_var(--acid)]" />
+            <span className="pulse-dot size-1.5 rounded-full bg-sig shadow-[0_0_10px_var(--sig)]" />
             {t('home.kicker')}
           </p>
           <h1 className="display mt-2 text-[clamp(1.9rem,4.2vw,3.4rem)]">
-            <span className="text-[#2b3128]">{t('home.title1')}</span>{' '}
+            <span className="text-[#242841]">{t('home.title1')}</span>{' '}
             <span className="text-glow">{t('home.title2')}</span>
           </h1>
           <p className="mt-2 max-w-[560px] text-[13px] leading-relaxed text-ink-2">{t('home.tagline')}</p>
@@ -449,8 +449,8 @@ export function TokenList() {
           <span className="mono rounded-full border border-line bg-white/[0.03] px-3 py-1.5 text-[10px] text-ink-2">
             {t('list.count', { n: totals.total })}
           </span>
-          <span className="mono flex items-center gap-1.5 rounded-full border border-line-acid bg-acid/[0.06] px-3 py-1.5 text-[10px] text-acid">
-            <span className="size-1.5 rounded-full bg-acid" />
+          <span className="mono flex items-center gap-1.5 rounded-full border border-line-sig bg-sig/[0.06] px-3 py-1.5 text-[10px] text-sig">
+            <span className="size-1.5 rounded-full bg-sig" />
             {t('list.openableCount', { n: totals.openable })}
           </span>
           {feedMode && (
@@ -498,7 +498,7 @@ export function TokenList() {
                 type="checkbox"
                 checked={openableOnly}
                 onChange={(e) => setOpenableOnly(e.target.checked)}
-                className="accent-[var(--acid)]"
+                className="accent-[var(--sig)]"
               />
               {t('list.openableOnly')}
             </label>
@@ -520,7 +520,7 @@ export function TokenList() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder={t('search.placeholder')}
-                className="h-8 w-[220px] rounded-full border border-line bg-black/30 pr-7 pl-8 text-mini text-ink placeholder:text-ink-4 outline-hidden transition-colors focus:border-line-acid"
+                className="h-8 w-[220px] rounded-full border border-line bg-black/30 pr-7 pl-8 text-mini text-ink placeholder:text-ink-4 outline-hidden transition-colors focus:border-line-sig"
               />
               {text && (
                 <button onClick={() => setText('')} className="absolute top-1/2 right-2.5 -translate-y-1/2 text-ink-4" aria-label="clear">
@@ -542,17 +542,17 @@ export function TokenList() {
           </div>
         ) : (
         <table className="w-full min-w-[720px] border-collapse">
-          <thead className="sticky top-0 z-10 bg-[#0d110c]/90 backdrop-blur-md">
+          <thead className="sticky top-0 z-10 bg-[#0e1020]/90 backdrop-blur-md">
             <tr className="mono h-[var(--head-h)] border-b border-line text-[9.5px] font-medium text-ink-3">
               <th className="w-[60px] px-2 pl-4 text-left">#</th>
               <th className="px-2 text-left">{t('list.col.token')}</th>
               <th className="hidden px-2 text-left md:table-cell">{t('list.col.address')}</th>
               <th className="px-2 text-left">{t('list.col.status')}</th>
-              <th className={cn('w-[130px] px-2 text-left', sort === 'capacity' && !feedMode && 'text-acid')}>
+              <th className={cn('w-[130px] px-2 text-left', sort === 'capacity' && !feedMode && 'text-sig')}>
                 {t('list.col.capacity')}
               </th>
-              <th className={cn('px-2 text-right', sort === 'rate' && !feedMode && 'text-acid')}>{t('list.col.rate')}</th>
-              <th className={cn('hidden px-2 text-right lg:table-cell', sort === 'depth' && !feedMode && 'text-acid')}>
+              <th className={cn('px-2 text-right', sort === 'rate' && !feedMode && 'text-sig')}>{t('list.col.rate')}</th>
+              <th className={cn('hidden px-2 text-right lg:table-cell', sort === 'depth' && !feedMode && 'text-sig')}>
                 {t('list.col.depth')}
               </th>
               <th className="hidden px-2 text-right sm:table-cell">{unit === 'mcap' ? 'MC' : t('list.col.spot')}</th>

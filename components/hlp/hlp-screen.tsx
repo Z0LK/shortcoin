@@ -32,7 +32,7 @@ function Stat({ label, value, hint, tone }: { label: string; value: React.ReactN
   return (
     <div className="glass glass-hover flex flex-col gap-2 p-4" title={hint}>
       <span className="mono text-[9.5px] font-medium text-ink-3">{label}</span>
-      <span className={cn('num text-[19px] text-acid', tone)}>{value}</span>
+      <span className={cn('num text-[19px] text-sig', tone)}>{value}</span>
     </div>
   )
 }
@@ -80,7 +80,7 @@ export function HlpScreen() {
       <div className="mx-auto flex max-w-[1100px] flex-col gap-3 p-3 sm:gap-4 sm:p-6">
         <header className="rise-in">
           <p className="mono flex items-center gap-2 text-[10px] text-ink-3">
-            <span className="size-1.5 rounded-full bg-acid" /> 03 — {t('nav.hlp')}
+            <span className="size-1.5 rounded-full bg-sig" /> 03 — {t('nav.hlp')}
           </p>
           <h1 className="display mt-2 text-[clamp(2rem,5vw,3.2rem)] text-glow">{t('hlp.title')}</h1>
           <p className="mt-2 max-w-[70ch] text-[13px] leading-relaxed text-ink-2">{t('hlp.subtitle')}</p>
@@ -164,7 +164,7 @@ export function HlpScreen() {
                     key={m}
                     onClick={() => setMode(m)}
                     aria-pressed={mode === m}
-                    className={cn('flex-1 rounded-md py-1 text-mini font-semibold', mode === m ? 'bg-acid text-accent-ink' : 'text-ink-3 hover:text-ink')}
+                    className={cn('flex-1 rounded-md py-1 text-mini font-semibold', mode === m ? 'bg-sig text-accent-ink' : 'text-ink-3 hover:text-ink')}
                   >
                     {t(`hlp.${m}` as MessageKey)}
                   </button>

@@ -286,7 +286,7 @@ export function OpenTicket({ token }: { token: TokenRow }) {
             {t('ticket.balance')} {formatUsdg(balance)}
           </span>
         </div>
-        <div className="flex h-11 items-center rounded-xl border border-line bg-sunken px-3 focus-within:border-line-acid">
+        <div className="flex h-11 items-center rounded-xl border border-line bg-sunken px-3 focus-within:border-line-sig">
           <span className="text-ink-4">$</span>
           <input
             id="collateral"
@@ -442,7 +442,7 @@ export function OpenTicket({ token }: { token: TokenRow }) {
         <button
           onClick={approve}
           disabled={phase !== 'idle'}
-          className="h-11 w-full rounded-full border border-line-acid bg-acid/[0.07] text-sm font-semibold text-acid transition-colors hover:bg-acid/15 disabled:opacity-50"
+          className="h-11 w-full rounded-full border border-line-sig bg-sig/[0.07] text-sm font-semibold text-sig transition-colors hover:bg-sig/15 disabled:opacity-50"
         >
           {phase === 'approving' ? t('ticket.approving') : t('ticket.approve', { amount: formatUsdg(q!.collateral).replace('$', '') })}
         </button>

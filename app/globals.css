@@ -3,64 +3,64 @@
 /* ===========================================================================
    SHORTCOIN — design tokens
    ---------------------------------------------------------------------------
-   Black glass, lime signal. Same family as the project's marketing sites:
-   green-black ground, translucent panels with a lit top edge, one acid lime
-   accent, Space Grotesk for words and DM Mono for figures and labels.
+   Deep space, iris signal. An ink-blue ground under a slow aurora and fine
+   scanlines, panels of smoked glass, and one signal colour that runs from iris
+   to cyan. Space Grotesk for words, DM Mono for figures and labels.
 
-   Lime is the brand and the call to action. It is not a direction: green and
-   red keep their ordinary meaning on price movement and PnL, everywhere.
+   The signal is the brand and the call to action. It is not a direction: green
+   and red keep their ordinary meaning on price movement and PnL, everywhere.
    =========================================================================== */
 
 :root {
-  /* Brand */
-  --acid: #c5f82a;
-  --acid-2: #7fe36b;
-  --acid-dim: rgba(197, 248, 42, 0.16);
+  /* Brand — iris, and the cyan it resolves to */
+  --sig: #8a7bff;
+  --sig-2: #35e8ff;
+  --sig-dim: rgba(138, 123, 255, 0.18);
 
   /* Surfaces. The page ground is opaque; panels are glass laid over the
      background layers. `--overlay` stays opaque: menus and sticky headers sit
      on top of moving content and must not let it through. */
-  --void: #050705;
-  --ground-2: #080b07;
-  --surface: rgba(255, 255, 255, 0.028);
-  --raised: rgba(255, 255, 255, 0.055);
-  --overlay: #0c100b;
+  --void: #05060e;
+  --ground-2: #090b16;
+  --surface: rgba(255, 255, 255, 0.03);
+  --raised: rgba(255, 255, 255, 0.06);
+  --overlay: #0c0e1a;
   --sunken: rgba(0, 0, 0, 0.32);
 
   /* Lines */
-  --line: rgba(255, 255, 255, 0.09);
+  --line: rgba(255, 255, 255, 0.085);
   --line-strong: rgba(255, 255, 255, 0.16);
-  --line-acid: rgba(197, 248, 42, 0.28);
+  --line-sig: rgba(138, 123, 255, 0.36);
 
   /* Ink */
-  --ink: #f4f7f2;
-  --ink-2: #a7b2a3;
-  --ink-3: #6d766b;
-  --ink-4: #4f584c;
+  --ink: #eef0fa;
+  --ink-2: #a6abc4;
+  --ink-3: #6c7191;
+  --ink-4: #4a4e68;
 
   /* Direction semantics. Green is up, red is down — always. */
   --long: #2fd98a;
   --long-dim: #1c8f5a;
   --long-soft: #0d2a1c;
-  --short: #ff4d5a;
-  --short-soft: #2c1015;
+  --short: #ff4d6a;
+  --short-soft: #2c1020;
 
   --warn: #f5b134;
   --info: #5b9dff;
-  --neutral: #6d766b;
+  --neutral: #6c7191;
 
   /* Chart */
   --chart-up: #2fd98a;
-  --chart-down: #ff4d5a;
+  --chart-down: #ff4d6a;
   --chart-grid: rgba(255, 255, 255, 0.035);
-  --chart-crosshair: #5d6a58;
+  --chart-crosshair: #6c7191;
   --chart-volume-up: #123f2a;
-  --chart-volume-down: #45161d;
+  --chart-volume-down: #45161f;
 
   /* One accent: the brand. */
-  --accent: var(--acid);
-  --accent-soft: var(--acid-dim);
-  --accent-ink: #0a1206;
+  --accent: var(--sig);
+  --accent-soft: var(--sig-dim);
+  --accent-ink: #0a0a18;
 
   --radius: 12px;
   --radius-sm: 8px;
@@ -85,15 +85,15 @@
 
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
-  --color-line-acid: var(--line-acid);
+  --color-line-sig: var(--line-sig);
 
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
   --color-ink-4: var(--ink-4);
 
-  --color-acid: var(--acid);
-  --color-acid-2: var(--acid-2);
+  --color-sig: var(--sig);
+  --color-sig-2: var(--sig-2);
   --color-long: var(--long);
   --color-long-soft: var(--long-soft);
   --color-short: var(--short);
@@ -149,8 +149,8 @@ body {
 }
 
 ::selection {
-  background: var(--acid);
-  color: #0a1206;
+  background: var(--sig);
+  color: #0a0a18;
 }
 
 /* Every number in the product is tabular, so columns never dance on tick. */
@@ -170,43 +170,112 @@ body {
   letter-spacing: 0.14em;
 }
 
-/* ── Background layers ──────────────────────────────────────────────────── */
+/* ── Background layers ──────────────────────────────────────────────────────
+   No grid here: a slow aurora of three drifting blobs, fine horizontal
+   scanlines over it, grain, and a vignette that closes the edges. */
 .bg-layer {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
 }
-.bg-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 35%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 35%, transparent 100%);
+.aurora {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.55;
+  will-change: transform;
 }
-.bg-glow {
-  background:
-    radial-gradient(900px 520px at 82% -4%, rgba(197, 248, 42, 0.11), transparent 62%),
-    radial-gradient(700px 520px at 6% 46%, rgba(127, 227, 107, 0.06), transparent 64%),
-    radial-gradient(900px 420px at 50% 112%, rgba(197, 248, 42, 0.07), transparent 66%);
+.aurora-a {
+  top: -22vh;
+  right: -8vw;
+  width: 62vw;
+  height: 62vh;
+  background: radial-gradient(circle, rgba(138, 123, 255, 0.55), transparent 68%);
+  animation: drift-a 34s ease-in-out infinite alternate;
+}
+.aurora-b {
+  bottom: -28vh;
+  left: -12vw;
+  width: 58vw;
+  height: 58vh;
+  background: radial-gradient(circle, rgba(53, 232, 255, 0.3), transparent 68%);
+  animation: drift-b 44s ease-in-out infinite alternate;
+}
+.aurora-c {
+  top: 32vh;
+  left: 38vw;
+  width: 40vw;
+  height: 44vh;
+  background: radial-gradient(circle, rgba(214, 92, 255, 0.22), transparent 70%);
+  animation: drift-c 52s ease-in-out infinite alternate;
+}
+@keyframes drift-a {
+  to {
+    transform: translate3d(-8vw, 10vh, 0) scale(1.15);
+  }
+}
+@keyframes drift-b {
+  to {
+    transform: translate3d(10vw, -8vh, 0) scale(1.2);
+  }
+}
+@keyframes drift-c {
+  to {
+    transform: translate3d(-12vw, -12vh, 0) scale(0.85);
+  }
+}
+.bg-scanlines {
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.028) 0 1px,
+    transparent 1px 4px
+  );
 }
 .bg-noise {
-  opacity: 0.05;
+  opacity: 0.045;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.cursor-glow {
+.bg-vignette {
+  background: radial-gradient(125% 100% at 50% 38%, transparent 42%, var(--void) 100%);
+}
+
+/* The pointer does not carry a light: it uncovers a dot matrix that is there
+   all along, plus a thin ring so the hit point stays legible. */
+.cursor-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(138, 123, 255, 0.85) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(
+    circle 190px at var(--cx, -999px) var(--cy, -999px),
+    #000 0%,
+    rgba(0, 0, 0, 0.35) 45%,
+    transparent 72%
+  );
+  -webkit-mask-image: radial-gradient(
+    circle 190px at var(--cx, -999px) var(--cy, -999px),
+    #000 0%,
+    rgba(0, 0, 0, 0.35) 45%,
+    transparent 72%
+  );
+}
+.cursor-ring {
   position: fixed;
   left: 0;
   top: 0;
-  width: 520px;
-  height: 520px;
-  margin: -260px 0 0 -260px;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
   border-radius: 50%;
+  border: 1px solid rgba(53, 232, 255, 0.5);
+  box-shadow: 0 0 22px rgba(53, 232, 255, 0.25), inset 0 0 12px rgba(138, 123, 255, 0.3);
   pointer-events: none;
   z-index: 0;
-  background: radial-gradient(circle, rgba(197, 248, 42, 0.07), transparent 62%);
   transform: translate3d(var(--cx, -999px), var(--cy, -999px), 0);
+  transition: transform 0.09s linear;
 }
 
 @layer components {
@@ -226,28 +295,28 @@ body {
   right: 12%;
   top: -1px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(197, 248, 42, 0.5), transparent);
-  opacity: 0.6;
+  background: linear-gradient(90deg, transparent, rgba(138, 123, 255, 0.7), rgba(53, 232, 255, 0.7), transparent);
+  opacity: 0.65;
   pointer-events: none;
 }
 .glass-hover {
   transition: border-color 0.35s var(--ease), transform 0.35s var(--ease);
 }
 .glass-hover:hover {
-  border-color: var(--line-acid);
+  border-color: var(--line-sig);
 }
 
 /* ── Buttons ────────────────────────────────────────────────────────────── */
 .btn-primary {
-  background: var(--acid);
-  color: #0a1206;
+  background: linear-gradient(135deg, #a89bff, #5ff0ff);
+  color: #0a0a18;
   border-radius: 999px;
   font-weight: 700;
   transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), opacity 0.2s;
 }
 .btn-primary:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 34px rgba(197, 248, 42, 0.28), 0 0 0 4px var(--acid-dim);
+  box-shadow: 0 10px 34px rgba(122, 116, 255, 0.35), 0 0 0 4px var(--sig-dim);
 }
 .btn-primary:disabled {
   cursor: not-allowed;
@@ -261,8 +330,8 @@ body {
   transition: border-color 0.25s var(--ease), background 0.25s var(--ease), color 0.25s;
 }
 .btn-ghost:not(:disabled):hover {
-  border-color: var(--line-acid);
-  background: rgba(197, 248, 42, 0.06);
+  border-color: var(--line-sig);
+  background: rgba(138, 123, 255, 0.09);
   color: var(--ink);
 }
 
@@ -286,8 +355,11 @@ body {
   text-transform: uppercase;
 }
 .text-glow {
-  color: var(--acid);
-  text-shadow: 0 0 60px rgba(197, 248, 42, 0.35);
+  background: linear-gradient(105deg, var(--sig) 15%, var(--sig-2) 85%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 34px rgba(138, 123, 255, 0.35));
 }
 }
 
@@ -300,12 +372,12 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1d231b;
+  background: #232842;
   border-radius: 999px;
   border: 3px solid var(--void);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2c3529;
+  background: #343b60;
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
@@ -313,7 +385,7 @@ body {
 
 /* ── Focus ──────────────────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 1px solid var(--acid);
+  outline: 1px solid var(--sig-2);
   outline-offset: 2px;
 }
 

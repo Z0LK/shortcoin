@@ -121,7 +121,7 @@ export function PayoffChart({
                 aria-pressed={horizon === h}
                 className={cn(
                   'rounded-md px-1.5 py-[2px] text-micro font-semibold',
-                  horizon === h ? 'bg-acid text-accent-ink' : 'text-ink-3 hover:text-ink',
+                  horizon === h ? 'bg-sig text-accent-ink' : 'text-ink-3 hover:text-ink',
                 )}
               >
                 {t(`payoff.horizon.${h}`)}
@@ -223,9 +223,9 @@ export function PayoffChart({
         </g>
 
         {/* The payoff itself */}
-        <polyline points={geo.pts.join(" ")} fill="none" stroke="var(--acid)" strokeWidth="1.8" strokeLinejoin="round" style={{ filter: "drop-shadow(0 0 6px rgba(197,248,42,0.45))" }} />
+        <polyline points={geo.pts.join(" ")} fill="none" stroke="var(--sig)" strokeWidth="1.8" strokeLinejoin="round" style={{ filter: "drop-shadow(0 0 6px rgba(138,123,255,0.5))" }} />
         {geo.kinks.map((k) => (
-          <circle key={k.m} cx={geo.x(k.m)} cy={geo.y(k.v)} r="2.2" fill="var(--acid)" />
+          <circle key={k.m} cx={geo.x(k.m)} cy={geo.y(k.v)} r="2.2" fill="var(--sig)" />
         ))}
 
         {/* Where an open position is right now */}

@@ -54,7 +54,7 @@ function Identity({ row }: { row: TokenRow }) {
       <div className="flex items-start gap-3">
         <span
           aria-hidden
-          className="num grid size-12 shrink-0 place-items-center rounded-[14px] text-sm text-[#0a0c10] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)]"
+          className="num grid size-12 shrink-0 place-items-center rounded-[14px] text-sm text-[#07060f] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)]"
           style={{ background: `hsl(${asset?.logoHue ?? 200} 58% 60%)` }}
         >
           {row.symbol.slice(0, 2)}
