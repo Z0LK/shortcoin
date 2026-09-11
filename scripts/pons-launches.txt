@@ -10,7 +10,10 @@
 # the thing Robinhood Chain invented.
 #
 # A handful of the launchpad's actual listings are slurs or sexual content and
-# have been left out. Everything else is verbatim.
+# have been left out. Everything else is verbatim — including the three extra
+# "Eloncoin" launches below, which are real, separate contracts. Impersonation
+# is the norm on a launchpad, and the search has to flag it (SPEC §3), so the
+# duplicates stay in rather than being tidied away.
 
 ZTHA|Zero To Hero Academy|0.0000411403|41140|0|87|ETH|2026-09-10|0x74107707964A2F5344470Fb3F11c5Db955851654
 NEX|Nexsets|0.0000234481|23448|0|55|ETH|2026-09-10|0xB62a51F2572E2Fe6f98a2338c8D33bdaC917D6B3
@@ -102,3 +105,6 @@ LOX|loxley.partners|0.00000441595|4416|0|1|ETH|2026-09-10|0x9D777409C8270F37c47A
 RETRO|Retro Media|0.00000440180|4402|0|1|ETH|2026-09-10|0xcF7022E990F743a948c343f810D93055e2312cF6
 BASTEROID|Baby Asteroid|0.00000433156|4332|0|0|SPCX|2026-08-01|0xe0Ea205Cf134945Fa706eB7A9eDC4fAd5F60a021
 APPLS|Apple Stock|0.00000431003|4310|0|0|ETH|2026-09-10|0x1D012d707825db4563Ac5ED92B560421c6bC0Efe
+ELONCOIN|Eloncoin|0.00000507938|5079|0|4|SPCX|2026-09-10|0x84b527A4753014b46Ab9035A052f16006a8B20B0
+ElonCoin|Eloncoin|0.00000530542|5305|0|4|SPCX|2026-09-10|0x870E2eb30A037889Be4018eA9Ab3D402Bf5bc2Cc
+eloncoin|ELONCOIN|0.00000539855|5399|0|0|SPCX|2026-09-10|0xD9f4A8Af6622039B1BCb643Eb6D034FAcf8ACF91

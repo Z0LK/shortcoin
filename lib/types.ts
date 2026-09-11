@@ -10,10 +10,6 @@
 /** Unix timestamp in SECONDS (lightweight-charts uses seconds, not ms). */
 export type UtcSeconds = number
 
-/**
- * Kept as a type because the position maths in `lib/inversion.ts` is written for
- * both directions, but SHORTCOIN only ever opens shorts.
- */
 export type Side = 'long' | 'short'
 
 /** Which synthetic-inverse transform is applied to build the short instrument. */
@@ -101,7 +97,7 @@ export interface Asset {
   logoHue: number
 
   price: number
-  /** Session open, used as the default inversion anchor. */
+  /** Session open. */
   anchor: number
   change1h: number
   change24h: number

@@ -1,5 +1,5 @@
-import { Scanner } from '@/components/scanner/scanner'
+import { TokenList } from '@/components/scanner/token-list'
 
-export default function DiscoverPage() {
-  return <Scanner />
+export default function TokensPage() {
+  return <TokenList />
 }

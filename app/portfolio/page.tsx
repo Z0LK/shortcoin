@@ -1,10 +1,6 @@
-import { Portfolio } from '@/components/portfolio/portfolio'
+import { redirect } from 'next/navigation'
 
-export const metadata = {
-  title: 'Portfolio — SHORTCOIN',
-  description: 'Open positions, exposure and simulated PnL across Robinhood Chain tokens.',
-}
-
+/** The portfolio screen became Positions when the product changed shape. */
 export default function PortfolioPage() {
-  return <Portfolio />
+  redirect('/positions')
 }

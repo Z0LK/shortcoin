@@ -1,48 +1,41 @@
 'use client'
 
 /**
- * ⌘K. Symbol search.
+ * ⌘K — search.
  *
- * Keyboard-first because the target user does not reach for a mouse to change
- * chart. Opening it is also how the header search behaves, so there is exactly
- * one search surface in the product.
+ * SPEC §3: a search always resolves to a state, never to nothing.
+ *   valid address, indexed   → the token, with its status and reason
+ *   valid address, unknown   → "this token has no tracked pool" + request listing
+ *   malformed address        → a format error, which is not the same as missing
+ *   a name                   → several results, each with its truncated address
+ *                              visible and a badge on homonyms
  *
- * Ranking lives in lib/search.ts. It matters here more than in most products:
- * a hundred of these listings are memecoins whose tickers deliberately collide
- * with the equities they are quoted against.
+ * The name never identifies a token on its own — impersonation is the norm on
+ * a launchpad — so the address is on every line and copyable from the list.
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CornerDownLeft, Search } from 'lucide-react'
-import { ASSETS, isStockPaired } from '@/lib/assets'
-import { ageLabel, pct, price, shortAddress, usdAbbr } from '@/lib/format'
-import { useStore } from '@/lib/store'
-import { looksLikeAddress, searchAssets } from '@/lib/search'
-import { cn } from '@/lib/utils'
+import { AlertTriangle, CornerDownLeft, Search, Send } from 'lucide-react'
+import { useRuntime } from '@/components/protocol/provider'
+import { AddressChip, StatusBadge } from '@/components/ui/protocol-ui'
 import { Pill } from '@/components/ui/primitives'
-
-interface ChainToken {
-  source: 'chain' | 'listed'
-  address: string
-  symbol: string
-  name: string
-  supply?: number
-}
-
-type ChainLookup =
-  | { state: 'idle' }
-  | { state: 'loading' }
-  | { state: 'found'; token: ChainToken }
-  | { state: 'missing' }
-  | { state: 'error' }
+import { formatBps } from '@/lib/protocol/fixed'
+import type { SearchResult } from '@/lib/protocol/types'
+import { resolveAsset } from '@/lib/universe'
+import { useT } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 export function CommandPalette() {
+  const { t } = useT()
   const router = useRouter()
-  const unit = useStore((s) => s.unit)
+  const rt = useRuntime()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [loading, setLoading] = useState(false)
   const [cursor, setCursor] = useState(0)
+  const [requested, setRequested] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -63,72 +56,64 @@ export function CommandPalette() {
   }, [])
 
   useEffect(() => {
-    if (open) {
-      setQuery('')
-      setCursor(0)
-      requestAnimationFrame(() => inputRef.current?.focus())
-    }
+    if (!open) return
+    setQuery('')
+    setResults([])
+    setCursor(0)
+    setRequested(null)
+    requestAnimationFrame(() => inputRef.current?.focus())
   }, [open])
 
-  const hits = useMemo(() => searchAssets(ASSETS, query, 12), [query])
-  const results = useMemo(() => hits.map((h) => h.asset), [hits])
-
-  // A full contract address that matches nothing locally is not a dead end: the
-  // chain knows what it is even when our lists do not. Ask it.
-  const [chain, setChain] = useState<ChainLookup>({ state: 'idle' })
-  const trimmed = query.trim()
-  const shouldLookUp = /^0x[0-9a-fA-F]{40}$/.test(trimmed) && hits.length === 0
-
+  // Debounced: a pasted address triggers one lookup, not forty-two.
   useEffect(() => {
-    if (!shouldLookUp) {
-      setChain({ state: 'idle' })
+    if (!rt || !open) return
+    const q = query.trim()
+    if (!q) {
+      setResults([])
+      setLoading(false)
       return
     }
     let cancelled = false
-    setChain({ state: 'loading' })
-    const t = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/token?address=${trimmed}`)
-        if (cancelled) return
-        if (!res.ok) {
-          setChain({ state: 'missing' })
-          return
-        }
-        setChain({ state: 'found', token: await res.json() })
-      } catch {
-        if (!cancelled) setChain({ state: 'error' })
-      }
-    }, 220)
+    setLoading(true)
+    const id = setTimeout(async () => {
+      const r = await rt.adapter.search(q).catch(() => [])
+      if (cancelled) return
+      setResults(r)
+      setCursor(0)
+      setLoading(false)
+    }, 180)
     return () => {
       cancelled = true
-      clearTimeout(t)
+      clearTimeout(id)
     }
-  }, [shouldLookUp, trimmed])
+  }, [query, rt, open])
 
-  const commit = (i: number) => {
-    const asset = results[i]
-    if (!asset) return
-    router.push(`/t/${asset.symbol}`)
+  const go = (r: SearchResult | undefined) => {
+    if (!r) return
+    if (r.kind === 'token') router.push(`/t/${r.token.symbol}`)
+    else if (r.kind === 'untracked') router.push(`/t/${r.address}`)
+    else return
     setOpen(false)
   }
 
-  const openChainToken = () => {
-    if (chain.state !== 'found') return
-    router.push(
-      chain.token.source === 'listed' ? `/t/${chain.token.symbol}` : `/t/${chain.token.address}`,
-    )
-    setOpen(false)
+  const request = async (address: `0x${string}`) => {
+    await rt?.adapter.requestListing(address)
+    setRequested(address)
   }
 
   if (!open) return null
 
+  const tokens = results.filter((r): r is Extract<SearchResult, { kind: 'token' }> => r.kind === 'token')
+  const untracked = results.find((r): r is Extract<SearchResult, { kind: 'untracked' }> => r.kind === 'untracked')
+  const invalid = results.find((r) => r.kind === 'invalid-address')
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 pt-[12vh] backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 px-2 pt-[8vh] backdrop-blur-[2px] sm:pt-[12vh]"
       onMouseDown={() => setOpen(false)}
     >
       <div
-        className="w-full max-w-[560px] overflow-hidden rounded-lg border border-line-strong bg-surface shadow-2xl shadow-black/60"
+        className="w-full max-w-[620px] overflow-hidden rounded-lg border border-line-strong bg-surface shadow-2xl shadow-black/60"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2.5 border-b border-line px-3.5">
@@ -136,14 +121,11 @@ export function CommandPalette() {
           <input
             ref={inputRef}
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value)
-              setCursor(0)
-            }}
+            onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'ArrowDown') {
                 e.preventDefault()
-                setCursor((c) => Math.min(c + 1, results.length - 1))
+                setCursor((c) => Math.min(c + 1, Math.max(tokens.length - 1, 0)))
               }
               if (e.key === 'ArrowUp') {
                 e.preventDefault()
@@ -151,142 +133,109 @@ export function CommandPalette() {
               }
               if (e.key === 'Enter') {
                 e.preventDefault()
-                if (chain.state === 'found') openChainToken()
-                else commit(cursor)
+                go(tokens[cursor] ?? untracked)
               }
             }}
-            placeholder="Search a ticker, coin, company or contract address…"
-            className="h-12 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-4"
+            placeholder={t('search.placeholder')}
+            spellCheck={false}
+            className="h-12 flex-1 bg-transparent text-sm text-ink outline-hidden placeholder:text-ink-4"
           />
-          <kbd className="num rounded-[3px] border border-line px-1.5 py-0.5 text-micro text-ink-4">
-            ESC
-          </kbd>
+          <kbd className="num rounded-[3px] border border-line px-1.5 py-0.5 text-micro text-ink-4">ESC</kbd>
         </div>
 
-        <div className="max-h-[52vh] overflow-y-auto py-1.5">
-          {/* ── on-chain lookup ─────────────────────────────────────────── */}
-          {chain.state === 'loading' && (
-            <div className="flex items-center gap-2.5 px-3.5 py-3">
-              <span className="pulse-dot size-1.5 shrink-0 rounded-full bg-accent" />
-              <span className="text-xs text-ink-3">Reading Robinhood Chain…</span>
+        <div className="max-h-[60vh] overflow-y-auto py-1.5">
+          {loading && <p className="px-3.5 py-3 text-xs text-ink-3">{t('search.loading')}</p>}
+
+          {!loading && invalid && (
+            <div className="flex gap-3 px-3.5 py-4">
+              <AlertTriangle size={16} className="mt-0.5 shrink-0 text-warn" />
+              <div>
+                <p className="text-xs font-semibold text-warn">{t('search.invalid.title')}</p>
+                <p className="mt-1 text-mini text-ink-3">{t('search.invalid.body')}</p>
+              </div>
             </div>
           )}
 
-          {chain.state === 'found' && (
-            <button
-              onClick={openChainToken}
-              className="flex w-full items-center gap-3 bg-raised px-3.5 py-2.5 text-left"
-            >
-              <span
-                className="num grid size-6 shrink-0 place-items-center rounded-[4px] text-micro font-bold text-void"
-                style={{ background: `hsl(${(chain.token.symbol.charCodeAt(0) * 37) % 360} 62% 58%)` }}
-              >
-                {chain.token.symbol.slice(0, 2)}
-              </span>
-              <span className="flex w-[128px] shrink-0 items-center gap-1.5">
-                <span className="truncate text-xs font-semibold text-ink">
-                  {chain.token.symbol}
-                </span>
-                <Pill tone={chain.token.source === 'listed' ? 'neutral' : 'long'}>
-                  {chain.token.source === 'listed' ? 'LISTED' : 'ON-CHAIN'}
-                </Pill>
-              </span>
-              <span className="flex min-w-0 flex-1 flex-col leading-tight">
-                <span className="truncate text-xs text-ink-3">{chain.token.name}</span>
-                <span className="num truncate text-micro text-info">
-                  {shortAddress(chain.token.address, 10, 8)}
-                </span>
-              </span>
-              <CornerDownLeft size={12} className="shrink-0 text-ink-4" />
-            </button>
-          )}
-
-          {chain.state === 'missing' && (
-            <div className="px-3.5 py-8 text-center">
-              <p className="text-xs text-ink-3">Nothing at that address.</p>
-              <p className="mt-1 text-mini text-ink-4">
-                Robinhood Chain has no contract there, or it is not an ERC-20.
-              </p>
-            </div>
-          )}
-
-          {chain.state === 'error' && (
-            <div className="px-3.5 py-8 text-center">
-              <p className="text-xs text-ink-3">Could not reach the chain.</p>
-              <p className="mt-1 text-mini text-ink-4">The public RPC did not answer. Try again.</p>
-            </div>
-          )}
-
-          {results.length === 0 && chain.state === 'idle' && (
-            <div className="px-3.5 py-8 text-center">
-              <p className="text-xs text-ink-3">Nothing matches “{query}”.</p>
-              <p className="mt-1 text-mini text-ink-4">
-                {looksLikeAddress(query)
-                  ? 'Paste the full 42-character address and it will be read straight off the chain.'
-                  : 'Try a ticker, a company name, or paste a contract address.'}
-              </p>
-            </div>
-          )}
-
-          {hits.map((hit, i) => {
-            const asset = hit.asset
-            const isCoin = asset.assetClass === 'coin'
-            return (
-              <button
-                key={asset.symbol}
-                onMouseEnter={() => setCursor(i)}
-                onClick={() => commit(i)}
-                className={cn(
-                  'flex w-full items-center gap-3 px-3.5 py-2 text-left',
-                  i === cursor ? 'bg-raised' : 'hover:bg-raised/50',
-                )}
-              >
-                <span
-                  className="num grid size-6 shrink-0 place-items-center rounded-[4px] text-micro font-bold text-void"
-                  style={{ background: `hsl(${asset.logoHue} 62% 58%)` }}
-                >
-                  {asset.symbol.slice(0, 2)}
-                </span>
-
-                <span className="flex w-[128px] shrink-0 items-center gap-1.5">
-                  <span className="truncate text-xs font-semibold text-ink">{asset.symbol}</span>
-                  <Pill tone={isCoin ? 'accent' : 'neutral'}>{isCoin ? 'COIN' : 'STOCK'}</Pill>
-                </span>
-
-                <span className="flex min-w-0 flex-1 flex-col leading-tight">
-                  <span className="truncate text-xs text-ink-3">{asset.name}</span>
-                  <span className="flex items-center gap-1.5 text-micro text-ink-4">
-                    {/* When the match came off the address, show the address —
-                        otherwise the row gives no clue why it is in the list. */}
-                    {hit.reason === 'address' ? (
-                      <span className="num text-info">{shortAddress(asset.address, 8, 6)}</span>
-                    ) : (
-                      <>
-                        <span>{usdAbbr(asset.liquidity)} liq</span>
-                        {asset.ageHours !== undefined && <span>· {ageLabel(asset.ageHours)}</span>}
-                        {isStockPaired(asset) && (
-                          <span className="num text-info">· /{asset.quote}</span>
-                        )}
-                      </>
+          {!loading && untracked && (
+            <div className="px-3.5 py-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Pill tone="neutral">{t('status.UNTRACKED')}</Pill>
+                    {untracked.symbol && (
+                      <span className="truncate text-xs font-semibold text-ink">
+                        {untracked.symbol}
+                        {untracked.name && <span className="font-normal text-ink-3"> · {untracked.name}</span>}
+                      </span>
                     )}
-                  </span>
-                </span>
+                  </div>
+                  <p className="mt-2 text-xs font-semibold text-ink">{t('search.untracked.title')}</p>
+                  <p className="mt-1 text-mini text-ink-3">{t('search.untracked.body')}</p>
+                  <div className="mt-2">
+                    <AddressChip address={untracked.address} head={10} tail={8} />
+                  </div>
+                  {untracked.symbol && <p className="mt-1 text-micro text-ink-4">{t('search.onChain')}</p>}
+                </div>
+                <button
+                  onClick={() => request(untracked.address)}
+                  disabled={requested === untracked.address}
+                  className="flex shrink-0 items-center gap-1.5 rounded-[5px] border border-line-strong px-2.5 py-1.5 text-mini font-semibold text-ink transition-colors hover:bg-raised disabled:cursor-default disabled:border-long/40 disabled:text-long"
+                >
+                  <Send size={11} />
+                  {requested === untracked.address ? t('search.untracked.requested') : t('search.untracked.request')}
+                </button>
+              </div>
+            </div>
+          )}
 
-                <span className="num text-xs text-ink-2">
-                  {unit === 'mcap' ? usdAbbr(asset.marketCap) : price(asset.price)}
-                </span>
-                <span
+          {!loading &&
+            tokens.map((r, i) => {
+              const asset = resolveAsset(r.token.symbol)
+              return (
+                <div
+                  key={r.token.address}
+                  role="button"
+                  tabIndex={-1}
+                  onMouseEnter={() => setCursor(i)}
+                  onClick={() => go(r)}
                   className={cn(
-                    'num w-[62px] text-right text-xs',
-                    asset.change24h >= 0 ? 'text-long' : 'text-short',
+                    'flex w-full cursor-pointer items-center gap-3 px-3.5 py-2 text-left',
+                    i === cursor ? 'bg-raised' : 'hover:bg-raised/50',
                   )}
                 >
-                  {pct(asset.change24h, 1)}
-                </span>
-                {i === cursor && <CornerDownLeft size={12} className="shrink-0 text-ink-4" />}
-              </button>
-            )
-          })}
+                  <span
+                    className="num grid size-7 shrink-0 place-items-center rounded-[4px] text-micro font-bold text-void"
+                    style={{ background: `hsl(${asset?.logoHue ?? 200} 62% 58%)` }}
+                  >
+                    {r.token.symbol.slice(0, 2)}
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5 leading-tight">
+                    <span className="flex items-center gap-1.5">
+                      <span className="truncate text-xs font-semibold text-ink">{r.token.symbol}</span>
+                      <span className="truncate text-mini text-ink-3">{r.token.name}</span>
+                      {r.homonym && (
+                        <Pill tone="warn" title={t('search.homonymHint')} className="shrink-0">
+                          {t('search.homonym')}
+                        </Pill>
+                      )}
+                    </span>
+                    <AddressChip address={r.token.address} head={8} tail={6} />
+                  </span>
+                  <span className="hidden flex-col items-end gap-1 sm:flex">
+                    <StatusBadge info={r.token.status} row={r.token} />
+                    <span className="num text-micro text-ink-4">{formatBps(r.token.dailyRateBps)}</span>
+                  </span>
+                  {i === cursor && <CornerDownLeft size={12} className="shrink-0 text-ink-4" />}
+                </div>
+              )
+            })}
+
+          {!loading && query.trim() && results.length === 0 && (
+            <div className="px-3.5 py-8 text-center">
+              <p className="text-xs text-ink-3">{t('search.none', { q: query.trim() })}</p>
+              <p className="mt-1 text-mini text-ink-4">{t('search.noneHint')}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

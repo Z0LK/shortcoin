@@ -9,43 +9,18 @@
  * one symbol they care about and hold their own tiny piece of state.
  */
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
-import { ASSETS } from '@/lib/assets'
-import { MarketEngine, type Interval, type Tick } from '@/lib/sim'
+import { useEffect, useRef, useState } from 'react'
+import { useRuntime } from '@/components/protocol/provider'
+import type { Interval, MarketEngine, Tick } from '@/lib/sim'
 import type { Asset } from '@/lib/types'
 
-const MarketContext = createContext<MarketEngine | null>(null)
-
-export function MarketProvider({ children }: { children: ReactNode }) {
-  // Built once, on the client, so the server never simulates anything.
-  const engine = useMemo(() => new MarketEngine(ASSETS, '1m', 700), [])
-
-  useEffect(() => {
-    engine.start()
-    const onVisibility = () => {
-      if (document.hidden) engine.stop()
-      else engine.start()
-    }
-    document.addEventListener('visibilitychange', onVisibility)
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibility)
-      engine.stop()
-    }
-  }, [engine])
-
-  return <MarketContext.Provider value={engine}>{children}</MarketContext.Provider>
-}
-
+/**
+ * The spot engine is owned by the protocol runtime, so the paper adapter and
+ * every price cell on screen read the same ticks. On testnet and mainnet the
+ * engine is idle and the indexer supplies prices instead.
+ */
 export function useMarket(): MarketEngine | null {
-  return useContext(MarketContext)
+  return useRuntime()?.engine ?? null
 }
 
 /** Subscribe to a symbol without re-rendering: the callback gets every tick. */
@@ -73,7 +48,7 @@ export interface LivePrice {
  * The first render deliberately returns the seed price so SSR and hydration
  * agree; movement starts on the first tick after mount.
  */
-export function useLivePrice(asset: Asset): LivePrice {
+export function useLivePrice(asset: Pick<Asset, 'symbol' | 'price'>): LivePrice {
   const [state, setState] = useState<LivePrice>({ price: asset.price, dir: 0, seq: 0 })
   const last = useRef(asset.price)
 

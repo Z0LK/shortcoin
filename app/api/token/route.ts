@@ -7,7 +7,6 @@
 
 import { NextResponse } from 'next/server'
 import { isAddress, readToken } from '@/lib/chain'
-import { toPayload } from '@/lib/imported'
 import { resolveAsset } from '@/lib/universe'
 import { ASSETS } from '@/lib/assets'
 
@@ -40,5 +39,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'not-a-token' }, { status: 404 })
   }
 
-  return NextResponse.json({ source: 'chain', ...toPayload(token) })
+  return NextResponse.json({
+    source: 'chain',
+    address: token.address,
+    symbol: token.symbol,
+    name: token.name,
+    decimals: token.decimals,
+    supply: token.supply,
+  })
 }
