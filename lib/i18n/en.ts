@@ -21,11 +21,11 @@ export const en: Record<MessageKey, string> = {
   'nav.alerts': 'Barrier alerts',
   'nav.language': 'Language',
 
-  'home.kicker': 'Robinhood Chain · capped short',
-  'home.title1': 'Bet against',
-  'home.title2': 'any token.',
+  'home.kicker': 'Robinhood Chain · spot and short',
+  'home.title1': 'Buy, sell,',
+  'home.title2': 'short.',
   'home.tagline':
-    'Bet against any eligible token. Loss capped at your collateral, gain capped at 100%.',
+    'Every coin on Robinhood Chain. Spot in one click, shorts capped at your collateral.',
 
   'status.ELIGIBLE': 'Openable',
   'status.WARMUP': 'Warm-up',

@@ -3,6 +3,14 @@
 /**
  * SPEC §4E — the risk portal.
  *
+ * Shown the first time someone picks the Short tab, not on arrival: since the
+ * platform also buys and sells spot, a person who came to buy a token has no
+ * business acknowledging a knock-out. Cancelling goes back to buying.
+ *
+ * Rendered into document.body: it is mounted from inside the ticket column,
+ * whose sticky wrapper is its own stacking context, and a fixed overlay left
+ * there paints under the chart's controls.
+ *
  * Blocking, once, three boxes, three sentences. Not a legal wall: each box is a
  * consequence the person will actually live through — the knock-out, the
  * premium eating the collateral, and a settlement price that will not match
@@ -10,6 +18,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ShieldAlert } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { useT, type MessageKey } from '@/lib/i18n'
@@ -17,7 +26,7 @@ import { cn } from '@/lib/utils'
 
 const POINTS: MessageKey[] = ['risk.1', 'risk.2', 'risk.3']
 
-export function RiskPortal() {
+export function RiskPortal({ onCancel }: { onCancel?: () => void }) {
   const { t } = useT()
   const acknowledged = useStore((s) => s.riskAcknowledgedAt)
   const acknowledge = useStore((s) => s.acknowledgeRisk)
@@ -35,14 +44,14 @@ export function RiskPortal() {
   if (!hydrated || acknowledged) return null
   const ready = checked.every(Boolean)
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="risk-title"
       className="fixed inset-0 z-[60] flex items-end justify-center bg-black/80 p-0 sm:items-center sm:p-4"
     >
-      <div className="panel w-full max-w-[460px] rounded-b-none bg-overlay p-5 shadow-[0_16px_40px_rgba(0,0,0,0.6)] sm:rounded-b-[6px]">
+      <div className="panel w-full max-w-[460px] rounded-b-none bg-overlay p-5 shadow-[0_16px_40px_rgba(0,0,0,0.6)] sm:rounded-b-[18px]">
         <div className="mb-4 flex items-center gap-2">
           <ShieldAlert size={18} className="text-short" />
           <h2 id="risk-title" className="text-base font-semibold">
@@ -55,7 +64,7 @@ export function RiskPortal() {
             <label
               key={key}
               className={cn(
-                'flex cursor-pointer items-start gap-3 rounded-[4px] border p-3 transition-colors',
+                'flex cursor-pointer items-start gap-3 rounded-[12px] border p-3 transition-colors',
                 checked[i] ? 'border-short/40 bg-short/5' : 'border-line bg-sunken hover:border-line-strong',
               )}
             >
@@ -63,7 +72,7 @@ export function RiskPortal() {
                 type="checkbox"
                 checked={checked[i]}
                 onChange={(e) => setChecked((c) => c.map((v, j) => (j === i ? e.target.checked : v)))}
-                className="mt-0.5 size-4 shrink-0 accent-[var(--sig)]"
+                className="mt-0.5 size-4 shrink-0 accent-[var(--v)]"
               />
               <span className="text-sm leading-snug text-ink">{t(key)}</span>
             </label>
@@ -77,7 +86,13 @@ export function RiskPortal() {
         >
           {t('risk.accept')}
         </button>
+        {onCancel && (
+          <button onClick={onCancel} className="mt-2 h-10 w-full text-sm text-ink-3 transition-colors hover:text-ink">
+            {t('common.cancel')}
+          </button>
+        )}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

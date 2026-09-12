@@ -9,6 +9,7 @@
 
 import { useState } from 'react'
 import { OpenTicket } from '@/components/ticket/open-ticket'
+import { RiskPortal } from '@/components/shell/risk-portal'
 import { TradeTicket } from '@/components/ticket/trade-ticket'
 import type { TokenRow } from '@/lib/protocol/types'
 import { useT } from '@/lib/i18n'
@@ -50,6 +51,8 @@ export function TradePanel({ token }: { token: TokenRow }) {
         ))}
       </div>
       {tab === 'short' ? <OpenTicket token={token} /> : <TradeTicket token={token} side={tab} />}
+      {/* Renders nothing once acknowledged. */}
+      {tab === 'short' && <RiskPortal onCancel={() => setTab('buy')} />}
     </div>
   )
 }

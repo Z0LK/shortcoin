@@ -28,7 +28,7 @@ export function Holdings() {
     <div className="flex flex-col gap-3">
       <section className="panel overflow-hidden">
         <header className="flex h-[var(--head-h)] items-center border-b border-line px-4">
-          <h2 className="text-sm font-semibold">{t('portfolio.holdings')}</h2>
+          <h2 className="font-display text-sm font-semibold">{t('portfolio.holdings')}</h2>
         </header>
         {rows.length === 0 ? (
           <div className="grid place-items-center gap-1 px-4 py-14 text-center">
@@ -80,7 +80,7 @@ export function Holdings() {
 
       <section className="panel overflow-hidden">
         <header className="flex h-[var(--head-h)] items-center border-b border-line px-4">
-          <h2 className="text-sm font-semibold">{t('portfolio.trades')}</h2>
+          <h2 className="font-display text-sm font-semibold">{t('portfolio.trades')}</h2>
         </header>
         {fills.length === 0 ? (
           <p className="px-4 py-10 text-center text-mini text-ink-3">{t('portfolio.tradesEmpty')}</p>

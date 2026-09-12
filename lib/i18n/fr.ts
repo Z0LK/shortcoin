@@ -27,11 +27,11 @@ export const fr = {
   'nav.alerts': 'Alertes barrière',
   'nav.language': 'Langue',
 
-  'home.kicker': 'Robinhood Chain · short plafonné',
-  'home.title1': 'Pariez contre',
-  'home.title2': 'tout token.',
+  'home.kicker': 'Robinhood Chain · spot et short',
+  'home.title1': 'Achetez, vendez,',
+  'home.title2': 'shortez.',
   'home.tagline':
-    'Pariez à la baisse sur n’importe quel token éligible. Perte plafonnée à votre collatéral, gain plafonné à 100%.',
+    'Tous les coins de Robinhood Chain. Le spot en un clic, le short plafonné à votre collatéral.',
 
   // ── statuts (SPEC §6) ─────────────────────────────────────────────────
   'status.ELIGIBLE': 'Ouvrable',

@@ -92,7 +92,7 @@ export function TwapChart({
         textColor: css('--ink-3', '#5c6472'),
         fontSize: 10,
         // A canvas font string cannot resolve var(): read the loaded family.
-        fontFamily: `${css('--font-numeric', '')}, ui-monospace, monospace`.replace(/^, /, ''),
+        fontFamily: `${css('--font-ui', '')}, ui-monospace, monospace`.replace(/^, /, ''),
         attributionLogo: false,
       },
       grid: {
@@ -220,7 +220,7 @@ export function TwapChart({
                   key={u}
                   onClick={() => setUnit(u)}
                   aria-pressed={unit === u}
-                  className={cn('num rounded-[3px] px-2 py-[2px] text-micro font-semibold', unit === u ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink')}
+                  className={cn('num rounded-full px-2 py-[2px] text-micro font-semibold', unit === u ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink')}
                 >
                   {u === 'mcap' ? 'MC' : 'PRICE'}
                 </button>
@@ -233,7 +233,7 @@ export function TwapChart({
                 key={i}
                 onClick={() => setIntervalValue(i)}
                 aria-pressed={interval === i}
-                className={cn('num rounded-[3px] px-2 py-[2px] text-micro font-semibold', interval === i ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink')}
+                className={cn('num rounded-full px-2 py-[2px] text-micro font-semibold', interval === i ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink')}
               >
                 {i}
               </button>

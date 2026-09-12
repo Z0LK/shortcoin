@@ -68,7 +68,7 @@ export function Pill({
     <span
       title={title}
       className={cn(
-        'inline-flex items-center gap-1 rounded-[4px] border px-2 py-[2px] text-micro font-medium',
+        'inline-flex items-center gap-1 rounded-[12px] border px-2 py-[2px] text-micro font-medium',
         tones[tone],
         className,
       )}
@@ -95,9 +95,9 @@ export function Meter({
     warn: 'bg-warn',
   }
   return (
-    <div className={cn('h-[3px] w-full overflow-hidden rounded-[4px] bg-line', className)}>
+    <div className={cn('h-[3px] w-full overflow-hidden rounded-[12px] bg-line', className)}>
       <div
-        className={cn('h-full rounded-[4px] transition-[width] duration-500', tones[tone])}
+        className={cn('h-full rounded-[12px] transition-[width] duration-500', tones[tone])}
         style={{ width: `${clamp01(value) * 100}%` }}
       />
     </div>
@@ -144,8 +144,8 @@ export function Button({
 }) {
   const variants: Record<string, string> = {
     accent: 'btn-primary',
-    long: 'rounded-[4px] bg-long text-[#04120b] hover:brightness-110',
-    short: 'rounded-[4px] bg-short text-[#1a0509] hover:brightness-110',
+    long: 'rounded-[12px] bg-long text-[#04120b] hover:brightness-110',
+    short: 'rounded-[12px] bg-short text-[#1a0509] hover:brightness-110',
     ghost: 'btn-ghost',
     outline: 'btn-ghost',
   }
@@ -157,7 +157,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-1.5 rounded-[4px] font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40',
+        'inline-flex items-center justify-center gap-1.5 rounded-[12px] font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40',
         variants[variant],
         sizes[size],
         className,

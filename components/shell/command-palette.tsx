@@ -140,7 +140,7 @@ export function CommandPalette() {
             spellCheck={false}
             className="h-12 flex-1 bg-transparent text-sm text-ink outline-hidden placeholder:text-ink-4"
           />
-          <kbd className="num rounded-[3px] border border-line px-1.5 py-0.5 text-micro text-ink-4">ESC</kbd>
+          <kbd className="num rounded-full border border-line px-1.5 py-0.5 text-micro text-ink-4">ESC</kbd>
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto py-1.5">
@@ -179,7 +179,7 @@ export function CommandPalette() {
                 <button
                   onClick={() => request(untracked.address)}
                   disabled={requested === untracked.address}
-                  className="flex shrink-0 items-center gap-1.5 rounded-[4px] border border-line-strong px-2.5 py-1.5 text-mini font-semibold text-ink transition-colors hover:bg-raised disabled:cursor-default disabled:border-long/40 disabled:text-long"
+                  className="flex shrink-0 items-center gap-1.5 rounded-[12px] border border-line-strong px-2.5 py-1.5 text-mini font-semibold text-ink transition-colors hover:bg-raised disabled:cursor-default disabled:border-long/40 disabled:text-long"
                 >
                   <Send size={11} />
                   {requested === untracked.address ? t('search.untracked.requested') : t('search.untracked.request')}
@@ -204,7 +204,7 @@ export function CommandPalette() {
                   )}
                 >
                   <span
-                    className="num grid size-7 shrink-0 place-items-center rounded-[4px] text-micro font-bold text-void"
+                    className="num grid size-7 shrink-0 place-items-center rounded-[12px] text-micro font-bold text-void"
                     style={{ background: `hsl(${asset?.logoHue ?? 200} 62% 58%)` }}
                   >
                     {r.token.symbol.slice(0, 2)}

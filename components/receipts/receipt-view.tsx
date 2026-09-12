@@ -85,26 +85,26 @@ export function ReceiptView({ positionId }: { positionId: string }) {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="mx-auto flex max-w-[980px] flex-col gap-2.5 p-3 sm:p-4">
+      <div className="mx-auto flex max-w-[980px] flex-col gap-4 p-3 sm:p-6">
         <Link href="/positions" className="flex items-center gap-1 text-mini text-ink-3 hover:text-ink">
           <ArrowLeft size={12} /> {t('nav.positions')}
         </Link>
 
         <header className="flex flex-wrap items-center gap-3">
-          <h1 className="text-sm font-semibold tracking-[-0.01em]">{t('receipt.title')}</h1>
+          <h1 className="font-display text-[clamp(26px,2.8vw,38px)] font-semibold leading-tight tracking-[-0.02em]">{t('receipt.title')}</h1>
           <Pill tone={tone}>{t(`receipt.trigger.${r.trigger}` as MessageKey)}</Pill>
           {symbol && <span className="text-sm font-semibold text-ink-2">{symbol}</span>}
           <span className="num text-micro text-ink-4">{r.positionId}</span>
           <div className="ml-auto flex gap-1.5">
             <button
               onClick={() => download(`receipt-${r.positionId}.json`, 'application/json', toJson(r))}
-              className="flex h-7 items-center gap-1 rounded-[4px] border border-line px-2.5 text-micro font-semibold text-ink-2 hover:bg-raised"
+              className="flex h-7 items-center gap-1 rounded-[12px] border border-line px-2.5 text-micro font-semibold text-ink-2 hover:bg-raised"
             >
               <Download size={11} /> {t('receipt.export.json')}
             </button>
             <button
               onClick={() => download(`receipt-${r.positionId}.csv`, 'text/csv', toCsv(r))}
-              className="flex h-7 items-center gap-1 rounded-[4px] border border-line px-2.5 text-micro font-semibold text-ink-2 hover:bg-raised"
+              className="flex h-7 items-center gap-1 rounded-[12px] border border-line px-2.5 text-micro font-semibold text-ink-2 hover:bg-raised"
             >
               <Download size={11} /> {t('receipt.export.csv')}
             </button>
@@ -147,7 +147,7 @@ export function ReceiptView({ positionId }: { positionId: string }) {
               <AddressChip address={r.keeper} head={10} tail={8} />
             </div>
 
-            <p className="rounded-[4px] border border-line bg-sunken p-2 text-micro leading-relaxed text-ink-3">
+            <p className="rounded-[12px] border border-line bg-sunken p-2 text-micro leading-relaxed text-ink-3">
               {t('receipt.whyTwap')}
             </p>
           </section>

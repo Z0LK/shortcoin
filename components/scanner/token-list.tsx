@@ -106,7 +106,7 @@ const Row = memo(function Row({
         <Link href={`/t/${row.symbol}`} className="flex min-w-0 items-center gap-2">
           <span
             aria-hidden
-            className="num grid size-7 shrink-0 place-items-center rounded-[4px] text-micro font-medium text-[#07060f] "
+            className="num grid size-7 shrink-0 place-items-center rounded-[12px] text-micro font-medium text-[#07060f] "
             style={{ background: `hsl(${asset?.logoHue ?? 200} 58% 60%)` }}
           >
             {row.symbol.slice(0, 2)}
@@ -143,7 +143,7 @@ const Row = memo(function Row({
             </span>
             <span className="text-ink-4">{formatUsdgCompact(row.remainingNotional)}</span>
           </span>
-          <div className="h-[3px] w-full overflow-hidden rounded-[4px] bg-line">
+          <div className="h-[3px] w-full overflow-hidden rounded-[12px] bg-line">
             <div
               className={cn('h-full', remainingPct < 0.15 ? 'bg-short' : remainingPct < 0.35 ? 'bg-warn' : 'bg-long')}
               style={{ width: `${remainingPct * 100}%` }}
@@ -162,7 +162,7 @@ const Row = memo(function Row({
         <span
           key={live.seq}
           className={cn(
-            'rounded-[4px] px-1.5 text-ink-2',
+            'rounded-[12px] px-1.5 text-ink-2',
             live.dir > 0 && 'flash-up',
             live.dir < 0 && 'flash-down',
           )}
@@ -182,7 +182,7 @@ const Row = memo(function Row({
         ) : (
           <span
             title={row.status.reason}
-            className="inline-flex h-7 cursor-not-allowed items-center rounded-[4px] border border-line px-3 text-micro font-semibold text-ink-4"
+            className="inline-flex h-7 cursor-not-allowed items-center rounded-[12px] border border-line px-3 text-micro font-semibold text-ink-4"
           >
             {t('list.open')}
           </span>
@@ -220,7 +220,7 @@ const Card = memo(function Card({ row, bornAt }: { row: TokenRow; bornAt?: numbe
       <div className="flex items-start gap-2.5">
         <span
           aria-hidden
-          className="num grid size-10 shrink-0 place-items-center rounded-[4px] text-mini font-medium text-[#07060f] "
+          className="num grid size-10 shrink-0 place-items-center rounded-[12px] text-mini font-medium text-[#07060f] "
           style={{ background: `hsl(${asset?.logoHue ?? 200} 58% 60%)` }}
         >
           {row.symbol.slice(0, 2)}
@@ -245,7 +245,7 @@ const Card = memo(function Card({ row, bornAt }: { row: TokenRow; bornAt?: numbe
             }}
             aria-pressed={watched}
             aria-label={row.symbol}
-            className={cn('grid size-8 place-items-center rounded-[4px] border border-line', watched ? 'text-warn' : 'text-ink-4')}
+            className={cn('grid size-8 place-items-center rounded-[12px] border border-line', watched ? 'text-warn' : 'text-ink-4')}
           >
             <Star size={15} fill={watched ? 'currentColor' : 'none'} />
           </button>
@@ -265,7 +265,7 @@ const Card = memo(function Card({ row, bornAt }: { row: TokenRow; bornAt?: numbe
               <span className="text-ink-4"> · {formatUsdgCompact(row.remainingNotional)}</span>
             </span>
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-[4px] bg-line">
+          <div className="h-1.5 w-full overflow-hidden rounded-[12px] bg-line">
             <div className={cn('h-full', tone.bg)} style={{ width: `${remainingPct * 100}%` }} />
           </div>
         </div>
@@ -282,7 +282,7 @@ const Card = memo(function Card({ row, bornAt }: { row: TokenRow; bornAt?: numbe
           <p
             key={live.seq}
             className={cn(
-              'num inline-block rounded-[3px] px-1 text-xs text-ink-2',
+              'num inline-block rounded-full px-1 text-xs text-ink-2',
               live.dir > 0 && 'flash-up',
               live.dir < 0 && 'flash-down',
             )}
@@ -301,7 +301,7 @@ const Card = memo(function Card({ row, bornAt }: { row: TokenRow; bornAt?: numbe
           {t('list.open')} <ArrowUpRight size={13} />
         </Link>
       ) : (
-        <p className="rounded-[4px] border border-line px-3 py-2 text-center text-micro leading-snug text-ink-3">
+        <p className="rounded-[12px] border border-line px-3 py-2 text-center text-micro leading-snug text-ink-3">
           {reason}
         </p>
       )}
@@ -428,23 +428,31 @@ export function TokenList() {
     )
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-2 p-2 sm:gap-2.5 sm:p-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 p-3 sm:gap-4 sm:p-5">
       {/* ── headline ──────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 flex-wrap items-baseline gap-x-5 gap-y-1">
-        <h1 className="text-sm font-semibold tracking-[-0.01em]">{t('nav.scanner')}</h1>
-        <p className="min-w-0 flex-1 truncate text-mini text-ink-3">{t('home.tagline')}</p>
-        <span className="flex flex-wrap items-center gap-3 text-mini">
-          <span className="num text-ink-3">{t('list.count', { n: totals.total })}</span>
-          <span className="num text-ink">{t('list.openableCount', { n: totals.openable })}</span>
+      <div className="flex shrink-0 flex-wrap items-end gap-x-8 gap-y-3 px-1 pt-3">
+        <div className="min-w-0">
+          <p className="eyebrow">{t('home.kicker')}</p>
+          <h1 className="font-display mt-2.5 text-[clamp(28px,3.4vw,48px)] font-semibold leading-[1.04] tracking-[-0.02em]">
+            {t('home.title1')} <em className="spectrum-text not-italic">{t('home.title2')}</em>
+          </h1>
+          <p className="mt-2.5 max-w-[560px] text-sm text-ink-3">{t('home.tagline')}</p>
+        </div>
+        <span className="ml-auto flex flex-wrap items-center gap-2">
+          <span className="chip num">{t('list.count', { n: totals.total })}</span>
+          <span className="chip num text-ink">
+            <i aria-hidden className="spectrum-dot" />
+            {t('list.openableCount', { n: totals.openable })}
+          </span>
           {feedMode && (
             <button
               onClick={() => setLive(!live)}
               className={cn(
-                'flex items-center gap-1.5 rounded-[3px] border px-2 py-0.5 text-mini font-semibold',
+                'flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-mini font-semibold',
                 live ? 'border-short/40 bg-short/10 text-short' : 'border-line text-ink-3',
               )}
             >
-              <span className={cn('size-1.5 rounded-[4px] bg-current', live && 'pulse-dot')} />
+              <span className={cn('size-1.5 rounded-[12px] bg-current', live && 'pulse-dot')} />
               {live ? t('list.feed.live') : t('list.feed.paused')} · {liveCount} {t('list.feed.since')}
             </button>
           )}
@@ -453,7 +461,7 @@ export function TokenList() {
 
       <div className="panel flex min-h-0 flex-1 flex-col overflow-hidden max-md:border-0 max-md:bg-transparent">
       {/* ── filters ───────────────────────────────────────────────────── */}
-      <div className="flex h-[var(--subnav-h)] shrink-0 items-center gap-2 overflow-x-auto border-b border-line [scrollbar-width:none] max-md:px-0 md:px-2.5">
+      <div className="flex h-[var(--subnav-h)] shrink-0 items-center gap-2 overflow-x-auto border-b border-line [scrollbar-width:none] max-md:px-0 md:px-4">
         <div className="seg shrink-0">
           {CLASSES.map((c) => (
             <button key={c.key} onClick={() => setCls(c.key)} className={tab(cls === c.key)} aria-pressed={cls === c.key}>
@@ -468,7 +476,7 @@ export function TokenList() {
               {t('list.feed.trending')}
             </button>
             <button onClick={() => setFeed('new')} className={cn(tab(feed === 'new'), 'flex items-center gap-1')}>
-              <span className={cn('size-1.5 rounded-[4px]', feed === 'new' ? 'pulse-dot bg-current' : 'bg-ink-4')} />
+              <span className={cn('size-1.5 rounded-[12px]', feed === 'new' ? 'pulse-dot bg-current' : 'bg-ink-4')} />
               {t('list.feed.new')}
             </button>
           </div>
@@ -476,7 +484,7 @@ export function TokenList() {
 
         {!feedMode && (
           <>
-            <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-[4px] border border-line bg-black/30 px-3 py-[5px] text-mini font-semibold text-ink-2">
+            <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-[12px] border border-line bg-black/30 px-3 py-[5px] text-mini font-semibold text-ink-2">
               <input
                 type="checkbox"
                 checked={openableOnly}
@@ -503,7 +511,7 @@ export function TokenList() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder={t('search.placeholder')}
-                className="h-8 w-[220px] rounded-[4px] border border-line bg-black/30 pr-7 pl-8 text-mini text-ink placeholder:text-ink-4 outline-hidden transition-colors focus:border-line-strong"
+                className="h-8 w-[220px] rounded-[12px] border border-line bg-black/30 pr-7 pl-8 text-mini text-ink placeholder:text-ink-4 outline-hidden transition-colors focus:border-line-strong"
               />
               {text && (
                 <button onClick={() => setText('')} className="absolute top-1/2 right-2.5 -translate-y-1/2 text-ink-4" aria-label="clear">
@@ -525,7 +533,7 @@ export function TokenList() {
           </div>
         ) : (
         <table className="w-full min-w-[720px] border-collapse">
-          <thead className="sticky top-0 z-10 bg-surface">
+          <thead className="sticky top-0 z-10 bg-overlay">
             <tr className="mono h-[var(--head-h)] border-b border-line text-[9.5px] font-medium text-ink-3">
               <th className="w-[60px] px-2 pl-4 text-left">#</th>
               <th className="px-2 text-left">{t('list.col.token')}</th>

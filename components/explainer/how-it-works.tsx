@@ -188,17 +188,17 @@ export function HowItWorks() {
   return (
     <div className="h-full overflow-y-auto">
       <article className="mx-auto max-w-[780px] px-5 pb-24">
-        <header className="py-10">
-          <p className="mono mb-3 text-[11px] text-ink-3">{c.kicker}</p>
-          <h1 className="text-2xl font-semibold leading-tight tracking-[-0.02em]">{c.title}</h1>
+        <header className="py-16">
+          <p className="eyebrow mb-4">{c.kicker}</p>
+          <h1 className="font-display text-[clamp(34px,5.4vw,68px)] font-semibold leading-[1.04] tracking-[-0.02em]">{c.title}</h1>
           <p className="mt-4 text-base leading-relaxed text-ink-2">{c.lede}</p>
         </header>
 
         {c.sections.map((s, i) => (
           <section key={s.title} className="border-t border-line py-8">
             <div className="mb-3 flex items-baseline gap-3">
-              <span className="num text-mini text-ink-4">{String(i + 1).padStart(2, '0')}</span>
-              <h2 className="text-[19px] font-semibold tracking-[-0.02em]">{s.title}</h2>
+              <span className="font-display spectrum-text text-sm font-bold tracking-[0.08em]">{String(i + 1).padStart(2, '0')}</span>
+              <h2 className="font-display text-[22px] font-semibold tracking-[-0.01em]">{s.title}</h2>
             </div>
             <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-2">
               {s.body.map((p) => (
@@ -208,7 +208,7 @@ export function HowItWorks() {
                 <ul className="flex flex-col gap-2">
                   {s.list.map((item) => (
                     <li key={item} className="flex gap-2.5">
-                      <span className="mt-[7px] size-1 shrink-0 rounded-[4px] bg-ink-4" />
+                      <i aria-hidden className="spectrum-dot mt-[8px] shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}

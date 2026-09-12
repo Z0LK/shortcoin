@@ -77,9 +77,9 @@ export function HlpScreen() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="mx-auto flex max-w-[1100px] flex-col gap-2.5 p-3 sm:p-4">
+      <div className="mx-auto flex max-w-[1100px] flex-col gap-4 p-3 sm:p-6">
         <header>
-          <h1 className="text-sm font-semibold tracking-[-0.01em]">{t('hlp.title')}</h1>
+          <h1 className="font-display text-[clamp(26px,2.8vw,38px)] font-semibold leading-tight tracking-[-0.02em]">{t('hlp.title')}</h1>
           <p className="mt-1 max-w-[80ch] text-mini leading-relaxed text-ink-3">{t('hlp.subtitle')}</p>
         </header>
 
@@ -104,7 +104,7 @@ export function HlpScreen() {
               {t('hlp.unreserved')} {formatUsdgCompact(pool.nav - pool.reserved)}
             </span>
           </div>
-          <div className="relative h-3 w-full overflow-hidden rounded-[4px] bg-long/25">
+          <div className="relative h-3 w-full overflow-hidden rounded-[12px] bg-long/25">
             <div
               className="absolute inset-y-0 left-0 bg-[repeating-linear-gradient(45deg,var(--warn)_0_4px,color-mix(in_oklab,var(--warn)_60%,transparent)_4px_8px)]"
               style={{ width: `${reservedShare * 100}%` }}
@@ -117,7 +117,7 @@ export function HlpScreen() {
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           {/* ── your position ────────────────────────────────────────────── */}
           <section className="panel flex flex-col gap-3 p-3">
-            <h2 className="text-sm font-semibold tracking-[-0.01em]">{t('hlp.yours')}</h2>
+            <h2 className="font-display text-sm font-semibold tracking-[-0.01em]">{t('hlp.yours')}</h2>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-micro text-ink-4">{t('hlp.value')}</p>
@@ -131,7 +131,7 @@ export function HlpScreen() {
 
             <div
               className={cn(
-                'flex items-center gap-2 rounded-[4px] border p-2.5',
+                'flex items-center gap-2 rounded-[12px] border p-2.5',
                 locked ? 'border-warn/40 bg-warn/10' : 'border-line bg-sunken',
               )}
             >
@@ -148,7 +148,7 @@ export function HlpScreen() {
               </div>
             </div>
 
-            <div className="rounded-[4px] border border-short/30 bg-short/5 p-2.5" title={t('hlp.drawdownHint')}>
+            <div className="rounded-[12px] border border-short/30 bg-short/5 p-2.5" title={t('hlp.drawdownHint')}>
               <p className="text-micro text-ink-4">{t('hlp.drawdown')}</p>
               <p className="num text-base font-semibold text-short">{formatUsdg(-me.maxDrawdown)}</p>
               <p className="mt-1 text-micro leading-relaxed text-ink-3">{t('hlp.drawdownHint')}</p>
@@ -161,13 +161,13 @@ export function HlpScreen() {
                     key={m}
                     onClick={() => setMode(m)}
                     aria-pressed={mode === m}
-                    className={cn('flex-1 rounded-[3px] py-1 text-mini font-semibold', mode === m ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink')}
+                    className={cn('flex-1 rounded-full py-1 text-mini font-semibold', mode === m ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink')}
                   >
                     {t(`hlp.${m}` as MessageKey)}
                   </button>
                 ))}
               </div>
-              <div className="flex h-10 items-center rounded-[4px] border border-line bg-sunken px-3">
+              <div className="flex h-10 items-center rounded-[12px] border border-line bg-sunken px-3">
                 <input
                   inputMode="decimal"
                   value={input}
@@ -187,7 +187,7 @@ export function HlpScreen() {
               <button
                 onClick={submit}
                 disabled={busy || !amount || amount <= 0n || amount > max || (mode === 'withdraw' && locked)}
-                className="h-10 rounded-[4px] bg-accent text-xs font-semibold text-void hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35"
+                className="h-10 rounded-[12px] bg-accent text-xs font-semibold text-void hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35"
               >
                 {busy ? t(mode === 'deposit' ? 'hlp.depositing' : 'hlp.withdrawing') : t(`hlp.${mode}` as MessageKey)}
               </button>
@@ -196,7 +196,7 @@ export function HlpScreen() {
 
           {/* ── exposure ─────────────────────────────────────────────────── */}
           <section className="flex flex-col gap-2 panel p-3">
-            <h2 className="text-sm font-semibold tracking-[-0.01em]">{t('hlp.exposure')}</h2>
+            <h2 className="font-display text-sm font-semibold tracking-[-0.01em]">{t('hlp.exposure')}</h2>
             <div className="flex flex-col">
               {pool.perTokenExposure.map((e) => {
                 const share = Number((e.reserved * 10_000n) / pool.nav) / 10_000
@@ -213,7 +213,7 @@ export function HlpScreen() {
                         {formatUsdgCompact(e.reserved)} · {formatPct(share, 2)}
                       </span>
                     </div>
-                    <div className="relative h-1.5 w-full overflow-hidden rounded-[4px] bg-line">
+                    <div className="relative h-1.5 w-full overflow-hidden rounded-[12px] bg-line">
                       <div
                         className={cn('h-full', share > cap * 0.85 ? 'bg-warn' : 'bg-info')}
                         style={{ width: `${Math.min(share / cap, 1) * 100}%` }}

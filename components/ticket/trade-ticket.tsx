@@ -255,10 +255,10 @@ export function TradeTicket({ token, side }: { token: TokenRow; side: SwapSide }
       </div>
 
       {quote && quote.priceImpactBps > 500 && (
-        <p className="rounded-[10px] border border-warn/30 bg-warn/10 p-2.5 text-mini text-warn">{t('trade.impactHigh')}</p>
+        <p className="rounded-[12px] border border-warn/30 bg-warn/10 p-2.5 text-mini text-warn">{t('trade.impactHigh')}</p>
       )}
       {(sendError ?? quoteError) && (
-        <p className="rounded-[10px] border border-short/30 bg-short/10 p-2.5 text-mini text-short">{sendError ?? quoteError}</p>
+        <p className="rounded-[12px] border border-short/30 bg-short/10 p-2.5 text-mini text-short">{sendError ?? quoteError}</p>
       )}
 
       <button

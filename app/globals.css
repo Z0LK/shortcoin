@@ -3,73 +3,84 @@
 /* ===========================================================================
    SHORTCOIN — design tokens
    ---------------------------------------------------------------------------
-   A terminal, not a landing page. Flat graphite surfaces, 1px hairlines, small
-   radii: no gradients, no blur, no glow, nothing that follows the pointer. The
-   only colour that carries meaning is direction — green up, red down — and
-   everything else is grey so the numbers stay the loudest thing on screen.
+   The app wears the landing page's clothes (PRISM): near-black ground under a
+   soft colour wash and moving grain, Syne for display type and Inter for
+   everything read, pill-shaped controls, cards with a faint top-lit gradient,
+   and one signature — the spectrum, pink → amber → green → cyan → violet —
+   that fills a button on hover and underlines what is active.
 
-   Primary actions are near-white on dark: one high-contrast element per
-   screen, because a coloured call to action competes with the PnL.
+   The spectrum is decoration, never data. Direction keeps its two colours,
+   taken from the same palette: green up, pink-red down.
    =========================================================================== */
 
 :root {
+  /* Palette (PRISM) */
+  --v: #7b5cff;
+  --c: #2ec5ff;
+  --g: #37e6a4;
+  --a: #ffb340;
+  --p: #ff5c8a;
+  --spectrum: linear-gradient(90deg, #ff5c8a, #ffb340, #37e6a4, #2ec5ff, #7b5cff);
+
   /* Surfaces */
-  --void: #0a0b0d;
-  --ground-2: #0e1013;
-  --surface: #121417;
-  --raised: #171a1e;
-  --overlay: #1b1f24;
-  --sunken: #0b0d0f;
+  --void: #040405;
+  --ground-2: #08080b;
+  --surface: rgba(255, 255, 255, 0.028);
+  --raised: rgba(255, 255, 255, 0.055);
+  /* Opaque: sticky headers and menus sit over moving content. */
+  --overlay: #0d0d12;
+  --sunken: rgba(0, 0, 0, 0.35);
 
   /* Lines */
-  --line: #22262c;
-  --line-strong: #333942;
-  --line-sig: #4a525d;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.22);
+  --line-sig: rgba(123, 92, 255, 0.5);
 
   /* Ink */
-  --ink: #e8eaed;
-  --ink-2: #9aa1ab;
-  --ink-3: #6b727c;
-  --ink-4: #4b525b;
+  --ink: #ffffff;
+  --ink-2: #c9c9d2;
+  --ink-3: #8b8b96;
+  --ink-4: #5a5a66;
 
   /* Direction semantics. Green is up, red is down — always. */
-  --long: #26c281;
-  --long-dim: #1a8a5c;
-  --long-soft: #0f2a1e;
-  --short: #f0555f;
-  --short-soft: #2b1216;
+  --long: #37e6a4;
+  --long-dim: #22a877;
+  --long-soft: #0c2a20;
+  --short: #ff5c8a;
+  --short-soft: #2e1019;
 
-  --warn: #e2a336;
-  --info: #5b8cc7;
-  --neutral: #6b727c;
+  --warn: #ffb340;
+  --info: #2ec5ff;
+  --neutral: #8b8b96;
 
   /* Chart */
-  --chart-up: #26c281;
-  --chart-down: #f0555f;
-  --chart-grid: #181b1f;
-  --chart-crosshair: #5b626c;
-  --chart-volume-up: #143f2c;
-  --chart-volume-down: #3f171c;
+  --chart-up: #37e6a4;
+  --chart-down: #ff5c8a;
+  --chart-grid: rgba(255, 255, 255, 0.04);
+  --chart-crosshair: #5a5a66;
+  --chart-volume-up: #123d2f;
+  --chart-volume-down: #43182a;
 
-  /* The accent is near-white: contrast, not colour. */
-  --sig: #e8eaed;
-  --sig-2: #9aa1ab;
-  --sig-dim: rgba(232, 234, 237, 0.1);
+  /* Accent: white, like PRISM's solid button. */
+  --sig: #ffffff;
+  --sig-2: #7b5cff;
+  --sig-dim: rgba(123, 92, 255, 0.16);
   --accent: var(--sig);
   --accent-soft: var(--sig-dim);
-  --accent-ink: #0a0b0d;
+  --accent-ink: #050505;
 
-  --radius: 4px;
-  --radius-sm: 3px;
-  --radius-lg: 6px;
-  --ease: cubic-bezier(0.2, 0, 0.2, 1);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 18px;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Density */
-  --row-h: 44px;
-  --row-h-tight: 34px;
-  --head-h: 36px;
-  --nav-h: 52px;
-  --subnav-h: 40px;
+  --row-h: 48px;
+  --row-h-tight: 36px;
+  --head-h: 42px;
+  --nav-h: 64px;
+  --subnav-h: 48px;
 }
 
 @theme inline {
@@ -91,6 +102,7 @@
 
   --color-sig: var(--sig);
   --color-sig-2: var(--sig-2);
+  --color-violet: var(--v);
   --color-long: var(--long);
   --color-long-soft: var(--long-soft);
   --color-short: var(--short);
@@ -103,8 +115,9 @@
   --color-accent-soft: var(--accent-soft);
   --color-accent-ink: var(--accent-ink);
 
-  --font-sans: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-numeric), ui-monospace, "SF Mono", monospace;
+  --font-sans: var(--font-ui), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-ui), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-syne), "Syne", ui-sans-serif, sans-serif;
 
   --radius-DEFAULT: var(--radius);
 
@@ -114,9 +127,9 @@
   --text-sm: 14px;
   --text-base: 15px;
   --text-lg: 17px;
-  --text-xl: 20px;
-  --text-2xl: 24px;
-  --text-3xl: 28px;
+  --text-xl: 21px;
+  --text-2xl: 26px;
+  --text-3xl: 34px;
 }
 
 /* Tailwind v4 defaults borders to `currentColor`. Pin it to the hairline. */
@@ -138,80 +151,164 @@ body {
 body {
   background: var(--void);
   color: var(--ink);
-  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-ui), "Inter", ui-sans-serif, system-ui, sans-serif;
   font-size: 14px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overscroll-behavior: none;
 }
 
 ::selection {
-  background: var(--line-strong);
-  color: var(--ink);
+  background: var(--v);
+  color: #fff;
 }
 
 /* Every number in the product is tabular, so columns never dance on tick. */
 .num {
-  font-family: var(--font-numeric), ui-monospace, monospace;
+  font-family: var(--font-ui), "Inter", ui-sans-serif, system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "zero" 1;
-  letter-spacing: -0.01em;
+  font-feature-settings: "tnum" 1, "cv11" 1;
+  letter-spacing: 0;
 }
 
-/* Column and field labels. Uppercase, tracked, never louder than the value. */
+/* Column and field labels, PRISM's small caps. */
 .mono {
-  font-family: var(--font-numeric), ui-monospace, monospace;
+  font-family: var(--font-ui), "Inter", ui-sans-serif, system-ui, sans-serif;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.16em;
+}
+
+/* ── Ambient ────────────────────────────────────────────────────────────── */
+.fx-tint {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(70vw 60vh at 18% 12%, rgba(123, 92, 255, 0.1), transparent 65%),
+    radial-gradient(60vw 55vh at 85% 90%, rgba(46, 197, 255, 0.07), transparent 65%);
+  filter: blur(10px);
+}
+.fx-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 45%, transparent 40%, rgba(0, 0, 0, 0.5) 100%);
+}
+.fx-grain {
+  position: fixed;
+  inset: -200%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-move 7s steps(8) infinite;
+}
+@keyframes grain-move {
+  0% { transform: translate(0, 0); }
+  12.5% { transform: translate(-2%, -3%); }
+  25% { transform: translate(-4%, 2%); }
+  37.5% { transform: translate(2%, -4%); }
+  50% { transform: translate(-3%, 3%); }
+  62.5% { transform: translate(3%, 1%); }
+  75% { transform: translate(-1%, -2%); }
+  87.5% { transform: translate(2%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+/* A soft wash of violet under the pointer — no dot, no ring. */
+.cursor-glow {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  width: 420px;
+  height: 420px;
+  margin: -210px 0 0 -210px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.22;
+  filter: blur(80px);
+  background: radial-gradient(circle, rgba(123, 92, 255, 0.45), rgba(46, 197, 255, 0.18) 45%, transparent 70%);
+  transform: translate3d(var(--cx, -999px), var(--cy, -999px), 0);
+}
+
+@keyframes spectrum-shift {
+  to { background-position: 300% 0; }
 }
 
 @layer components {
-  /* A panel is a rectangle with a hairline. That is the whole vocabulary. */
+  /* PRISM's card: hairline, faint top light, generous radius. */
   .panel {
     position: relative;
-    background: var(--surface);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.008));
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
   }
   .panel-hover {
-    transition: border-color 0.12s var(--ease);
+    transition: border-color 0.5s var(--ease), transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease);
   }
   .panel-hover:hover {
-    border-color: var(--line-strong);
+    border-color: color-mix(in srgb, var(--v) 45%, transparent);
+    box-shadow: 0 18px 50px -30px var(--v);
+  }
+
+  /* Buttons fill with the spectrum from below on hover. */
+  .btn-primary,
+  .btn-ghost {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 999px;
+    transition: color 0.4s var(--ease), border-color 0.4s var(--ease), opacity 0.2s;
+  }
+  .btn-primary::before,
+  .btn-ghost::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--spectrum);
+    background-size: 200% 100%;
+    translate: 0 101%;
+    transition: translate 0.5s var(--ease-out);
+  }
+  .btn-primary:not(:disabled):hover::before,
+  .btn-ghost:not(:disabled):hover::before {
+    translate: 0 0;
   }
 
   .btn-primary {
-    background: var(--ink);
-    color: var(--accent-ink);
-    border-radius: var(--radius);
-    font-weight: 600;
-    transition: background 0.12s var(--ease), opacity 0.12s;
-  }
-  .btn-primary:not(:disabled):hover {
     background: #fff;
+    color: #050505;
+    font-weight: 600;
+    letter-spacing: 0.02em;
   }
   .btn-primary:disabled {
     cursor: not-allowed;
     opacity: 0.3;
   }
+
   .btn-ghost {
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
+    border: 1px solid var(--line-strong);
     color: var(--ink-2);
-    background: var(--raised);
-    transition: border-color 0.12s var(--ease), color 0.12s;
+    background: transparent;
   }
   .btn-ghost:not(:disabled):hover {
-    border-color: var(--line-strong);
-    color: var(--ink);
+    color: #050505;
+    border-color: transparent;
   }
 
+  /* Buy and sell keep their colour: the spectrum would erase the direction. */
   .btn-buy,
   .btn-sell {
-    border-radius: var(--radius);
+    border-radius: 999px;
     font-weight: 600;
-    color: var(--void);
-    transition: filter 0.12s var(--ease), opacity 0.12s;
+    letter-spacing: 0.02em;
+    color: #050505;
+    transition: filter 0.3s var(--ease), box-shadow 0.4s var(--ease), opacity 0.2s;
   }
   .btn-buy {
     background: var(--long);
@@ -219,52 +316,100 @@ body {
   .btn-sell {
     background: var(--short);
   }
-  .btn-buy:not(:disabled):hover,
+  .btn-buy:not(:disabled):hover {
+    filter: brightness(1.08);
+    box-shadow: 0 12px 34px -12px var(--long);
+  }
   .btn-sell:not(:disabled):hover {
-    filter: brightness(1.1);
+    filter: brightness(1.08);
+    box-shadow: 0 12px 34px -12px var(--short);
   }
   .btn-buy:disabled,
   .btn-sell:disabled {
     cursor: not-allowed;
     opacity: 0.3;
   }
+
   .field {
     border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--sunken);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
   }
   .field:focus-within {
-    border-color: var(--line-strong);
+    border-color: var(--line-sig);
+    box-shadow: 0 0 0 3px var(--sig-dim);
   }
 
-  /* Segmented control: a sunken track, square thumbs. */
+  /* Segmented control: a pill track, pill thumbs. */
   .seg {
     display: flex;
-    padding: 2px;
+    padding: 3px;
     border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: var(--sunken);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.02);
   }
   .seg > * {
-    border-radius: var(--radius-sm) !important;
+    border-radius: 999px !important;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--ink-3);
+    font-size: 12px;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .spectrum-text {
+    background: var(--spectrum);
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: spectrum-shift 5s linear infinite;
+  }
+  .spectrum-bg {
+    background: var(--spectrum);
+    background-size: 200% 100%;
+    animation: spectrum-shift 4s linear infinite;
+  }
+  .spectrum-dot {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--spectrum);
+    background-size: 200% 100%;
+    animation: spectrum-shift 4s linear infinite;
   }
 }
 
 /* ── Scrollbars ─────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
-  border-radius: 999px;
-  border: 3px solid var(--void);
+  background: #1c1c22;
+  border-radius: 9px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #444b55;
+  background: #2a2a33;
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
@@ -272,8 +417,8 @@ body {
 
 /* ── Focus ──────────────────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 1px solid var(--ink-2);
-  outline-offset: 1px;
+  outline: 1px solid var(--c);
+  outline-offset: 2px;
 }
 
 /* ── Tick flash ─────────────────────────────────────────────────────────── */
@@ -300,7 +445,6 @@ body {
   animation: flash-down 620ms ease-out;
 }
 
-/* ── Ambient ────────────────────────────────────────────────────────────── */
 @keyframes pulse-dot {
   0%,
   100% {

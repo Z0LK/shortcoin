@@ -54,8 +54,8 @@ export function TopNav() {
   }
 
   return (
-    <header className="relative z-30 flex shrink-0 flex-col border-b border-line bg-ground-2">
-      <div className="flex h-[var(--nav-h)] items-center gap-3 px-3">
+    <header className="relative z-30 flex shrink-0 flex-col border-b border-line bg-[rgba(4,4,5,0.7)] backdrop-blur-[18px]">
+      <div className="flex h-[var(--nav-h)] items-center gap-4 px-4 sm:px-6">
         <Link href="/" className="shrink-0">
           <Wordmark />
         </Link>
@@ -74,11 +74,11 @@ export function TopNav() {
               >
                 {t(l.key)}
                 {l.href === '/positions' && openCount > 0 && (
-                  <span className="num ml-1.5 rounded-[4px] bg-ink px-1.5 py-px text-micro font-medium text-void">{openCount}</span>
+                  <span className="num ml-1.5 rounded-[12px] bg-ink px-1.5 py-px text-micro font-medium text-void">{openCount}</span>
                 )}
                 <span
                   className={cn(
-                    'absolute inset-x-2.5 -bottom-px h-px origin-left bg-ink transition-transform duration-150',
+                    'spectrum-bg absolute inset-x-2.5 -bottom-[3px] h-px origin-left transition-transform duration-500',
                     active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100',
                   )}
                 />
@@ -94,14 +94,14 @@ export function TopNav() {
         >
           <Search size={13} className="shrink-0" />
           <span className="hidden flex-1 truncate sm:inline">{t('nav.search')}</span>
-          <kbd className="num hidden rounded-[4px] border border-line bg-raised px-2 py-0.5 text-micro text-ink-3 lg:inline">
+          <kbd className="num hidden rounded-[12px] border border-line bg-raised px-2 py-0.5 text-micro text-ink-3 lg:inline">
             ⌘K
           </kbd>
         </button>
 
         <div className="flex shrink-0 items-center gap-1.5">
           <div
-            className="hidden h-8 items-center gap-2 rounded-[4px] border border-line bg-raised px-3 sm:flex"
+            className="hidden h-8 items-center gap-2 rounded-[12px] border border-line bg-raised px-3 sm:flex"
             title={t('nav.balance')}
           >
             <Wallet2 size={13} className="text-ink-3" />
@@ -140,7 +140,7 @@ export function TopNav() {
               key={l.href}
               href={l.href}
               className={cn(
-                'whitespace-nowrap rounded-[3px] px-2.5 py-1 text-mini font-medium',
+                'whitespace-nowrap rounded-full px-2.5 py-1 text-mini font-medium',
                 active ? 'bg-raised text-ink' : 'text-ink-3',
               )}
             >

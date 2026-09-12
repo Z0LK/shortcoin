@@ -120,7 +120,7 @@ export function PayoffChart({
                 onClick={() => setHorizon(h)}
                 aria-pressed={horizon === h}
                 className={cn(
-                  'rounded-[3px] px-1.5 py-[2px] text-micro font-semibold',
+                  'rounded-full px-1.5 py-[2px] text-micro font-semibold',
                   horizon === h ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink',
                 )}
               >
@@ -168,12 +168,12 @@ export function PayoffChart({
         {[geo.yMax, geo.yMin].map((v) => (
           <g key={v}>
             <line x1={PAD.l} x2={W - PAD.r} y1={geo.y(v)} y2={geo.y(v)} stroke="var(--line)" strokeDasharray="2 3" />
-            <text x={PAD.l - 4} y={geo.y(v) + 3} textAnchor="end" fontSize="8.5" fill="var(--ink-3)" fontFamily="var(--font-numeric)">
+            <text x={PAD.l - 4} y={geo.y(v) + 3} textAnchor="end" fontSize="8.5" fill="var(--ink-3)" fontFamily="var(--font-ui)">
               {money(v)}
             </text>
           </g>
         ))}
-        <text x={PAD.l - 4} y={zeroY + 3} textAnchor="end" fontSize="8.5" fill="var(--ink-4)" fontFamily="var(--font-numeric)">
+        <text x={PAD.l - 4} y={zeroY + 3} textAnchor="end" fontSize="8.5" fill="var(--ink-4)" fontFamily="var(--font-ui)">
           $0
         </text>
         {ticks.map((m) => (
@@ -184,7 +184,7 @@ export function PayoffChart({
             textAnchor="middle"
             fontSize="8.5"
             fill="var(--ink-3)"
-            fontFamily="var(--font-numeric)"
+            fontFamily="var(--font-ui)"
           >
             {formatPct(m, 0, true)}
           </text>
@@ -246,7 +246,7 @@ export function PayoffChart({
               fill="var(--overlay)"
               stroke="var(--line-strong)"
             />
-            <text x={Math.min(geo.x(hover) + 12, W - PAD.r - 86)} y={PAD.t + 25} fontSize="8.5" fill="var(--ink-3)" fontFamily="var(--font-numeric)">
+            <text x={Math.min(geo.x(hover) + 12, W - PAD.r - 86)} y={PAD.t + 25} fontSize="8.5" fill="var(--ink-3)" fontFamily="var(--font-ui)">
               {formatPct(hover, 1, true)}
             </text>
             <text
@@ -255,7 +255,7 @@ export function PayoffChart({
               fontSize="9.5"
               fontWeight="600"
               fill={geo.pnlAt(hover) >= 0 ? 'var(--long)' : 'var(--short)'}
-              fontFamily="var(--font-numeric)"
+              fontFamily="var(--font-ui)"
             >
               {money(geo.pnlAt(hover))}
             </text>
