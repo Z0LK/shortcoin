@@ -37,7 +37,7 @@ import { useDuration, useT } from '@/lib/i18n'
 
 function Fact({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
   return (
-    <div className="flex flex-col gap-1 rounded-xl border border-line bg-black/20 px-3 py-2.5" title={hint}>
+    <div className="flex flex-col gap-0.5 rounded-[3px] border border-line bg-sunken px-2.5 py-2" title={hint}>
       <span className="mono text-[9.5px] font-medium text-ink-3">{label}</span>
       <span className="num text-[13px] text-ink">{children}</span>
     </div>
@@ -50,18 +50,18 @@ function Identity({ row }: { row: TokenRow }) {
   const asset = resolveAsset(row.symbol)
 
   return (
-    <section className="glass flex flex-col gap-4 p-4 sm:p-5">
+    <section className="panel flex flex-col gap-3 p-3">
       <div className="flex items-start gap-3">
         <span
           aria-hidden
-          className="num grid size-12 shrink-0 place-items-center rounded-[14px] text-sm text-[#07060f] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)]"
+          className="num grid size-12 shrink-0 place-items-center rounded-[4px] text-sm text-[#07060f] "
           style={{ background: `hsl(${asset?.logoHue ?? 200} 58% 60%)` }}
         >
           {row.symbol.slice(0, 2)}
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="display text-[28px] leading-none">{row.symbol}</h1>
+            <h1 className="text-lg font-semibold tracking-[-0.01em]">{row.symbol}</h1>
             <span className="truncate text-xs text-ink-3">{row.name}</span>
           </div>
           <AddressChip address={row.address} head={10} tail={8} className="mt-1" />
@@ -110,7 +110,7 @@ function Untracked({ address }: { address: Address }) {
       <Link href="/" className="flex items-center gap-1 text-mini text-ink-3 hover:text-ink">
         <ArrowLeft size={12} /> {t('token.back')}
       </Link>
-      <section className="flex flex-col gap-3 glass p-4">
+      <section className="flex flex-col gap-3 panel p-4">
         <Pill tone="neutral" className="self-start">
           {t('status.UNTRACKED')}
         </Pill>
@@ -131,7 +131,7 @@ function Untracked({ address }: { address: Address }) {
             setRequested(true)
           }}
           disabled={requested}
-          className="flex h-10 items-center justify-center gap-2 rounded-xl border border-line-strong text-xs font-semibold hover:bg-raised disabled:border-long/40 disabled:text-long"
+          className="flex h-10 items-center justify-center gap-2 rounded-[4px] border border-line-strong text-xs font-semibold hover:bg-raised disabled:border-long/40 disabled:text-long"
         >
           <Send size={13} />
           {requested ? t('search.untracked.requested') : t('search.untracked.request')}
@@ -184,12 +184,12 @@ export function TokenSheet({ keyOrAddress }: { keyOrAddress: string }) {
           hiding one would run two quote loops against the same capacity. */}
       {/* Rows size to their content; the last one absorbs the ticket's extra
           height, so the identity block never stretches into an empty band. */}
-      <div className="grid gap-3 p-3 sm:gap-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_390px] lg:grid-rows-[auto_auto_1fr]">
+      <div className="grid gap-2 p-2 sm:gap-2.5 sm:p-3 lg:grid-cols-[minmax(0,1fr)_380px] lg:grid-rows-[auto_auto_1fr]">
         <div className="lg:col-start-1 lg:row-start-1">
           <Identity row={row} />
         </div>
         <div className="lg:col-start-2 lg:row-span-3 lg:row-start-1">
-          <div className="lg:sticky lg:top-5">
+          <div className="lg:sticky lg:top-3">
             <OpenTicket token={row} />
           </div>
         </div>
@@ -198,7 +198,7 @@ export function TokenSheet({ keyOrAddress }: { keyOrAddress: string }) {
         </div>
         <div className="lg:col-start-1 lg:row-start-3">
           {mine.length > 0 && (
-            <section className="glass">
+            <section className="panel">
               <PositionList positions={mine} compact />
             </section>
           )}

@@ -205,7 +205,7 @@ export function TwapChart({
   })
 
   return (
-    <section className="glass flex min-h-[320px] flex-1 flex-col overflow-hidden">
+    <section className="panel flex min-h-[320px] flex-1 flex-col overflow-hidden">
       <header className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-2.5">
         <span className="flex items-center gap-3 text-micro">
           <span className="flex items-center gap-1 text-ink-2">
@@ -220,7 +220,7 @@ export function TwapChart({
                   key={u}
                   onClick={() => setUnit(u)}
                   aria-pressed={unit === u}
-                  className={cn('num rounded-md px-2 py-[2px] text-micro font-semibold', unit === u ? 'bg-sig text-accent-ink' : 'text-ink-3 hover:text-ink')}
+                  className={cn('num rounded-[3px] px-2 py-[2px] text-micro font-semibold', unit === u ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink')}
                 >
                   {u === 'mcap' ? 'MC' : 'PRICE'}
                 </button>
@@ -233,7 +233,7 @@ export function TwapChart({
                 key={i}
                 onClick={() => setIntervalValue(i)}
                 aria-pressed={interval === i}
-                className={cn('num rounded-md px-2 py-[2px] text-micro font-semibold', interval === i ? 'bg-sig text-accent-ink' : 'text-ink-3 hover:text-ink')}
+                className={cn('num rounded-[3px] px-2 py-[2px] text-micro font-semibold', interval === i ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink')}
               >
                 {i}
               </button>

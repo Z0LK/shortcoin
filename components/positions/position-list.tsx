@@ -70,7 +70,7 @@ function Detail({ p }: { p: Position }) {
   const symbol = useSymbol()(p.token)
 
   return (
-    <div className="grid gap-4 border-t border-line bg-black/25 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+    <div className="grid gap-4 border-t border-line bg-sunken p-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div className="flex flex-col gap-3">
         <PayoffChart
           params={pp}
@@ -101,14 +101,14 @@ function Detail({ p }: { p: Position }) {
         </div>
         <AddressChip address={p.token} head={10} tail={8} />
         {open && rt?.paper && (
-          <div className="rounded-xl border border-dashed border-line-strong p-2">
+          <div className="rounded-[4px] border border-dashed border-line-strong p-2">
             <p className="mb-1.5 text-micro text-ink-4">{t('positions.paperShockHint')}</p>
             <div className="flex flex-wrap gap-1.5">
               {[0.6, 0.85, 1.2, 1.6].map((f) => (
                 <button
                   key={f}
                   onClick={() => rt.paper!.shock(p.token, f)}
-                  className="flex items-center gap-1 rounded-lg border border-line px-2 py-1 text-micro font-semibold text-ink-2 hover:bg-raised"
+                  className="flex items-center gap-1 rounded-[4px] border border-line px-2 py-1 text-micro font-semibold text-ink-2 hover:bg-raised"
                   title={t('positions.paperShock')}
                 >
                   <Zap size={10} /> {symbol} {formatPct(f - 1, 0, true)}
@@ -188,7 +188,7 @@ export function PositionList({ positions, compact = false }: { positions: Positi
               <Fragment key={p.id}>
                 <tr
                   className={cn(
-                    'border-b border-line/60 align-middle transition-colors hover:bg-sig/[0.035]',
+                    'border-b border-line/60 align-middle transition-colors hover:bg-raised',
                     danger && 'bg-short/[0.07]',
                   )}
                 >
@@ -261,14 +261,14 @@ export function PositionList({ positions, compact = false }: { positions: Positi
                         onClick={() => close(p.id)}
                         disabled={closing === p.id}
                         title={!eligible ? t('positions.closeEarly') : undefined}
-                        className="h-7 rounded-lg border border-line-strong px-2.5 text-micro font-semibold text-ink-2 hover:bg-raised hover:text-ink disabled:opacity-50"
+                        className="h-7 rounded-[4px] border border-line-strong px-2.5 text-micro font-semibold text-ink-2 hover:bg-raised hover:text-ink disabled:opacity-50"
                       >
                         {closing === p.id ? t('positions.closing') : t('positions.close')}
                       </button>
                     ) : p.status === 'PENDING_SETTLEMENT' ? null : (
                       <Link
                         href={`/receipts/${p.id}`}
-                        className="inline-flex h-7 items-center gap-1 rounded-lg border border-line px-2.5 text-micro font-semibold text-info hover:bg-raised"
+                        className="inline-flex h-7 items-center gap-1 rounded-[4px] border border-line px-2.5 text-micro font-semibold text-info hover:bg-raised"
                       >
                         <FileText size={11} /> {t('positions.receipt')}
                       </Link>
@@ -302,14 +302,9 @@ export function PositionsScreen() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="mx-auto flex max-w-[1280px] flex-col gap-4 p-3 sm:p-6">
-        <header className="rise-in flex flex-wrap items-end gap-4">
-          <div>
-            <p className="mono flex items-center gap-2 text-[10px] text-ink-3">
-              <span className="size-1.5 rounded-full bg-sig" /> 02 — {t('nav.positions')}
-            </p>
-            <h1 className="display mt-2 text-[clamp(2rem,5vw,3.2rem)] text-glow">{t('positions.title')}</h1>
-          </div>
+      <div className="mx-auto flex max-w-[1280px] flex-col gap-2.5 p-3 sm:p-4">
+        <header className="flex flex-wrap items-center gap-3">
+          <h1 className="text-sm font-semibold tracking-[-0.01em]">{t('positions.title')}</h1>
           <div className="seg">
             {(['open', 'closed'] as const).map((k) => (
               <button
@@ -318,7 +313,7 @@ export function PositionsScreen() {
                 aria-pressed={tab === k}
                 className={cn(
                   'px-3 py-1 text-mini font-semibold transition-colors',
-                  tab === k ? 'bg-sig text-accent-ink' : 'text-ink-3 hover:text-ink',
+                  tab === k ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink',
                 )}
               >
                 {t(`positions.${k}` as MessageKey)} <span className="num opacity-60">{k === 'open' ? open.length : closed.length}</span>
@@ -327,7 +322,7 @@ export function PositionsScreen() {
           </div>
         </header>
 
-        <section className="glass">
+        <section className="panel">
           {positions.loading && !positions.data ? (
             <p className="p-8 text-center mono text-[10px] text-ink-3">{t('common.loading')}</p>
           ) : shown.length ? (

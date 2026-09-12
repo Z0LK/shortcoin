@@ -120,8 +120,8 @@ export function PayoffChart({
                 onClick={() => setHorizon(h)}
                 aria-pressed={horizon === h}
                 className={cn(
-                  'rounded-md px-1.5 py-[2px] text-micro font-semibold',
-                  horizon === h ? 'bg-sig text-accent-ink' : 'text-ink-3 hover:text-ink',
+                  'rounded-[3px] px-1.5 py-[2px] text-micro font-semibold',
+                  horizon === h ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink',
                 )}
               >
                 {t(`payoff.horizon.${h}`)}

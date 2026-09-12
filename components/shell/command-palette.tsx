@@ -109,11 +109,11 @@ export function CommandPalette() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 px-2 pt-[8vh] backdrop-blur-[3px] sm:pt-[12vh]"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/75 px-2 pt-[8vh] sm:pt-[12vh]"
       onMouseDown={() => setOpen(false)}
     >
       <div
-        className="glass w-full max-w-[620px] overflow-hidden bg-[#0c0e1a] shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+        className="panel w-full max-w-[620px] overflow-hidden bg-overlay shadow-[0_16px_40px_rgba(0,0,0,0.6)]"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2.5 border-b border-line px-3.5">
@@ -140,7 +140,7 @@ export function CommandPalette() {
             spellCheck={false}
             className="h-12 flex-1 bg-transparent text-sm text-ink outline-hidden placeholder:text-ink-4"
           />
-          <kbd className="num rounded-md border border-line px-1.5 py-0.5 text-micro text-ink-4">ESC</kbd>
+          <kbd className="num rounded-[3px] border border-line px-1.5 py-0.5 text-micro text-ink-4">ESC</kbd>
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto py-1.5">
@@ -179,7 +179,7 @@ export function CommandPalette() {
                 <button
                   onClick={() => request(untracked.address)}
                   disabled={requested === untracked.address}
-                  className="flex shrink-0 items-center gap-1.5 rounded-xl border border-line-strong px-2.5 py-1.5 text-mini font-semibold text-ink transition-colors hover:bg-raised disabled:cursor-default disabled:border-long/40 disabled:text-long"
+                  className="flex shrink-0 items-center gap-1.5 rounded-[4px] border border-line-strong px-2.5 py-1.5 text-mini font-semibold text-ink transition-colors hover:bg-raised disabled:cursor-default disabled:border-long/40 disabled:text-long"
                 >
                   <Send size={11} />
                   {requested === untracked.address ? t('search.untracked.requested') : t('search.untracked.request')}
@@ -200,11 +200,11 @@ export function CommandPalette() {
                   onClick={() => go(r)}
                   className={cn(
                     'flex w-full cursor-pointer items-center gap-3 px-3.5 py-2 text-left',
-                    i === cursor ? 'bg-sig/[0.09] text-ink' : 'hover:bg-white/[0.04]',
+                    i === cursor ? 'bg-raised text-ink' : 'hover:bg-white/[0.04]',
                   )}
                 >
                   <span
-                    className="num grid size-7 shrink-0 place-items-center rounded-lg text-micro font-bold text-void"
+                    className="num grid size-7 shrink-0 place-items-center rounded-[4px] text-micro font-bold text-void"
                     style={{ background: `hsl(${asset?.logoHue ?? 200} 62% 58%)` }}
                   >
                     {r.token.symbol.slice(0, 2)}

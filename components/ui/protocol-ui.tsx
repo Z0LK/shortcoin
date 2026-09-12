@@ -61,7 +61,7 @@ export function AddressChip({
         }}
         aria-label={copied ? t('address.copied') : t('address.copy')}
         title={copied ? t('address.copied') : t('address.copy')}
-        className="grid size-5 place-items-center rounded-md text-ink-4 transition-colors hover:bg-raised hover:text-ink-2"
+        className="grid size-5 place-items-center rounded-[3px] text-ink-4 transition-colors hover:bg-raised hover:text-ink-2"
       >
         {copied ? <Check size={11} className="text-long" /> : <Copy size={11} />}
       </button>
@@ -72,7 +72,7 @@ export function AddressChip({
         onClick={(e) => e.stopPropagation()}
         aria-label={t('address.explorer')}
         title={t('address.explorer')}
-        className="grid size-5 place-items-center rounded-md text-ink-4 transition-colors hover:bg-raised hover:text-info"
+        className="grid size-5 place-items-center rounded-[3px] text-ink-4 transition-colors hover:bg-raised hover:text-info"
       >
         <ExternalLink size={10} />
       </a>
@@ -226,7 +226,7 @@ export function UtilizationBar({ before, after }: { before: number; after?: numb
   const a = after === undefined ? b : Math.min(Math.max(after, 0), 1)
   const hot = a > 0.8
   return (
-    <div className="relative h-2 w-full overflow-hidden rounded-full bg-line">
+    <div className="relative h-2 w-full overflow-hidden rounded-[4px] bg-line">
       <div className="absolute inset-y-0 left-0 bg-ink-3" style={{ width: `${b * 100}%` }} />
       {a > b && (
         <div

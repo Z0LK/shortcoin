@@ -84,7 +84,7 @@ const Row = memo(function Row({
   const { asset, watched, toggleWatch, live, remainingPct, age, priceText } = useRowView(row, bornAt)
 
   return (
-    <tr className="group h-[var(--row-h)] border-b border-line/60 transition-colors hover:bg-sig/[0.035]">
+    <tr className="group h-[var(--row-h)] border-b border-line/60 transition-colors hover:bg-raised">
       <td className="px-2 pl-4">
         <div className="flex items-center gap-1">
           <button
@@ -106,14 +106,14 @@ const Row = memo(function Row({
         <Link href={`/t/${row.symbol}`} className="flex min-w-0 items-center gap-2">
           <span
             aria-hidden
-            className="num grid size-7 shrink-0 place-items-center rounded-[9px] text-micro font-medium text-[#07060f] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)]"
+            className="num grid size-7 shrink-0 place-items-center rounded-[4px] text-micro font-medium text-[#07060f] "
             style={{ background: `hsl(${asset?.logoHue ?? 200} 58% 60%)` }}
           >
             {row.symbol.slice(0, 2)}
           </span>
           <span className="flex min-w-0 flex-col leading-tight">
             <span className="flex items-center gap-1.5">
-              <span className="truncate text-[13px] font-semibold tracking-[-0.01em] text-ink transition-colors group-hover:text-sig">
+              <span className="truncate text-[13px] font-semibold tracking-[-0.01em] text-ink transition-colors group-hover:text-ink">
                 {row.symbol}
               </span>
               {age !== undefined && (
@@ -143,7 +143,7 @@ const Row = memo(function Row({
             </span>
             <span className="text-ink-4">{formatUsdgCompact(row.remainingNotional)}</span>
           </span>
-          <div className="h-[3px] w-full overflow-hidden rounded-full bg-line">
+          <div className="h-[3px] w-full overflow-hidden rounded-[4px] bg-line">
             <div
               className={cn('h-full', remainingPct < 0.15 ? 'bg-short' : remainingPct < 0.35 ? 'bg-warn' : 'bg-long')}
               style={{ width: `${remainingPct * 100}%` }}
@@ -162,7 +162,7 @@ const Row = memo(function Row({
         <span
           key={live.seq}
           className={cn(
-            'rounded-full px-1.5 text-ink-2',
+            'rounded-[4px] px-1.5 text-ink-2',
             live.dir > 0 && 'flash-up',
             live.dir < 0 && 'flash-down',
           )}
@@ -175,14 +175,14 @@ const Row = memo(function Row({
         {row.status.canOpen ? (
           <Link
             href={`/t/${row.symbol}`}
-            className="btn-primary inline-flex h-7 items-center gap-1 px-3 text-micro"
+            className="btn-ghost inline-flex h-7 items-center gap-1 px-2.5 text-micro font-semibold text-ink hover:bg-overlay"
           >
             {t('list.open')} <ArrowUpRight size={11} />
           </Link>
         ) : (
           <span
             title={row.status.reason}
-            className="inline-flex h-7 cursor-not-allowed items-center rounded-full border border-line px-3 text-micro font-semibold text-ink-4"
+            className="inline-flex h-7 cursor-not-allowed items-center rounded-[4px] border border-line px-3 text-micro font-semibold text-ink-4"
           >
             {t('list.open')}
           </span>
@@ -215,12 +215,12 @@ const Card = memo(function Card({ row, bornAt }: { row: TokenRow; bornAt?: numbe
       tabIndex={0}
       onClick={() => router.push(href)}
       onKeyDown={(e) => e.key === 'Enter' && router.push(href)}
-      className="glass flex cursor-pointer flex-col gap-3 rounded-[18px] p-3.5 active:border-line-sig"
+      className="panel panel-hover flex cursor-pointer flex-col gap-2.5 p-3 active:border-line-strong"
     >
       <div className="flex items-start gap-2.5">
         <span
           aria-hidden
-          className="num grid size-10 shrink-0 place-items-center rounded-[12px] text-mini font-medium text-[#07060f] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.25)]"
+          className="num grid size-10 shrink-0 place-items-center rounded-[4px] text-mini font-medium text-[#07060f] "
           style={{ background: `hsl(${asset?.logoHue ?? 200} 58% 60%)` }}
         >
           {row.symbol.slice(0, 2)}
@@ -245,7 +245,7 @@ const Card = memo(function Card({ row, bornAt }: { row: TokenRow; bornAt?: numbe
             }}
             aria-pressed={watched}
             aria-label={row.symbol}
-            className={cn('grid size-8 place-items-center rounded-full border border-line', watched ? 'text-warn' : 'text-ink-4')}
+            className={cn('grid size-8 place-items-center rounded-[4px] border border-line', watched ? 'text-warn' : 'text-ink-4')}
           >
             <Star size={15} fill={watched ? 'currentColor' : 'none'} />
           </button>
@@ -265,7 +265,7 @@ const Card = memo(function Card({ row, bornAt }: { row: TokenRow; bornAt?: numbe
               <span className="text-ink-4"> · {formatUsdgCompact(row.remainingNotional)}</span>
             </span>
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-line">
+          <div className="h-1.5 w-full overflow-hidden rounded-[4px] bg-line">
             <div className={cn('h-full', tone.bg)} style={{ width: `${remainingPct * 100}%` }} />
           </div>
         </div>
@@ -282,7 +282,7 @@ const Card = memo(function Card({ row, bornAt }: { row: TokenRow; bornAt?: numbe
           <p
             key={live.seq}
             className={cn(
-              'num inline-block rounded-md px-1 text-xs text-ink-2',
+              'num inline-block rounded-[3px] px-1 text-xs text-ink-2',
               live.dir > 0 && 'flash-up',
               live.dir < 0 && 'flash-down',
             )}
@@ -301,7 +301,7 @@ const Card = memo(function Card({ row, bornAt }: { row: TokenRow; bornAt?: numbe
           {t('list.open')} <ArrowUpRight size={13} />
         </Link>
       ) : (
-        <p className="rounded-full border border-line px-3 py-2 text-center text-micro leading-snug text-ink-3">
+        <p className="rounded-[4px] border border-line px-3 py-2 text-center text-micro leading-snug text-ink-3">
           {reason}
         </p>
       )}
@@ -424,50 +424,36 @@ export function TokenList() {
   const tab = (active: boolean) =>
     cn(
       'whitespace-nowrap px-3 py-1 text-mini font-semibold transition-colors',
-      active ? 'bg-sig text-accent-ink' : 'text-ink-3 hover:text-ink',
+      active ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink',
     )
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 p-3 sm:gap-4 sm:p-5">
+    <div className="flex h-full min-h-0 flex-col gap-2 p-2 sm:gap-2.5 sm:p-3">
       {/* ── headline ──────────────────────────────────────────────────── */}
-      <div className="rise-in flex shrink-0 flex-wrap items-end gap-x-8 gap-y-3">
-        <div className="min-w-0">
-          <p className="mono flex items-center gap-2 text-[10px] text-ink-3">
-            <span className="pulse-dot size-1.5 rounded-full bg-sig shadow-[0_0_10px_var(--sig)]" />
-            {t('home.kicker')}
-          </p>
-          <h1 className="display mt-2 text-[clamp(1.9rem,4.2vw,3.4rem)]">
-            <span className="text-[#242841]">{t('home.title1')}</span>{' '}
-            <span className="text-glow">{t('home.title2')}</span>
-          </h1>
-          <p className="mt-2 max-w-[560px] text-[13px] leading-relaxed text-ink-2">{t('home.tagline')}</p>
-        </div>
-        <span className="ml-auto flex flex-wrap items-center gap-2 text-mini">
-          <span className="mono rounded-full border border-line bg-white/[0.03] px-3 py-1.5 text-[10px] text-ink-2">
-            {t('list.count', { n: totals.total })}
-          </span>
-          <span className="mono flex items-center gap-1.5 rounded-full border border-line-sig bg-sig/[0.06] px-3 py-1.5 text-[10px] text-sig">
-            <span className="size-1.5 rounded-full bg-sig" />
-            {t('list.openableCount', { n: totals.openable })}
-          </span>
+      <div className="flex shrink-0 flex-wrap items-baseline gap-x-5 gap-y-1">
+        <h1 className="text-sm font-semibold tracking-[-0.01em]">{t('nav.scanner')}</h1>
+        <p className="min-w-0 flex-1 truncate text-mini text-ink-3">{t('home.tagline')}</p>
+        <span className="flex flex-wrap items-center gap-3 text-mini">
+          <span className="num text-ink-3">{t('list.count', { n: totals.total })}</span>
+          <span className="num text-ink">{t('list.openableCount', { n: totals.openable })}</span>
           {feedMode && (
             <button
               onClick={() => setLive(!live)}
               className={cn(
-                'mono flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px]',
+                'flex items-center gap-1.5 rounded-[3px] border px-2 py-0.5 text-mini font-semibold',
                 live ? 'border-short/40 bg-short/10 text-short' : 'border-line text-ink-3',
               )}
             >
-              <span className={cn('size-1.5 rounded-full bg-current', live && 'pulse-dot')} />
+              <span className={cn('size-1.5 rounded-[4px] bg-current', live && 'pulse-dot')} />
               {live ? t('list.feed.live') : t('list.feed.paused')} · {liveCount} {t('list.feed.since')}
             </button>
           )}
         </span>
       </div>
 
-      <div className="glass flex min-h-0 flex-1 flex-col overflow-hidden max-md:border-0 max-md:bg-none max-md:backdrop-blur-none max-md:before:hidden">
+      <div className="panel flex min-h-0 flex-1 flex-col overflow-hidden max-md:border-0 max-md:bg-transparent">
       {/* ── filters ───────────────────────────────────────────────────── */}
-      <div className="flex shrink-0 items-center gap-2 overflow-x-auto border-b border-line py-2.5 [scrollbar-width:none] max-md:px-0 max-md:pt-0 md:px-4">
+      <div className="flex h-[var(--subnav-h)] shrink-0 items-center gap-2 overflow-x-auto border-b border-line [scrollbar-width:none] max-md:px-0 md:px-2.5">
         <div className="seg shrink-0">
           {CLASSES.map((c) => (
             <button key={c.key} onClick={() => setCls(c.key)} className={tab(cls === c.key)} aria-pressed={cls === c.key}>
@@ -482,7 +468,7 @@ export function TokenList() {
               {t('list.feed.trending')}
             </button>
             <button onClick={() => setFeed('new')} className={cn(tab(feed === 'new'), 'flex items-center gap-1')}>
-              <span className={cn('size-1.5 rounded-full', feed === 'new' ? 'pulse-dot bg-current' : 'bg-ink-4')} />
+              <span className={cn('size-1.5 rounded-[4px]', feed === 'new' ? 'pulse-dot bg-current' : 'bg-ink-4')} />
               {t('list.feed.new')}
             </button>
           </div>
@@ -490,7 +476,7 @@ export function TokenList() {
 
         {!feedMode && (
           <>
-            <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-full border border-line bg-black/30 px-3 py-[5px] text-mini font-semibold text-ink-2">
+            <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-[4px] border border-line bg-black/30 px-3 py-[5px] text-mini font-semibold text-ink-2">
               <input
                 type="checkbox"
                 checked={openableOnly}
@@ -517,7 +503,7 @@ export function TokenList() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder={t('search.placeholder')}
-                className="h-8 w-[220px] rounded-full border border-line bg-black/30 pr-7 pl-8 text-mini text-ink placeholder:text-ink-4 outline-hidden transition-colors focus:border-line-sig"
+                className="h-8 w-[220px] rounded-[4px] border border-line bg-black/30 pr-7 pl-8 text-mini text-ink placeholder:text-ink-4 outline-hidden transition-colors focus:border-line-strong"
               />
               {text && (
                 <button onClick={() => setText('')} className="absolute top-1/2 right-2.5 -translate-y-1/2 text-ink-4" aria-label="clear">
@@ -532,24 +518,24 @@ export function TokenList() {
       {/* ── table, or cards on a phone ────────────────────────────────── */}
       <div className="min-h-0 flex-1 overflow-auto">
         {isMobile ? (
-          <div className="flex flex-col gap-2.5 pb-3">
+          <div className="flex flex-col gap-1.5 pb-3">
             {feedMode
               ? tape.map((item) => <Card key={item.row.address} row={item.row} bornAt={item.bornAt} />)
               : rows.map((row) => <Card key={row.address} row={row} />)}
           </div>
         ) : (
         <table className="w-full min-w-[720px] border-collapse">
-          <thead className="sticky top-0 z-10 bg-[#0e1020]/90 backdrop-blur-md">
+          <thead className="sticky top-0 z-10 bg-surface">
             <tr className="mono h-[var(--head-h)] border-b border-line text-[9.5px] font-medium text-ink-3">
               <th className="w-[60px] px-2 pl-4 text-left">#</th>
               <th className="px-2 text-left">{t('list.col.token')}</th>
               <th className="hidden px-2 text-left md:table-cell">{t('list.col.address')}</th>
               <th className="px-2 text-left">{t('list.col.status')}</th>
-              <th className={cn('w-[130px] px-2 text-left', sort === 'capacity' && !feedMode && 'text-sig')}>
+              <th className={cn('w-[130px] px-2 text-left', sort === 'capacity' && !feedMode && 'text-ink')}>
                 {t('list.col.capacity')}
               </th>
-              <th className={cn('px-2 text-right', sort === 'rate' && !feedMode && 'text-sig')}>{t('list.col.rate')}</th>
-              <th className={cn('hidden px-2 text-right lg:table-cell', sort === 'depth' && !feedMode && 'text-sig')}>
+              <th className={cn('px-2 text-right', sort === 'rate' && !feedMode && 'text-ink')}>{t('list.col.rate')}</th>
+              <th className={cn('hidden px-2 text-right lg:table-cell', sort === 'depth' && !feedMode && 'text-ink')}>
                 {t('list.col.depth')}
               </th>
               <th className="hidden px-2 text-right sm:table-cell">{unit === 'mcap' ? 'MC' : t('list.col.spot')}</th>

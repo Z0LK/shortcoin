@@ -32,7 +32,7 @@ export function Panel({
   bodyClassName?: string
 }) {
   return (
-    <section className={cn('glass flex min-h-0 flex-col', className)}>
+    <section className={cn('panel flex min-h-0 flex-col', className)}>
       {(title || right) && (
         <header className="flex h-[var(--head-h)] shrink-0 items-center justify-between border-b border-line px-4">
           <Label>{title}</Label>
@@ -68,7 +68,7 @@ export function Pill({
     <span
       title={title}
       className={cn(
-        'inline-flex items-center gap-1 rounded-full border px-2 py-[2px] text-micro font-medium',
+        'inline-flex items-center gap-1 rounded-[4px] border px-2 py-[2px] text-micro font-medium',
         tones[tone],
         className,
       )}
@@ -95,9 +95,9 @@ export function Meter({
     warn: 'bg-warn',
   }
   return (
-    <div className={cn('h-[3px] w-full overflow-hidden rounded-full bg-line', className)}>
+    <div className={cn('h-[3px] w-full overflow-hidden rounded-[4px] bg-line', className)}>
       <div
-        className={cn('h-full rounded-full transition-[width] duration-500', tones[tone])}
+        className={cn('h-full rounded-[4px] transition-[width] duration-500', tones[tone])}
         style={{ width: `${clamp01(value) * 100}%` }}
       />
     </div>
@@ -144,8 +144,8 @@ export function Button({
 }) {
   const variants: Record<string, string> = {
     accent: 'btn-primary',
-    long: 'rounded-full bg-long text-[#04120b] hover:brightness-110',
-    short: 'rounded-full bg-short text-[#1a0509] hover:brightness-110',
+    long: 'rounded-[4px] bg-long text-[#04120b] hover:brightness-110',
+    short: 'rounded-[4px] bg-short text-[#1a0509] hover:brightness-110',
     ghost: 'btn-ghost',
     outline: 'btn-ghost',
   }
@@ -157,7 +157,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-1.5 rounded-full font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40',
+        'inline-flex items-center justify-center gap-1.5 rounded-[4px] font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40',
         variants[variant],
         sizes[size],
         className,

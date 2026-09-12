@@ -24,9 +24,9 @@ const TapeItem = memo(function TapeItem({ asset }: { asset: Asset }) {
   return (
     <Link
       href={`/t/${asset.symbol}`}
-      className="flex shrink-0 items-center gap-2 px-4 transition-colors hover:bg-sig/[0.06]"
+      className="flex shrink-0 items-center gap-2 px-3 transition-colors hover:bg-raised"
     >
-      <i aria-hidden className="not-italic text-sig">✦</i>
+      <span aria-hidden className="text-ink-4">·</span>
       <span className="mono text-[10px] text-ink-2">{asset.symbol}</span>
       <span
         key={live.seq}
@@ -47,7 +47,7 @@ const TapeItem = memo(function TapeItem({ asset }: { asset: Asset }) {
 
 export function TickerTape() {
   return (
-    <div className="relative flex h-8 shrink-0 items-center overflow-hidden border-b border-line bg-sig/[0.035]">
+    <div className="relative flex h-7 shrink-0 items-center overflow-hidden border-b border-line bg-sunken">
       <div className="marquee flex w-max items-center">
         {[0, 1].map((copy) => (
           <div key={copy} className="flex items-center" aria-hidden={copy === 1}>
@@ -58,8 +58,8 @@ export function TickerTape() {
         ))}
       </div>
       {/* fade the ends so the loop seam never shows */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[var(--void)] to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[var(--void)] to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[var(--sunken)] to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[var(--sunken)] to-transparent" />
     </div>
   )
 }

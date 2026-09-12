@@ -3,33 +3,25 @@
 import { cn } from '@/lib/utils'
 
 /**
- * The mark: a rounded glass tile with a lime edge, and a line that falls to a
+ * The mark: a rounded panel tile with a lime edge, and a line that falls to a
  * floor. The short, and the cap under it.
  */
-export function Mark({ size = 26 }: { size?: number }) {
+export function Mark({ size = 20 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden className="shrink-0">
-      <defs>
-        <linearGradient id="sc-mark" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#181433" />
-          <stop offset="1" stopColor="#07060f" />
-        </linearGradient>
-      </defs>
-      <rect x="1" y="1" width="62" height="62" rx="17" fill="url(#sc-mark)" stroke="#8a7bff" strokeOpacity=".45" strokeWidth="1.5" />
-      <path d="M15 20 L26 31 L33 25 L48 40" stroke="#8a7bff" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M40 40 h8 v-8" stroke="#35e8ff" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M14 48 H50" stroke="#8a7bff" strokeOpacity=".35" strokeWidth="2" strokeDasharray="3 4" strokeLinecap="round" />
-      <circle cx="26" cy="31" r="2.6" fill="#35e8ff" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden className="shrink-0">
+      <path d="M3 6 L9 12 L13 8.5 L21 17" stroke="var(--ink)" strokeWidth="2" strokeLinecap="square" />
+      <path d="M15 17 h6 v-6" stroke="var(--ink)" strokeWidth="2" strokeLinecap="square" />
+      <path d="M3 21 H21" stroke="var(--line-strong)" strokeWidth="1.5" />
     </svg>
   )
 }
 
 export function Wordmark({ className }: { className?: string }) {
   return (
-    <span className={cn('flex items-center gap-2.5 select-none', className)}>
+    <span className={cn('flex items-center gap-2 select-none', className)}>
       <Mark />
-      <span className="text-[17px] font-bold tracking-[-0.04em]">
-        SHORT<span className="text-sig">COIN</span>
+      <span className="text-[15px] font-semibold tracking-[-0.02em]">
+        SHORT<span className="text-ink-3">COIN</span>
       </span>
     </span>
   )
