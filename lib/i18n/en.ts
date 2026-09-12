@@ -81,8 +81,6 @@ export const en: Record<MessageKey, string> = {
   'list.feed.since': 'since you arrived',
   'list.feed.loading': 'Loading…',
   'list.class.all': 'All',
-  'list.class.equity': 'Stocks',
-  'list.class.coin': 'Coins',
 
   'search.placeholder': 'Name, ticker or contract address…',
   'search.homonym': 'Homonym',

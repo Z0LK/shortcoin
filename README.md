@@ -1,7 +1,8 @@
 # SHORTCOIN
 
-Un terminal de **position short** sur les tokens de **Robinhood Chain** — les actions tokenisées et
-les coins natifs du launchpad Pons.
+Un terminal de **position short** sur les coins de **Robinhood Chain** — les tokens natifs de la
+chaîne et ceux du launchpad Pons. Les actions tokenisées ne sont pas listées : le produit ne vend
+pas de short sur une action.
 
 > Pariez à la baisse sur n'importe quel token éligible. Perte plafonnée à votre collatéral, gain
 > plafonné à 100%.
@@ -115,10 +116,10 @@ Toute la calibration du mode paper est dans `PAPER_CONFIG` (`lib/protocol/paper.
 
 ## Ce qui est réel, ce qui est simulé
 
-- **Réel** : les symboles, noms et adresses des actions tokenisées et des 90 tokens Pons ; la
-  lecture d'identité d'une adresse inconnue sur le RPC de Robinhood Chain.
+- **Réel** : les symboles, noms, dates de lancement et adresses des coins natifs et des tokens
+  Pons ; la lecture d'identité d'une adresse inconnue sur le RPC de Robinhood Chain.
 - **Simulé** (mode paper) : prix, profondeur, capacité, taux, trésors, HLP, clusters de wallets,
-  positions, règlements. Le badge **PAPER** est visible sur tout l'écran.
+  positions, règlements. Le mode paper est annoncé sur le ticket, au-dessus du bouton d'ouverture.
 
 ## Ce qui reste à décider
 

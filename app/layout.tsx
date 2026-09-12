@@ -19,7 +19,7 @@ const numeric = DM_Mono({
 export const metadata: Metadata = {
   title: 'SHORTCOIN — short any token',
   description:
-    'The short-only trading terminal for tokenized equities on Robinhood Chain. Pre-funded, capped shorts with a knock-out barrier.',
+    'The short-only trading terminal for Robinhood Chain coins. Pre-funded, capped shorts with a knock-out barrier.',
 }
 
 export const viewport: Viewport = {

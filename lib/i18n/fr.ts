@@ -90,8 +90,6 @@ export const fr = {
   'list.feed.since': 'depuis votre arrivée',
   'list.feed.loading': 'Chargement…',
   'list.class.all': 'Tout',
-  'list.class.equity': 'Actions',
-  'list.class.coin': 'Coins',
 
   // ── recherche (SPEC §3) ───────────────────────────────────────────────
   'search.placeholder': 'Nom, ticker ou adresse de contrat…',

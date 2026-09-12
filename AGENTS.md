@@ -38,7 +38,12 @@ ES2020 (bigint literals) · Tailwind v4 · lightweight-charts 5 · zustand 5 · 
 - **One price series per token** (`lib/protocol/series.ts`). The list, the chart overlay, the marks
   and the receipts all read it, so they never disagree. Do not generate a second one for a screen.
 - `lib/assets.ts` is **generated** — edit the registries in `scripts/` and re-run
-  `npx tsx scripts/gen-assets.ts`.
+  `npx tsx scripts/gen-assets.ts`. The universe is **coins only**: `registry.txt` survives so the
+  equity tickers that Pons pools are quoted against still resolve to a name, but no equity is
+  listed and nothing renders one.
+- **The listed universe is `LISTED_UNIVERSE` in `lib/universe.ts`**, not `ASSETS`: the registries
+  plus a deterministic slice of the launch tail, biased to the caps a pool could back. The paper
+  adapter models exactly that set.
 - **The coin tail is generated from an index.** `coinAt(n)` must stay pure, and a coin's ticker
   encodes its index in base 36 — changing `symbolFor` breaks every saved tail URL.
 

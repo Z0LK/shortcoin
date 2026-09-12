@@ -39,12 +39,12 @@ export type ShortRoute = 'borrow' | 'perp' | 'none'
 export type DisplayUnit = 'mcap' | 'price'
 
 /**
- * Two very different things live on this chain. Tokenized equities track a share
+ * SHORTCOIN lists the chain's coins only; tokenized equities track a share
  * and inherit its trading calendar; native coins track nothing, trade genuinely
  * around the clock, and can be a few days old. Almost every rule that differs
  * between them keys off this.
  */
-export type AssetClass = 'equity' | 'coin'
+export type AssetClass = 'coin'
 
 /** Whether the underlying equity's primary venue is currently open. */
 export type MarketPhase = 'open' | 'pre' | 'after' | 'closed'

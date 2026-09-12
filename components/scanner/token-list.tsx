@@ -31,7 +31,7 @@ import { useT } from '@/lib/i18n'
 import { ageLabel, usdAbbr } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-type ClassTab = 'all' | 'equity' | 'coin' | 'watch'
+type ClassTab = 'all' | 'watch'
 type Feed = 'listed' | 'new'
 
 const FEED_PAGE = 60
@@ -338,7 +338,7 @@ export function TokenList() {
   const [sort, setSort] = useState<TokenSort>('capacity')
   const [text, setText] = useState('')
 
-  const feedMode = cls === 'coin' && feed === 'new'
+  const feedMode = feed === 'new'
   const isMobile = useIsMobile()
 
   // ── listed ─────────────────────────────────────────────────────────────
@@ -347,7 +347,6 @@ export function TokenList() {
   const rows = useMemo(() => {
     let out = listed.data ?? []
     if (cls === 'watch') out = out.filter((r) => watchlist.includes(r.symbol))
-    else if (cls !== 'all') out = out.filter((r) => resolveAsset(r.symbol)?.assetClass === cls)
     if (openableOnly) out = out.filter((r) => r.status.canOpen)
     const q = text.trim()
     if (q) {
@@ -419,8 +418,6 @@ export function TokenList() {
 
   const CLASSES: { key: ClassTab; label: string }[] = [
     { key: 'all', label: t('list.class.all') },
-    { key: 'equity', label: t('list.class.equity') },
-    { key: 'coin', label: t('list.class.coin') },
     { key: 'watch', label: '★' },
   ]
 
@@ -479,7 +476,7 @@ export function TokenList() {
           ))}
         </div>
 
-        {cls === 'coin' && (
+        {cls !== 'watch' && (
           <div className="seg shrink-0">
             <button onClick={() => setFeed('listed')} className={tab(feed === 'listed')}>
               {t('list.feed.trending')}

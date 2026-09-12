@@ -17,8 +17,7 @@
 
 import type { MarketEngine } from '@/lib/sim'
 import type { Asset } from '@/lib/types'
-import { ASSETS } from '@/lib/assets'
-import { coinPage, resolveAsset } from '@/lib/universe'
+import { LISTED_UNIVERSE, coinPage, resolveAsset } from '@/lib/universe'
 import { searchAssets } from '@/lib/search'
 import { between, rng } from '@/lib/rng'
 import {
@@ -223,7 +222,7 @@ export class PaperAdapter implements ProtocolAdapter {
 
   constructor(private readonly engine: MarketEngine) {
     this.state = typeof window === 'undefined' ? structuredClone(INITIAL) : load()
-    for (const a of ASSETS) this.model(a)
+    for (const a of LISTED_UNIVERSE) this.model(a)
     if (typeof window !== 'undefined') {
       this.timers.push(setInterval(() => this.tick(), TICK_MS))
       this.timers.push(setInterval(() => this.launch(), PAPER_CONFIG.launchEveryMs))
@@ -420,7 +419,7 @@ export class PaperAdapter implements ProtocolAdapter {
     } else if (query.addresses) {
       models = query.addresses.map((a) => this.find(a)).filter((m): m is TokenModel => !!m)
     } else {
-      models = ASSETS.map((a) => this.model(a))
+      models = LISTED_UNIVERSE.map((a) => this.model(a))
     }
 
     let rows = models.map((m) => this.row(m, now))
@@ -452,7 +451,7 @@ export class PaperAdapter implements ProtocolAdapter {
         // A partial address is still worth matching against what we carry,
         // but a malformed one is a format problem, not a missing token.
         if (/^0x[0-9a-fA-F]{4,39}$/.test(q)) {
-          const hits = searchAssets(ASSETS, q, 8)
+          const hits = searchAssets(LISTED_UNIVERSE, q, 8)
           if (hits.length) return hits.map((h) => this.tokenResult(h.asset))
         }
         return [{ kind: 'invalid-address', input: q }]
@@ -467,7 +466,7 @@ export class PaperAdapter implements ProtocolAdapter {
       return [{ kind: 'untracked', address: q.toLowerCase() as Address, ...identity }]
     }
 
-    return searchAssets(ASSETS, q, 14).map((h) => this.tokenResult(h.asset))
+    return searchAssets(LISTED_UNIVERSE, q, 14).map((h) => this.tokenResult(h.asset))
   }
 
   private tokenResult(asset: Asset): SearchResult {
@@ -1054,7 +1053,7 @@ const PAPER_REASONS: Record<TokenStatus, string> = {
 const homonyms = (() => {
   const counts = new Map<string, number>()
   const bump = (k: string) => counts.set(k, (counts.get(k) ?? 0) + 1)
-  for (const a of ASSETS) {
+  for (const a of LISTED_UNIVERSE) {
     bump(`s:${a.symbol.toLowerCase()}`)
     bump(`n:${a.name.toLowerCase()}`)
   }
@@ -1068,7 +1067,7 @@ function isHomonym(asset: Asset): boolean {
     (homonyms.get(`n:${asset.name.toLowerCase()}`) ?? 0) > 1 ||
     // Launchpad impersonation is mostly casing and punctuation games on a name
     // somebody else made famous.
-    ASSETS.some(
+    LISTED_UNIVERSE.some(
       (o) => o !== asset && o.name.toLowerCase().replace(/[^a-z]/g, '') === base && base.length > 2,
     )
   )

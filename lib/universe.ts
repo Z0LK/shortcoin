@@ -235,6 +235,22 @@ export function coinAt(index: number): Asset {
 
 /** A slice of the feed, newest first. */
 /** Everything the tail can be asked for, newest first. */
+/**
+ * The listed universe: the registries, plus a deterministic sample of the
+ * launch tail spread over about two months so the scanner is not all warm-up.
+ *
+ * Only the chain's coins live here. Tokenized equities are not listed — the
+ * product does not sell a short on a share — though a Pons pool can still be
+ * quoted against one, which is why their tickers still resolve by name.
+ */
+export const LISTED_TAIL: Asset[] = Array.from({ length: 6_000 }, (_, i) => coinAt(300 + i * 220))
+  // Launch caps follow a power law: taking a flat slice would list 6,000 tokens
+  // too thin to quote. Keep the ones a pool could actually back.
+  .sort((a, b) => b.marketCap - a.marketCap)
+  .slice(0, 280)
+
+export const LISTED_UNIVERSE: Asset[] = [...KNOWN_COINS, ...LISTED_TAIL]
+
 export function coinPage(offset: number, limit: number): Asset[] {
   const out: Asset[] = []
   for (let i = offset; i < offset + limit; i++) out.push(coinAt(i))
