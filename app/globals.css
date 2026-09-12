@@ -3,9 +3,9 @@
 /* ===========================================================================
    SHORTCOIN — design tokens
    ---------------------------------------------------------------------------
-   Deep space, iris signal. An ink-blue ground under a slow aurora and fine
-   scanlines, panels of smoked glass, and one signal colour that runs from iris
-   to cyan. Space Grotesk for words, DM Mono for figures and labels.
+   Deep space, iris signal. An ink-blue ground under a slow aurora, panels of
+   smoked glass, and one signal colour that runs from iris to cyan. IBM Plex
+   Sans for words, IBM Plex Mono for figures and labels.
 
    The signal is the brand and the call to action. It is not a direction: green
    and red keep their ordinary meaning on price movement and PnL, everywhere.
@@ -68,9 +68,9 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* Density */
-  --row-h: 44px;
-  --row-h-tight: 34px;
-  --head-h: 42px;
+  --row-h: 48px;
+  --row-h-tight: 36px;
+  --head-h: 44px;
   --nav-h: 60px;
   --subnav-h: 44px;
 }
@@ -111,15 +111,15 @@
 
   --radius-DEFAULT: var(--radius);
 
-  --text-micro: 10px;
-  --text-mini: 11px;
-  --text-xs: 12px;
-  --text-sm: 13px;
-  --text-base: 14px;
-  --text-lg: 16px;
-  --text-xl: 20px;
-  --text-2xl: 26px;
-  --text-3xl: 34px;
+  --text-micro: 11px;
+  --text-mini: 12px;
+  --text-xs: 13px;
+  --text-sm: 14px;
+  --text-base: 15px;
+  --text-lg: 17px;
+  --text-xl: 21px;
+  --text-2xl: 27px;
+  --text-3xl: 35px;
 }
 
 /* Tailwind v4 defaults borders to `currentColor`. Pin it to the hairline. */
@@ -142,7 +142,7 @@ body {
   background: var(--void);
   color: var(--ink);
   font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
-  font-size: 13px;
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overscroll-behavior: none;
@@ -158,21 +158,19 @@ body {
   font-family: var(--font-numeric), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "zero" 1;
-  letter-spacing: -0.02em;
-  /* DM Mono stops at 500; anything heavier is a smeared faux-bold. */
-  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 /* Mono uppercase label — the sites' `.mono`. */
 .mono {
   font-family: var(--font-numeric), ui-monospace, monospace;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
 }
 
 /* ── Background layers ──────────────────────────────────────────────────────
-   No grid here: a slow aurora of three drifting blobs, fine horizontal
-   scanlines over it, grain, and a vignette that closes the edges. */
+   No grid, no rules: a slow aurora of three drifting blobs, grain, and a
+   vignette that closes the edges. */
 .bg-layer {
   position: fixed;
   inset: 0;
@@ -224,13 +222,6 @@ body {
   to {
     transform: translate3d(-12vw, -12vh, 0) scale(0.85);
   }
-}
-.bg-scanlines {
-  background-image: repeating-linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.028) 0 1px,
-    transparent 1px 4px
-  );
 }
 .bg-noise {
   opacity: 0.045;

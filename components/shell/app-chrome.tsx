@@ -11,7 +11,7 @@ import { useRehydrateStore } from '@/lib/store'
 
 /**
  * The fixed layers behind every screen: a slow aurora of three drifting blobs,
- * scanlines, grain and a vignette. The pointer carries no light of its own: it
+ * grain and a vignette. The pointer carries no light of its own: it
  * faintly uncovers a dot matrix that is always there. Panels are smoked glass
  * laid over all of it.
  */
@@ -46,7 +46,6 @@ function Backdrop() {
         <div className="aurora aurora-b" />
         <div className="aurora aurora-c" />
       </div>
-      <div className="bg-layer bg-scanlines" />
       <div className="bg-layer bg-noise" />
       <div className="bg-layer bg-vignette" />
       <div ref={layers}>

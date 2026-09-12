@@ -1,16 +1,17 @@
 import type { Metadata, Viewport } from 'next'
-import { DM_Mono, Space_Grotesk } from 'next/font/google'
+import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google'
 import './globals.css'
 import { AppChrome } from '@/components/shell/app-chrome'
 
-const ui = Space_Grotesk({
+const ui = IBM_Plex_Sans({
+  weight: ['400', '500', '600', '700'],
   variable: '--font-ui',
   subsets: ['latin'],
   display: 'swap',
 })
 
-const numeric = DM_Mono({
-  weight: ['300', '400', '500'],
+const numeric = IBM_Plex_Mono({
+  weight: ['400', '500', '600'],
   variable: '--font-numeric',
   subsets: ['latin'],
   display: 'swap',
