@@ -42,8 +42,12 @@ import type {
   SettlementReceipt,
   TokenRow,
   TokenStatus,
+  Holding,
+  SwapQuote,
+  SwapSide,
+  Trade,
 } from './types'
-import { E18, USDG_UNIT, fixed, fixedToNumber, ratioToFixed, toFixed18 } from './fixed'
+import { E18, USDG_TO_E18, USDG_UNIT, fixed, fixedToNumber, ratioToFixed, toFixed18 } from './fixed'
 import { resolveStatus, STATUS_RULES } from './status'
 import { TokenSeries, WINDOW_24H, WINDOW_72H } from './series'
 import { FIRST_TRANCHE } from './payoff'
@@ -81,6 +85,10 @@ export const PAPER_CONFIG = {
   keeper: '0x6b1f3a9e02c4d7a58e3f1c0b92d4e6a7f8c90d12' as Address,
   account: '0x7a3f9c21be04d5e8f6a1c9037bd82e4419f0cd6a' as Address,
   launchEveryMs: 3_800,
+  /** Spot: pool fee, quote lifetime, and how much of a fill's impact stays in the price. */
+  swapFeeBps: 30,
+  swapQuoteTtlMs: 15_000,
+  swapPriceFollow: 0.5,
 } as const
 
 const STORAGE_KEY = 'shortcoin.paper.v2'
@@ -165,6 +173,9 @@ interface State {
   hlpShares: bigint
   hlpDepositedAt: number | null
   listingRequests: { address: Address; requestedAt: number }[]
+  /** Spot holdings by token address. `cost` is USDG paid for what is still held. */
+  holdings: Record<string, { symbol: string; amount: bigint; cost: bigint }>
+  trades: Trade[]
   seq: number
 }
 
@@ -176,6 +187,8 @@ const INITIAL: State = {
   hlpShares: 0n,
   hlpDepositedAt: null,
   listingRequests: [],
+  holdings: {},
+  trades: [],
   seq: 0,
 }
 
@@ -195,9 +208,13 @@ function load(): State {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return structuredClone(INITIAL)
-    return JSON.parse(raw, (_k, v) =>
-      v && typeof v === 'object' && '$b' in v ? BigInt((v as { $b: string }).$b) : v,
-    ) as State
+    // Merged over the defaults, so a state saved before a field existed still loads.
+    return {
+      ...structuredClone(INITIAL),
+      ...(JSON.parse(raw, (_k, v) =>
+        v && typeof v === 'object' && '$b' in v ? BigInt((v as { $b: string }).$b) : v,
+      ) as Partial<State>),
+    }
   } catch {
     return structuredClone(INITIAL)
   }
@@ -631,6 +648,148 @@ export class PaperAdapter implements ProtocolAdapter {
     }
     this.quotes.set(quote.quoteId, quote)
     return quote
+  }
+
+  // ── spot ───────────────────────────────────────────────────────────────
+
+  /**
+   * Priced as a constant-product pool whose USDG side is the token's quote
+   * depth: a trade of x dollars against a reserve R moves the price by
+   * x / (R + x). The fee is taken in USDG on both sides.
+   */
+  async quoteSwap(token: Address, side: SwapSide, amountIn: bigint, slippageBps: number): Promise<SwapQuote> {
+    const m = this.find(token)
+    if (!m) throw new ProtocolError('TokenNotEligible')
+    const st = this.status(m).status
+    if (st === 'PAUSED') throw new ProtocolError('Paused')
+    if (st === 'UNTRACKED') throw new ProtocolError('TokenNotEligible')
+    if (amountIn <= 0n) throw new ProtocolError('Unknown', { message: 'amount' })
+
+    const spot = this.spot(m)
+    const reserve = Math.max(Number(m.depth / USDG_UNIT), 1)
+    const feeBps = PAPER_CONFIG.swapFeeBps
+    let amountOut: bigint
+    let fee: bigint
+    let impact: number
+    let exec: bigint
+
+    if (side === 'buy') {
+      fee = (amountIn * BigInt(feeBps)) / 10_000n
+      const net = amountIn - fee
+      const netUsd = Number(net) / Number(USDG_UNIT)
+      impact = netUsd / (reserve + netUsd)
+      exec = BigInt(toFixed18(spot / (1 - impact)))
+      amountOut = exec > 0n ? (net * USDG_TO_E18 * E18) / exec : 0n
+    } else {
+      const grossUsd = (Number(amountIn) / 1e18) * spot
+      impact = grossUsd / (reserve + grossUsd)
+      exec = BigInt(toFixed18(spot * (1 - impact)))
+      const gross = (amountIn * exec) / E18 / USDG_TO_E18
+      fee = (gross * BigInt(feeBps)) / 10_000n
+      amountOut = gross - fee
+    }
+
+    const now = Date.now()
+    return {
+      quoteId: `swp-${now.toString(36)}-${(this.state.seq++).toString(36)}`,
+      token: m.address,
+      symbol: m.asset.symbol,
+      side,
+      amountIn,
+      amountOut,
+      minAmountOut: (amountOut * BigInt(10_000 - slippageBps)) / 10_000n,
+      slippageBps,
+      spotPrice: toFixed18(spot),
+      executionPrice: exec.toString(),
+      priceImpactBps: Math.round(impact * 10_000),
+      feeBps,
+      fee,
+      expiresAt: now + PAPER_CONFIG.swapQuoteTtlMs,
+    }
+  }
+
+  async executeSwap(quote: SwapQuote): Promise<Trade> {
+    await wait(800)
+    if (Date.now() > quote.expiresAt) throw new ProtocolError('QuoteExpired')
+    const m = this.find(quote.token)
+    if (!m) throw new ProtocolError('TokenNotEligible')
+    const held = this.state.holdings[m.address]
+    if (quote.side === 'buy' && quote.amountIn > this.state.balance) throw new ProtocolError('InsufficientBalance')
+    if (quote.side === 'sell' && quote.amountIn > (held?.amount ?? 0n)) {
+      throw new ProtocolError('InsufficientTokenBalance')
+    }
+
+    // Fill at the pool as it is now, and hold it to the quote's minimum.
+    const fill = await this.quoteSwap(quote.token, quote.side, quote.amountIn, quote.slippageBps)
+    if (fill.amountOut < quote.minAmountOut) throw new ProtocolError('SlippageExceeded')
+
+    const h = held ?? { symbol: m.asset.symbol, amount: 0n, cost: 0n }
+    let tokenAmount: bigint
+    let usdgAmount: bigint
+    if (quote.side === 'buy') {
+      tokenAmount = fill.amountOut
+      usdgAmount = fill.amountIn
+      this.state.balance -= usdgAmount
+      h.amount += tokenAmount
+      h.cost += usdgAmount
+    } else {
+      tokenAmount = fill.amountIn
+      usdgAmount = fill.amountOut
+      const released = h.amount > 0n ? (h.cost * tokenAmount) / h.amount : 0n
+      h.amount -= tokenAmount
+      h.cost -= released
+      this.state.balance += usdgAmount
+    }
+    if (h.amount > 0n) this.state.holdings[m.address] = h
+    else delete this.state.holdings[m.address]
+
+    const now = Date.now()
+    const trade: Trade = {
+      id: `trd-${now.toString(36)}-${(this.state.seq++).toString(36)}`,
+      token: m.address,
+      symbol: m.asset.symbol,
+      side: quote.side,
+      tokenAmount,
+      usdgAmount,
+      price: fill.executionPrice,
+      fee: fill.fee,
+      time: now,
+      txHash: `0x${Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}` as Address,
+    }
+    this.state.trades = [trade, ...this.state.trades].slice(0, 200)
+
+    // The fill leaves part of its impact in the pool. The TWAPs take it in
+    // slowly, which is the whole point of settling on them.
+    const move = (fill.priceImpactBps / 10_000) * PAPER_CONFIG.swapPriceFollow
+    this.shock(m.address, quote.side === 'buy' ? 1 + move : 1 - move)
+
+    this.emit({ type: 'swap.filled', trade })
+    this.commit()
+    return trade
+  }
+
+  async listHoldings(): Promise<Holding[]> {
+    return Object.entries(this.state.holdings)
+      .map(([address, h]) => {
+        const m = this.find(address) ?? this.find(h.symbol)
+        const spot = m ? BigInt(toFixed18(this.spot(m))) : 0n
+        const value = (h.amount * spot) / E18 / USDG_TO_E18
+        return {
+          token: address as Address,
+          symbol: h.symbol,
+          amount: h.amount,
+          costBasis: h.cost,
+          avgPrice: (h.amount > 0n ? (h.cost * USDG_TO_E18 * E18) / h.amount : 0n).toString(),
+          spotPrice: spot.toString(),
+          value,
+          pnl: value - h.cost,
+        }
+      })
+      .sort((a, b) => (b.value > a.value ? 1 : b.value < a.value ? -1 : 0))
+  }
+
+  async listTrades(): Promise<Trade[]> {
+    return this.state.trades
   }
 
   // ── writes ─────────────────────────────────────────────────────────────

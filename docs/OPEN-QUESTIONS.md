@@ -61,3 +61,25 @@ Permit2, pas d'ABI des erreurs custom. Le décodage (`decodeError`) attend des e
 
 Les endpoints attendus sont listés en tête de `lib/protocol/indexer.ts`. Ils sont une proposition,
 à valider avec l'équipe backend avant que l'un ou l'autre ne les implémente.
+
+## 9. Achat et vente spot
+
+`SPEC-FRONTEND.md` décrit un produit short uniquement ; la décision d'ajouter l'achat et la vente du
+token lui-même est postérieure et le spec ne la couvre pas. Le front a donc un ticket
+**Acheter / Vendre / Short** sur la fiche token et un onglet **Portefeuille** dans Positions.
+
+En paper, un swap est coté contre un pool à produit constant dont la réserve USDG est la profondeur du
+token : impact `x / (R + x)`, frais de 30 bps en USDG, tolérance de slippage 0,5 / 1 / 3 %, refus
+`SlippageExceeded` si le prix a bougé au-delà du minimum reçu. La moitié de l'impact reste dans le prix.
+
+À trancher avec le backend :
+- **Routage** : quels pools (Pons, DEX de la chaîne), agrégateur ou non, qui fixe les frais.
+- **Autorisations** : Permit2 ou approve classique pour le routeur, et si c'est la même autorisation que
+  celle du collatéral short.
+- **Interaction avec le short** : un achat pousse le spot, donc les TWAP, donc rapproche la barrière de
+  ses propres positions short sur le même token. Les TWAP amortissent, mais faut-il avertir, voire
+  bloquer, l'achat d'un token sur lequel le compte est short ?
+- **Portefeuille** : les tokens détenus peuvent-ils servir de collatéral, et le coût moyen doit-il
+  intégrer les frais (c'est le cas en paper) ?
+- **Endpoints indexeur** : `quoteSwap`, `listHoldings`, `listTrades` renvoient `IndexerUnavailable`
+  dans `lib/protocol/indexer.ts` tant que la source n'est pas choisie.

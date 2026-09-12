@@ -1,6 +1,6 @@
 # SHORTCOIN
 
-Un terminal de **position short** sur les coins de **Robinhood Chain** — les tokens natifs de la
+Un terminal pour **acheter, vendre et shorter** les coins de **Robinhood Chain** — les tokens natifs de la
 chaîne et ceux du launchpad Pons. Les actions tokenisées ne sont pas listées : le produit ne vend
 pas de short sur une action.
 

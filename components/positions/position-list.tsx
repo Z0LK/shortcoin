@@ -24,6 +24,7 @@ import { AddressChip, DualMark, KV } from '@/components/ui/protocol-ui'
 import { PayoffChart } from '@/components/ticket/payoff-chart'
 import { Pill } from '@/components/ui/primitives'
 import { SampleSeries } from '@/components/receipts/sample-series'
+import { Holdings } from '@/components/portfolio/holdings'
 import {
   fixedToNumber,
   formatMicroPrice,
@@ -294,11 +295,13 @@ export function PositionList({ positions, compact = false }: { positions: Positi
 export function PositionsScreen() {
   const { t } = useT()
   const positions = useAdapterQuery((a) => a.listPositions(), [], { everyMs: 2000 })
-  const [tab, setTab] = useState<'open' | 'closed'>('open')
+  const [tab, setTab] = useState<'open' | 'closed' | 'portfolio'>('open')
   const all = positions.data ?? []
   const open = all.filter((p) => p.status === 'OPEN' || p.status === 'PENDING_SETTLEMENT')
   const closed = all.filter((p) => !(p.status === 'OPEN' || p.status === 'PENDING_SETTLEMENT'))
   const shown = tab === 'open' ? open : closed
+  const holdings = useAdapterQuery((a) => a.listHoldings(), [], { everyMs: 3000 })
+  const held = holdings.data?.length ?? 0
 
   return (
     <div className="h-full overflow-y-auto">
@@ -306,7 +309,7 @@ export function PositionsScreen() {
         <header className="flex flex-wrap items-center gap-3">
           <h1 className="text-sm font-semibold tracking-[-0.01em]">{t('positions.title')}</h1>
           <div className="seg">
-            {(['open', 'closed'] as const).map((k) => (
+            {(['open', 'closed', 'portfolio'] as const).map((k) => (
               <button
                 key={k}
                 onClick={() => setTab(k)}
@@ -316,12 +319,15 @@ export function PositionsScreen() {
                   tab === k ? 'bg-ink text-void' : 'text-ink-3 hover:text-ink',
                 )}
               >
-                {t(`positions.${k}` as MessageKey)} <span className="num opacity-60">{k === 'open' ? open.length : closed.length}</span>
+                {t(`positions.${k}` as MessageKey)} <span className="num opacity-60">{k === 'open' ? open.length : k === 'closed' ? closed.length : held}</span>
               </button>
             ))}
           </div>
         </header>
 
+        {tab === 'portfolio' ? (
+          <Holdings />
+        ) : (
         <section className="panel">
           {positions.loading && !positions.data ? (
             <p className="p-8 text-center mono text-[10px] text-ink-3">{t('common.loading')}</p>
@@ -340,6 +346,7 @@ export function PositionsScreen() {
             </div>
           )}
         </section>
+        )}
       </div>
     </div>
   )

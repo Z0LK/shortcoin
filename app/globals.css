@@ -206,6 +206,37 @@ body {
     color: var(--ink);
   }
 
+  .btn-buy,
+  .btn-sell {
+    border-radius: var(--radius);
+    font-weight: 600;
+    color: var(--void);
+    transition: filter 0.12s var(--ease), opacity 0.12s;
+  }
+  .btn-buy {
+    background: var(--long);
+  }
+  .btn-sell {
+    background: var(--short);
+  }
+  .btn-buy:not(:disabled):hover,
+  .btn-sell:not(:disabled):hover {
+    filter: brightness(1.1);
+  }
+  .btn-buy:disabled,
+  .btn-sell:disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
+  }
+  .field {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--sunken);
+  }
+  .field:focus-within {
+    border-color: var(--line-strong);
+  }
+
   /* Segmented control: a sunken track, square thumbs. */
   .seg {
     display: flex;

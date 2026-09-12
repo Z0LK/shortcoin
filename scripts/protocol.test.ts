@@ -180,6 +180,34 @@ async function main() {
   ok('every homonym shows a distinct address',
      new Set(byName.map((r) => (r.kind === 'token' ? r.token.address : ''))).size === byName.length)
 
+  // Spot: buy, partial sell, oversell, impact that grows with size.
+  const spotToken = tokens.find((r) => r.address !== t.address && r.address !== t2.address)!
+  const before = (await paper.account()).usdgBalance
+  const qb = await paper.quoteSwap(spotToken.address, 'buy', 100n * USDG_UNIT, 100)
+  ok('buy quote returns tokens', qb.amountOut > 0n)
+  ok('minimum received sits under the quote', qb.minAmountOut < qb.amountOut)
+  ok('fee is 30 bps of the USDG in', qb.fee === (100n * USDG_UNIT * 30n) / 10_000n, formatUsdg(qb.fee))
+  const qBig = await paper.quoteSwap(spotToken.address, 'buy', 50_000n * USDG_UNIT, 100)
+  ok('a bigger buy moves the price more', qBig.priceImpactBps > qb.priceImpactBps, `${qb.priceImpactBps} → ${qBig.priceImpactBps} bps`)
+  const bought = await paper.executeSwap(qb)
+  ok('buy debits exactly the USDG in', (await paper.account()).usdgBalance === before - 100n * USDG_UNIT)
+  const holding = (await paper.listHoldings()).find((x) => x.token === spotToken.address)
+  ok('buy creates the holding', !!holding && holding.amount === bought.tokenAmount)
+  ok('cost basis is what was paid', holding?.costBasis === 100n * USDG_UNIT)
+  try {
+    await paper.executeSwap(await paper.quoteSwap(spotToken.address, 'sell', holding!.amount * 2n, 100))
+    ok('selling more than held is refused', false)
+  } catch (e) {
+    ok('selling more than held is refused', e instanceof ProtocolError && e.code === 'InsufficientTokenBalance')
+  }
+  const half = holding!.amount / 2n
+  const sold = await paper.executeSwap(await paper.quoteSwap(spotToken.address, 'sell', half, 300))
+  ok('sell credits USDG', sold.usdgAmount > 0n, formatUsdg(sold.usdgAmount))
+  const after = (await paper.listHoldings()).find((x) => x.token === spotToken.address)
+  ok('sell reduces the holding exactly', after?.amount === holding!.amount - half)
+  ok('sell releases cost pro rata', after?.costBasis === 100n * USDG_UNIT - (100n * USDG_UNIT * half) / holding!.amount)
+  ok('both fills are in the history', (await paper.listTrades()).length >= 2)
+
   paper.dispose()
   console.log(fails === 0 ? '\nALL PASS' : `\n${fails} FAILURES`)
   process.exit(fails === 0 ? 0 : 1)

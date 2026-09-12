@@ -171,3 +171,36 @@ export function formatPct(fraction: number, digits = 1, signed = false): string 
   const sign = v < 0 ? '−' : signed ? '+' : ''
   return `${sign}${Math.abs(v).toFixed(digits)}%`
 }
+
+// ---------------------------------------------------------------------------
+// Token amounts
+// ---------------------------------------------------------------------------
+
+/** Launch tokens on Robinhood Chain are 18-decimal ERC-20s. */
+export const TOKEN_DECIMALS = 18
+/** USDG base units (6 dp) → 18 dp. */
+export const USDG_TO_E18 = 10n ** 12n
+
+/** A user-typed token quantity into 18-decimal units. Returns null when unparseable. */
+export function parseTokenAmount(input: string): bigint | null {
+  const clean = input.replace(/[\s,]/g, '')
+  if (!/^\d*\.?\d*$/.test(clean) || clean === '' || clean === '.') return null
+  const [whole = '0', frac = ''] = clean.split('.')
+  const padded = (frac + '0'.repeat(TOKEN_DECIMALS)).slice(0, TOKEN_DECIMALS)
+  return BigInt(whole || '0') * E18 + BigInt(padded || '0')
+}
+
+/** 18-decimal units → a plain string an input can hold. Truncates, never rounds up. */
+export function tokenAmountToInput(amount: bigint, maxDecimals = 6): string {
+  const whole = amount / E18
+  const frac = (amount % E18).toString().padStart(TOKEN_DECIMALS, '0').slice(0, maxDecimals).replace(/0+$/, '')
+  return frac ? `${whole}.${frac}` : whole.toString()
+}
+
+/** Token quantities: compact for memecoin supplies, subscript notation for dust. */
+export function formatTokenAmount(amount: bigint): string {
+  const n = Number(amount) / 1e18
+  if (n >= 1e9) return `${(n / 1e9).toFixed(2)}B`
+  if (n >= 1e6) return `${(n / 1e6).toFixed(2)}M`
+  return formatMicroPrice(amount)
+}

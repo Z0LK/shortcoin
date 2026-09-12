@@ -14,7 +14,8 @@ ES2020 (bigint literals) · Tailwind v4 · lightweight-charts 5 · zustand 5 · 
 - **Screens talk to a `ProtocolAdapter`, never to `PaperAdapter`.** Use the hooks in
   `components/protocol/provider.tsx`. The only paper-specific thing a screen may touch is
   `useRuntime().paper`, and only for dev levers that are hidden outside paper mode.
-- **The front never computes the entry price, the premium or the capacity.** It shows the quote.
+- **The front never computes the entry price, the premium or the capacity** — nor a swap's fill: the
+  spot ticket shows `quoteSwap`'s `amountOut` and `minAmountOut`. It shows the quote.
   `lib/protocol/payoff.ts` draws graphs and cross-checks quotes in dev; it decides nothing.
 - **Never hard-code the tranche.** Read `capPct` / `barrierPct` from the quote. `FIRST_TRANCHE` is
   for explanatory copy and paper defaults only.
@@ -29,6 +30,9 @@ ES2020 (bigint literals) · Tailwind v4 · lightweight-charts 5 · zustand 5 · 
   knock-out, premium quotidien, capacité, prix de règlement, TWAP. Never: emprunter, vendre, vente à
   découvert, liquider, marge, appel de marge, levier (unqualified), garanti, sans risque — the only
   exception is explaining what the product is *not*, as the spec's own copy does.
+- **« Acheter » / « vendre » belong to spot only.** Since the spot pivot, the platform buys and sells
+  the token itself, and those are that ticket's verbs. They never describe the short: no « vendre »
+  on the short ticket, never « vente à découvert ».
 - **Every user-facing string goes through `t()`**, in both `lib/i18n/fr.ts` and `lib/i18n/en.ts`.
   The type checker enforces that English has every French key.
 - **Buttons say what happens.** « Ouvrir la position », never « Confirmer », and the same label until

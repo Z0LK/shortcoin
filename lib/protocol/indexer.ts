@@ -48,6 +48,9 @@ import type {
   SearchResult,
   SettlementReceipt,
   TokenRow,
+  Holding,
+  SwapQuote,
+  Trade,
 } from './types'
 
 /** Fields that are bigint in the contracts and strings on the wire. */
@@ -178,6 +181,21 @@ export class IndexerAdapter implements ProtocolAdapter {
   // Writes need a wallet, USDG approval / Permit2 and pre-send simulation —
   // SPEC §7.5. None of that exists yet, so they refuse cleanly rather than
   // pretending.
+  // Spot routing is not decided yet (docs/OPEN-QUESTIONS.md §9): no pool
+  // reads and no swap writes until it is.
+  async quoteSwap(): Promise<SwapQuote> {
+    throw new ProtocolError('IndexerUnavailable')
+  }
+  async executeSwap(): Promise<Trade> {
+    throw new ProtocolError('WalletNotConnected')
+  }
+  async listHoldings(): Promise<Holding[]> {
+    throw new ProtocolError('IndexerUnavailable')
+  }
+  async listTrades(): Promise<Trade[]> {
+    throw new ProtocolError('IndexerUnavailable')
+  }
+
   async simulateOpen(): Promise<ProtocolError | null> {
     return new ProtocolError('WalletNotConnected')
   }

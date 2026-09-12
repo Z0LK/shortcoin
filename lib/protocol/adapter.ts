@@ -23,6 +23,10 @@ import type {
   SearchResult,
   SettlementReceipt,
   TokenRow,
+  Holding,
+  SwapQuote,
+  SwapSide,
+  Trade,
 } from './types'
 
 export type TokenSort = 'capacity' | 'rate' | 'depth'
@@ -78,9 +82,16 @@ export interface ProtocolAdapter {
 
   hlp(): Promise<{ pool: HlpState; account: HlpAccount }>
 
+  /** Spot tokens held by the account, marked at spot. */
+  listHoldings(): Promise<Holding[]>
+  /** Spot fills, newest first. */
+  listTrades(): Promise<Trade[]>
+
   // ── quoting ─────────────────────────────────────────────────────────────
   /** Throws a ProtocolError when the token cannot be opened. */
   quoteOpen(token: Address, collateral: bigint): Promise<OpenQuote>
+  /** Spot swap against the pool: USDG in when buying, token units in when selling. */
+  quoteSwap(token: Address, side: SwapSide, amountIn: bigint, slippageBps: number): Promise<SwapQuote>
 
   // ── writes ──────────────────────────────────────────────────────────────
   /** Simulate before sending (§7.5). Resolves to null when the call would pass. */
@@ -88,6 +99,8 @@ export interface ProtocolAdapter {
   approveUsdg(amount: bigint): Promise<void>
   openPosition(quote: OpenQuote): Promise<Position>
   closePosition(id: string): Promise<SettlementReceipt>
+  /** Refused with SlippageExceeded when the pool moved past the quote's minimum. */
+  executeSwap(quote: SwapQuote): Promise<Trade>
   hlpDeposit(amount: bigint): Promise<void>
   hlpWithdraw(amount: bigint): Promise<void>
   requestListing(address: Address): Promise<void>
@@ -117,6 +130,8 @@ export type ProtocolErrorCode =
   | 'OracleStale'
   | 'InsufficientBalance'
   | 'InsufficientAllowance'
+  | 'InsufficientTokenBalance'
+  | 'SlippageExceeded'
   | 'CollateralTooSmall'
   | 'PayoutNotEligible'
   | 'Paused'
@@ -152,4 +167,4 @@ export function decodeError(err: unknown): ProtocolError {
 }
 
 /** Errors that mean "get a fresh quote and try again" rather than "stop". */
-export const REQUOTE_ON: ProtocolErrorCode[] = ['QuoteExpired', 'CapacityExceeded']
+export const REQUOTE_ON: ProtocolErrorCode[] = ['QuoteExpired', 'CapacityExceeded', 'SlippageExceeded']

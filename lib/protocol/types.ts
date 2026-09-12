@@ -185,8 +185,65 @@ export type ProtocolEvent =
   | { type: 'position.payout-eligible'; position: Position }
   | { type: 'token.status'; token: TokenRow }
   | { type: 'token.launched'; token: TokenRow }
+  | { type: 'swap.filled'; trade: Trade }
 
 export interface ListingRequest {
   address: Address
   requestedAt: number
+}
+
+// ---------------------------------------------------------------------------
+// Spot
+// ---------------------------------------------------------------------------
+
+export type SwapSide = 'buy' | 'sell'
+
+/**
+ * A priced swap against the token's pool. Amounts are exact: USDG in 6
+ * decimals, token units in 18. Prices are 1e18 fixed-point USDG per token.
+ */
+export interface SwapQuote {
+  quoteId: string
+  token: Address
+  symbol: string
+  side: SwapSide
+  /** USDG when buying, token units when selling. */
+  amountIn: bigint
+  /** Token units when buying, USDG when selling — after fee and impact. */
+  amountOut: bigint
+  /** The fill is refused below this. amountOut × (1 − slippage). */
+  minAmountOut: bigint
+  slippageBps: number
+  spotPrice: string
+  executionPrice: string
+  priceImpactBps: number
+  feeBps: number
+  /** Always in USDG. */
+  fee: bigint
+  expiresAt: number
+}
+
+export interface Holding {
+  token: Address
+  symbol: string
+  amount: bigint
+  /** USDG paid for what is still held, fee included. */
+  costBasis: bigint
+  avgPrice: string
+  spotPrice: string
+  value: bigint
+  pnl: bigint
+}
+
+export interface Trade {
+  id: string
+  token: Address
+  symbol: string
+  side: SwapSide
+  tokenAmount: bigint
+  usdgAmount: bigint
+  price: string
+  fee: bigint
+  time: number
+  txHash: Address
 }

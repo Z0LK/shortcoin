@@ -3,8 +3,8 @@
 /**
  * Token sheet — SPEC §4A, the central screen.
  *
- * Left: identity, address, pool depth, status with its reason, the price chart
- * with both TWAPs over the spot. Right: the opening ticket.
+ * Left: identity, address, pool depth, status with its reason, the price chart.
+ * Right: buy, sell, or open a short.
  *
  * On a phone the ticket comes straight after the identity block, before the
  * chart: launchpad traders are on their phones (§7.9), and the action they came
@@ -21,7 +21,7 @@ import { ArrowLeft, Send } from 'lucide-react'
 import { useAdapterQuery, useRuntime } from '@/components/protocol/provider'
 import { AddressChip, StatusBadge } from '@/components/ui/protocol-ui'
 import { TwapChart, type ChartLevel } from '@/components/token/twap-chart'
-import { OpenTicket } from '@/components/ticket/open-ticket'
+import { TradePanel } from '@/components/ticket/trade-panel'
 import { PositionList } from '@/components/positions/position-list'
 import { Pill } from '@/components/ui/primitives'
 import {
@@ -190,7 +190,7 @@ export function TokenSheet({ keyOrAddress }: { keyOrAddress: string }) {
         </div>
         <div className="lg:col-start-2 lg:row-span-3 lg:row-start-1">
           <div className="lg:sticky lg:top-3">
-            <OpenTicket token={row} />
+            <TradePanel token={row} />
           </div>
         </div>
         <div className="flex h-[440px] lg:col-start-1 lg:row-start-2 lg:h-[520px]">
